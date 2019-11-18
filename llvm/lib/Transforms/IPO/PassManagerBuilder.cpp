@@ -775,6 +775,7 @@ void PassManagerBuilder::addLTOOptimizationPasses(legacy::PassManagerBase &PM) {
   PM.add(createInferFunctionAttrsLegacyPass());
 
   PM.add(createUntrustedAllocPass());
+  PM.add(createRemoveInRegStructsPass());
 
   if (OptLevel > 1) {
     // Split call-site with more constrained arguments.
