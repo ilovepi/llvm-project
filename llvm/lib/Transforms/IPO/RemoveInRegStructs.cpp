@@ -106,29 +106,21 @@ RemoveInRegStructsPass::run(Module &M, ModuleAnalysisManager &AM,
 
 bool RemoveInRegStructsPass::UpdateFunction(Function *F) {
   ValueToValueMapTy VMap;
-  Type *NewRetType = F->getReturnType()->getPointerElementType();
-  //  FunctionType* oldFT =  F->getFunctionType();
-  //  auto params = oldFT->params();
-  //  FunctionType* newFT = oldFT->get(RetType,params,
-  //  oldFT->isVarArg()); auto name = F->getName() + "_untrusted";
-  //  auto newFunc =
-  //  F->getParent()->getOrInsertFunction(name.str(),newFT,
-  const AttributeList &PAL = F->getAttributes();
-  // auto newF = CloneFunction(F, VMap);
-
-  // newF->ret
-
   std::vector<Type *> ArgTypes;
-  ArgTypes.push_back(NewRetType);
-
   SmallVector<AttributeSet, 8> ArgAttrVec;
+  const AttributeList &PAL = F->getAttributes();
+  Type *NewRetType = F->getReturnType()->getPointerTo();
+  ArgTypes.push_back(NewRetType);
   auto RetAttr = PAL.getRetAttributes();
-  auto NewRetAttr = RetAttr.addAttribute(F->getContext(), Attribute::Returned);
+  auto NewRetAttr = RetAttr.addAttribute(F->getContext(), Attribute::StructRet);
   ArgAttrVec.push_back(NewRetAttr);
   auto ArgNum = F->getFunctionType()->getNumParams();
   for (size_t i = 0; i < ArgNum; ++i) {
     ArgAttrVec.push_back(PAL.getParamAttributes(i));
   }
+  AttributeList NewPAL;
+  NewPAL = AttributeList::get(F->getContext(), PAL.getFnAttributes(), RetAttr,
+                              ArgAttrVec);
 
   // The user might be deleting arguments to the function by specifying
   // them in the VMap.  If so, we need to not add the arguments to the arg
@@ -144,12 +136,14 @@ bool RemoveInRegStructsPass::UpdateFunction(Function *F) {
                         F->getFunctionType()->isVarArg());
 
   // Create the new function...
-  Function *NewF = Function::Create(FTy, F->getLinkage(), F->getAddressSpace(),
-                                    F->getName(), F->getParent());
+  Function *NewF =
+      Function::Create(FTy, F->getLinkage(), F->getAddressSpace(),
+                       F->getName() + "__untrusted__", F->getParent());
 
   // Loop over the arguments, copying the names of the mapped arguments
   // over...
   Function::arg_iterator DestI = NewF->arg_begin();
+  DestI++;
   for (const Argument &I : F->args())
     if (VMap.count(&I) == 0) {     // Is this argument preserved?
       DestI->setName(I.getName()); // Copy the name over...
@@ -157,18 +151,61 @@ bool RemoveInRegStructsPass::UpdateFunction(Function *F) {
     }
 
   SmallVector<ReturnInst *, 8> Returns; // Ignore returns cloned.
-  CloneFunctionInto(NewF, F, VMap, F->getSubprogram() != nullptr, Returns,
-                    "__untrusted__", nullptr);
+  //  CloneFunctionInto(NewF, F, VMap, F->getSubprogram() != nullptr, Returns,
+  //  "",
+  CloneFunctionInto(NewF, F, VMap, true, Returns, "", nullptr);
 
+  NewF->setAttributes(NewPAL);
   for (auto &BB : *NewF) {
     if (auto TI = BB.getTerminator()) {
+      if (auto RetInst = dyn_cast<ReturnInst>(TI)) {
+        llvm::IRBuilder<> IRB(&BB);
+        auto RetVal = RetInst->getReturnValue();
+        auto RetLoc = NewF->arg_begin();
+        IRB.CreateStore(RetVal, RetLoc);
+        IRB.CreateRetVoid();
+        TI->eraseFromParent();
+      }
     }
   }
 
-  //NewF->dump();
-  llvm::errs() << *NewF << "\n";
+  for (auto Call : F->users()) {
+    Call->dump();
+    CallSite CS(Call);
+    auto BB = CS.getParent();
 
-  // return NewF;
+    llvm::IRBuilder<> IRB(BB);
+    auto CallSiteInst = CS.getInstruction();
+    // auto allocaInst = IRB.CreateAlloca(CS.getType());
+    auto allocaInst =
+        new AllocaInst(CS.getType(), 0, "RetValSlot", CallSiteInst);
+
+    SmallVector<Value *, 4> Args;
+    Args.push_back(allocaInst);
+    for (auto &A : CS.args()) {
+      Args.push_back(A);
+    }
+    // auto newCall = IRB.CreateCall(NewF->getFunctionType(), NewF, Args);
+    Instruction *newCall = CallInst::Create(NewF->getFunctionType(), NewF, Args,
+                                            None, "", CallSiteInst);
+
+    auto Load = new LoadInst(F->getReturnType(), allocaInst, "LoadedRetVal",
+                             CallSiteInst);
+    CS.getInstruction()->replaceAllUsesWith(Load);
+    BB->getInstList().erase(CallSiteInst);
+
+    //CallSiteInst->removeFromParent();
+  }
+
+  // F->dump();
+  // llvm::errs() << *NewF << "\n";
+  auto M = F->getParent();
+  llvm::errs() << "\nThe Function " << F->getName() << " has " << F->getNumUses() << " Uses in the program\n";
+  //F->dropAllReferences();
+  M->getFunctionList().erase(F);
+  //F->removeFromParent();
+  // M->dump();
+
   return true;
 }
 
