@@ -29,6 +29,8 @@
 #include <cstring>
 #include <string>
 
+#define DEBUG_TYPE "rem-struct"
+
 using namespace llvm;
 
 namespace {
@@ -50,13 +52,16 @@ public:
   }
 
   bool UpdateModule(Module &M) {
-    llvm::errs() << "-- RemoveInRegStructs Pass begin -- \n";
+    LLVM_DEBUG(llvm::dbgs() << "-- RemoveInRegStructs Pass begin -- \n";);
+
     if (!ShouldUpdateModule(M)) {
-      llvm::errs() << "No InRegStructs APIs in Module\n";
+      LLVM_DEBUG(llvm::dbgs() << "No InRegStructs APIs in Module\n";);
       return false;
     }
-    llvm::errs() << "RemoveInRegStruct Pass found " << AggregateReturns.size()
-                 << " Functions to update\n";
+    LLVM_DEBUG(llvm::dbgs()
+               << "RemoveInRegStruct Pass found " << AggregateReturns.size()
+               << " Functions to update\n");
+    LLVM_DEBUG(llvm::dbgs() << "-----------------------------------\n";);
 
     RemoveInRegStructsPass RIRSP;
     ModuleAnalysisManager DummyMAM;
@@ -66,7 +71,7 @@ public:
 
   bool ShouldUpdateModule(Module &M) {
     bool shouldUpdate = false;
-    llvm::errs() << "ReplaceInRegStruct Pass Diagnostics\n";
+    LLVM_DEBUG(llvm::dbgs() << "ReplaceInRegStruct Pass Diagnostics\n";);
     for (Function &F : M) {
       // Check if the function is 'untrusted'
       if (F.getReturnType()->isAggregateType()) {
@@ -74,10 +79,8 @@ public:
         AggregateReturns.push_back(&F);
       }
     }
-    if (shouldUpdate)
-      llvm::errs() << "Aggregate Return APIs found in module\n";
-    else
-      llvm::errs() << "No Aggregate Return APIs in Module\n";
+    LLVM_DEBUG(llvm::dbgs() << (shouldUpdate ? "" : "No ")
+                            << "Aggregate Return APIs found in module\n");
     return shouldUpdate;
   }
 
@@ -101,7 +104,58 @@ RemoveInRegStructsPass::run(Module &M, ModuleAnalysisManager &AM,
   }
   if (!Changed)
     return PreservedAnalyses::all();
+
+  RemoveExtractValueInst(M);
+
   return PreservedAnalyses::none();
+}
+
+void RemoveInRegStructsPass::RemoveExtractValueInst(Module &M) {
+  SmallVector<Instruction *, 8> ToRemove;
+  for (auto &F : M) {
+    for (auto &BB : F) {
+      for (auto &I : BB) {
+        if (ExtractValueInst *EV = dyn_cast<ExtractValueInst>(&I)) {
+          auto OP = EV->getAggregateOperand();
+          if (auto Load = dyn_cast<LoadInst>(OP)) {
+            auto Slot = Load->getPointerOperand();
+            SmallVector<Value *, 4> Idx;
+            Idx.push_back(llvm::ConstantInt::get(
+                F.getContext(),
+                llvm::APInt(32, EV->getAggregateOperandIndex(), false)));
+
+            for (auto id : EV->indices()) {
+              Idx.push_back(llvm::ConstantInt::get(F.getContext(),
+                                                   llvm::APInt(32, id, false)));
+            }
+
+            auto newGep = GetElementPtrInst::CreateInBounds(
+                OP->getType(), Slot, Idx, "StructGep", EV);
+
+            LLVM_DEBUG(llvm::dbgs()
+                       << "New Gep created:\n"
+                       << *newGep << "\n"
+                       << "New Gep Type: " << *newGep->getType() << "\n");
+
+            auto GepLoad =
+                new LoadInst(EV->getType(), newGep, "LoadedGepVal", EV);
+
+            LLVM_DEBUG(llvm::dbgs()
+                       << "New Load created:\n"
+                       << *GepLoad << "\n"
+                       << "New Loaded Type: " << *GepLoad->getType() << "\n");
+
+            EV->replaceAllUsesWith(GepLoad);
+            ToRemove.push_back(EV);
+          } // if LoadInst
+        }   // if ExtractValueInst
+      }     // for I in BB
+    }       // for BB in F
+  }         // for F in Module
+
+  for (auto *I : ToRemove) {
+    I->eraseFromParent();
+  }
 }
 
 bool RemoveInRegStructsPass::UpdateFunction(Function *F) {
@@ -151,8 +205,6 @@ bool RemoveInRegStructsPass::UpdateFunction(Function *F) {
     }
 
   SmallVector<ReturnInst *, 8> Returns; // Ignore returns cloned.
-  //  CloneFunctionInto(NewF, F, VMap, F->getSubprogram() != nullptr, Returns,
-  //  "",
   CloneFunctionInto(NewF, F, VMap, true, Returns, "", nullptr);
 
   NewF->setAttributes(NewPAL);
@@ -170,13 +222,12 @@ bool RemoveInRegStructsPass::UpdateFunction(Function *F) {
   }
 
   for (auto Call : F->users()) {
-    Call->dump();
+    LLVM_DEBUG(llvm::dbgs() << "Updating call site:\n" << *Call << "\n");
     CallSite CS(Call);
     auto BB = CS.getParent();
 
     llvm::IRBuilder<> IRB(BB);
     auto CallSiteInst = CS.getInstruction();
-    // auto allocaInst = IRB.CreateAlloca(CS.getType());
     auto allocaInst =
         new AllocaInst(CS.getType(), 0, "RetValSlot", CallSiteInst);
 
@@ -185,7 +236,6 @@ bool RemoveInRegStructsPass::UpdateFunction(Function *F) {
     for (auto &A : CS.args()) {
       Args.push_back(A);
     }
-    // auto newCall = IRB.CreateCall(NewF->getFunctionType(), NewF, Args);
     Instruction *newCall = CallInst::Create(NewF->getFunctionType(), NewF, Args,
                                             None, "", CallSiteInst);
 
@@ -193,19 +243,12 @@ bool RemoveInRegStructsPass::UpdateFunction(Function *F) {
                              CallSiteInst);
     CS.getInstruction()->replaceAllUsesWith(Load);
     BB->getInstList().erase(CallSiteInst);
-
-    //CallSiteInst->removeFromParent();
   }
 
-  // F->dump();
-  // llvm::errs() << *NewF << "\n";
   auto M = F->getParent();
-  llvm::errs() << "\nThe Function " << F->getName() << " has " << F->getNumUses() << " Uses in the program\n";
-  //F->dropAllReferences();
+  LLVM_DEBUG(llvm::dbgs() << "After updating Function \"" << F->getName() << "\" has "
+                          << F->getNumUses() << " uses\n");
   M->getFunctionList().erase(F);
-  //F->removeFromParent();
-  // M->dump();
-
   return true;
 }
 

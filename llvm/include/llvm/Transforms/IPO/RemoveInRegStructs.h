@@ -31,6 +31,7 @@ public:
   PreservedAnalyses run(Module &M, ModuleAnalysisManager &AM,
                         SmallVector<Function *, 4> &AggregateReturns);
   bool UpdateFunction(Function *F);
+  void RemoveExtractValueInst(Module &M);
 
   SmallVector<Function *, 4> AggRets;
 };
