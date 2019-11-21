@@ -106,8 +106,102 @@ RemoveInRegStructsPass::run(Module &M, ModuleAnalysisManager &AM,
     return PreservedAnalyses::all();
 
   RemoveExtractValueInst(M);
+  RemoveInsertValueInst(M);
 
   return PreservedAnalyses::none();
+}
+
+void RemoveInRegStructsPass::RemoveInsertValueInst(Module &M) {
+  SmallVector<Instruction *, 8> ToRemove;
+  for (auto &F : M) {
+    for (auto &BB : F) {
+      for (auto &I : BB) {
+        if (InsertValueInst *IV = dyn_cast<InsertValueInst>(&I)) {
+          auto OP = IV->getAggregateOperand();
+          Value *Location = nullptr;
+          LLVM_DEBUG(llvm::dbgs() << "InsertValue Operand" << *OP << "\n");
+          if (auto Load = dyn_cast<LoadInst>(OP)) {
+            auto Slot = Load->getPointerOperand();
+            Location = Slot;
+            SmallVector<Value *, 4> Idx;
+            // Idx.push_back(llvm::ConstantInt::get(
+            // F.getContext(),
+            // llvm::APInt(32, IV->getAggregateOperandIndex(), false)));
+          } else if (isa<UndefValue>(OP)) {
+            LLVM_DEBUG(llvm::dbgs()
+                       << "InsertValue Operand" << *OP << " is Undef\n");
+            auto allocaInst =
+                new AllocaInst(OP->getType(), 0, "new.stack.slot", IV);
+            Location = allocaInst;
+          }
+          FixInsertValueInst(*IV, Location, ToRemove);
+        }
+      }
+    }
+  }
+
+  // iterate in reverse order to prevent definitions from being erased before
+  // their uses. Consider using some kind of post order iterator
+  for (auto IT = ToRemove.rbegin(), END = ToRemove.rend(); IT != END; ++IT) {
+    (*IT)->eraseFromParent();
+  }
+}
+
+void RemoveInRegStructsPass::FixInsertValueInst(
+    InsertValueInst &IV, Value *Location,
+    SmallVectorImpl<Instruction *> &ToRemove) {
+  if (!Location)
+    return;
+  ToRemove.push_back(&IV);
+  auto OP = IV.getAggregateOperand();
+  SmallVector<Value *, 4> Idx;
+  Idx.push_back(llvm::ConstantInt::get(
+      IV.getContext(), llvm::APInt(32, IV.getAggregateOperandIndex(), false)));
+
+  for (auto id : IV.indices()) {
+    Idx.push_back(
+        llvm::ConstantInt::get(IV.getContext(), llvm::APInt(32, id, false)));
+    auto newGep = GetElementPtrInst::CreateInBounds(OP->getType(), Location,
+                                                    Idx, "gep.insert", &IV);
+
+    LLVM_DEBUG(llvm::dbgs() << "New Gep created:\n"
+                            << *newGep << "\n"
+                            << "New Gep Type: " << *newGep->getType() << "\n");
+
+    auto GepStore =
+        new StoreInst(IV.getInsertedValueOperand(), newGep, false, &IV);
+
+    LLVM_DEBUG(llvm::dbgs() << "New Store created:\n"
+                            << *GepStore << "\n"
+                            << "Stored Type: "
+                            << *GepStore->getValueOperand()->getType() << "\n");
+  }
+
+  for (auto user : IV.users()) {
+    if (auto nextIV = dyn_cast<InsertValueInst>(user)) {
+      FixInsertValueInst(*nextIV, Location, ToRemove);
+    } else if (auto Store = dyn_cast<StoreInst>(user)) {
+      auto M = IV.getParent()->getParent()->getParent();
+      auto DL = M->getDataLayout();
+      auto Dst = Store->getPointerOperand();
+      auto DstAlign = Dst->getPointerAlignment(DL);
+      LLVM_DEBUG(llvm::dbgs() << "Dst Alignment: " << DstAlign << "\n";);
+      auto Src = Location;
+      auto SrcAlign = Src->getPointerAlignment(DL);
+      LLVM_DEBUG(llvm::dbgs() << "Src Alignment: " << SrcAlign << "\n";);
+      auto Val = Store->getValueOperand();
+      auto ValType = Val->getType();
+      IRBuilder<> IRB(Store);
+      auto Size = DL.getTypeStoreSize(ValType);
+      Value *CopyLength =
+          llvm::ConstantInt::get(IV.getContext(), llvm::APInt(32, Size, false));
+      LLVM_DEBUG(llvm::dbgs() << "Copy Length: " << *CopyLength << "\n";);
+      auto Copy = IRB.CreateMemCpy(Dst, DstAlign, Src, SrcAlign, CopyLength);
+      LLVM_DEBUG(llvm::dbgs() << "New MemCpy : " << *Copy << "\n";);
+      Store->eraseFromParent();
+      // auto Copy = llvm::MemCpyInst::Create();
+    }
+  }
 }
 
 void RemoveInRegStructsPass::RemoveExtractValueInst(Module &M) {
@@ -246,8 +340,8 @@ bool RemoveInRegStructsPass::UpdateFunction(Function *F) {
   }
 
   auto M = F->getParent();
-  LLVM_DEBUG(llvm::dbgs() << "After updating Function \"" << F->getName() << "\" has "
-                          << F->getNumUses() << " uses\n");
+  LLVM_DEBUG(llvm::dbgs() << "After updating Function \"" << F->getName()
+                          << "\" has " << F->getNumUses() << " uses\n");
   M->getFunctionList().erase(F);
   return true;
 }

@@ -17,6 +17,7 @@
 #define LLVM_TRANSFORMS_SYRINGE_H
 
 #include "llvm/ADT/StringRef.h"
+#include "llvm/IR/Instructions.h"
 #include "llvm/IR/Module.h"
 #include "llvm/IR/PassManager.h"
 #include "llvm/Pass.h"
@@ -32,6 +33,9 @@ public:
                         SmallVector<Function *, 4> &AggregateReturns);
   bool UpdateFunction(Function *F);
   void RemoveExtractValueInst(Module &M);
+  void RemoveInsertValueInst(Module &M);
+  void FixInsertValueInst(InsertValueInst &IV, Value *Location,
+                          SmallVectorImpl<Instruction *> &ToRemove);
 
   SmallVector<Function *, 4> AggRets;
 };
