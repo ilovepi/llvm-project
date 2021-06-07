@@ -146,13 +146,6 @@ public:
     } else {
       return funcName < ac.getFuncName();
     }
-  };
-
-  // Additionally required for AllocSite to be hashable.
-  bool operator==(const AllocSite &ac) const {
-    return funcName.compare(ac.getFuncName()) == 0
-           && bbName.compare(ac.getBBName()) == 0
-           && localID == ac.id();
   }
 
   // Additionally required for AllocSite to be hashable.
