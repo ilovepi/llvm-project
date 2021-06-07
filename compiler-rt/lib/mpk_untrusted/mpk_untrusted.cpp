@@ -2,6 +2,7 @@
 #include "mpk_common.h"
 #include "mpk_fault_handler.h"
 #include "sanitizer_common/sanitizer_common.h"
+#include <cstdint>
 
 struct sigaction *prevAction = nullptr;
 struct sigaction *SEGVAction = nullptr;
@@ -66,7 +67,8 @@ void mpk_untrusted_constructor() {
     SEGVAction = &sa;
   prevAction = &sa_old;
 
-#ifdef SINGLE_STEP_MPK
+// If PAGE_MPK is not defined, default to Single Step
+#ifndef PAGE_MPK
   // If we are single stepping, we add an additional signal handler.
   static struct sigaction sa_trap;
 
