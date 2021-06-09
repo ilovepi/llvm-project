@@ -38,7 +38,7 @@ bool MpkCallGatesLegacyPass::runOnModule(Module &M) {
     // and only if they may be called from outside of rust code
     // i.e., externally available or are address taken functions
     if (!(F.hasAddressTaken() || F.hasLinkOnceLinkage() ||
-        F.hasAvailableExternallyLinkage() || !F.hasLocalLinkage()))
+          F.hasAvailableExternallyLinkage() || !F.hasLocalLinkage()))
       continue;
 
     // ignore our APIs

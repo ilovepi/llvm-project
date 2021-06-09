@@ -7,7 +7,6 @@ bool is_safe_address(void *addr) { return false; }
 namespace __mpk_untrusted {
 #define DEFAULT_PKEY 0
 
-
 AllocSiteHandler *AllocSiteHandle = nullptr;
 
 std::once_flag AllocHandlerInitFlag;
