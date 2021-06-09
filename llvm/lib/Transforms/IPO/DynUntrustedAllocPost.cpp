@@ -43,7 +43,6 @@
 
 #include <fstream>
 #include <map>
-#include <set>
 #include <string>
 #include <utility>
 #include <vector>
@@ -269,7 +268,7 @@ public:
 
   std::map<std::string, std::map<uint64_t, FaultingSite>> getFaultingAllocMap() {
     std::map<std::string, std::map<uint64_t, FaultingSite>> fault_map;
-    // If no path provided, return empty set.
+    // If no path provided, return empty map.
     if (mpk_profile_path.empty())
       return fault_map;
 
@@ -295,7 +294,7 @@ public:
       }
     }
 
-    LLVM_DEBUG(errs() << "Returning successful fault_set.\n");
+    LLVM_DEBUG(errs() << "Returning successful fault_map.\n");
     return fault_map;
   }
 
@@ -406,7 +405,7 @@ public:
             auto allocFunc = CS.getArgument(0);
             if (auto *allocInst = dyn_cast<CallBase>(allocFunc)) {
 
-              // Check to see if ID is in fault set for patching
+              // Check to see if ID is in fault map for patching
               auto &func_fault_map = func_fault_iter->second;
               auto map_iter = func_fault_map.find(id->getZExtValue());
               if (map_iter == func_fault_map.end()) {

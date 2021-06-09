@@ -43,8 +43,8 @@ namespace __mpk_untrusted {
  * track the pointer of the allocation, the size of the allocation, and a
  * <localID, basicBlockName, funcName> tuple for tracking the call to alloc back
  * to its position in the source code. This information is intended to be used
- * in the compilation process for changing Allocation Site found to be unsafe to
- * unsafe alloc calls.
+ * in the compilation process for changing Allocation Sites that should be untrusted
+ * to untrusted alloc calls.
  *
  * @note A note on thread safety: The only parameter that is changed at any
  * point after object creation is the PKey that the object faults on, thus this
