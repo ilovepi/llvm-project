@@ -77,7 +77,8 @@ public:
     // Adds function hooks with dummy LocalIDs immediately after calls
     // to __rust_alloc* functions. Additionally, we must remove the
     // NoInline attribute from RustAlloc functions.
-    GlobalNullStr = llvm::ConstantPointerNull::get(Type::getInt8PtrTy(M.getContext()));
+    GlobalNullStr =
+        llvm::ConstantPointerNull::get(Type::getInt8PtrTy(M.getContext()));
 
     AttrBuilder attrBldr;
     attrBldr.addAttribute(Attribute::NoUnwind);
@@ -88,33 +89,36 @@ public:
 
     // Make function hook to add to all functions we wish to track
     Constant *allocHookFunc = M.getOrInsertFunction(
-        "allocHook", fnAttrs, Type::getVoidTy(M.getContext()),    // void allocHook(
-        Type::getInt8PtrTy(M.getContext()),                       // (int8_t *)rust_ptr ptr,
-        IntegerType::get(M.getContext(), 64),                     // int64_t size,
-        IntegerType::getInt64Ty(M.getContext()),                  // int64_t localID,
-        Type::getInt8PtrTy(M.getContext()),                       // const char *bbName,
-        Type::getInt8PtrTy(M.getContext()));                      // const char *funcName)
+        "allocHook", fnAttrs,
+        Type::getVoidTy(M.getContext()),         // void allocHook(
+        Type::getInt8PtrTy(M.getContext()),      // (int8_t *)rust_ptr ptr,
+        IntegerType::get(M.getContext(), 64),    // int64_t size,
+        IntegerType::getInt64Ty(M.getContext()), // int64_t localID,
+        Type::getInt8PtrTy(M.getContext()),      // const char *bbName,
+        Type::getInt8PtrTy(M.getContext()));     // const char *funcName)
     allocHook = cast<Function>(allocHookFunc);
     // set its linkage
     allocHook->setLinkage(GlobalValue::LinkageTypes::ExternalLinkage);
 
     Constant *reallocHookFunc = M.getOrInsertFunction(
-        "reallocHook", fnAttrs, Type::getVoidTy(M.getContext()),  // void reallocHook(
-        Type::getInt8PtrTy(M.getContext()),                       // rust_ptr newPtr,
-        IntegerType::get(M.getContext(), 64),                     // int64_t newSize,
-        Type::getInt8PtrTy(M.getContext()),                       // rust_ptr oldPtr,
-        IntegerType::get(M.getContext(), 64),                     // int64_t oldSize,
-        IntegerType::getInt64Ty(M.getContext()),                  // int64_t localID,
-        Type::getInt8PtrTy(M.getContext()),                       // const char *bbName,
-        Type::getInt8PtrTy(M.getContext()));                      // const char *funcName)
+        "reallocHook", fnAttrs,
+        Type::getVoidTy(M.getContext()),         // void reallocHook(
+        Type::getInt8PtrTy(M.getContext()),      // rust_ptr newPtr,
+        IntegerType::get(M.getContext(), 64),    // int64_t newSize,
+        Type::getInt8PtrTy(M.getContext()),      // rust_ptr oldPtr,
+        IntegerType::get(M.getContext(), 64),    // int64_t oldSize,
+        IntegerType::getInt64Ty(M.getContext()), // int64_t localID,
+        Type::getInt8PtrTy(M.getContext()),      // const char *bbName,
+        Type::getInt8PtrTy(M.getContext()));     // const char *funcName)
     reallocHook = cast<Function>(reallocHookFunc);
     reallocHook->setLinkage(GlobalValue::LinkageTypes::ExternalLinkage);
 
     Constant *deallocHookFunc = M.getOrInsertFunction(
-        "deallocHook", fnAttrs, Type::getVoidTy(M.getContext()),  // void deallocHook(
-        Type::getInt8PtrTy(M.getContext()),                       // rust_ptr ptr,
-        IntegerType::get(M.getContext(), 64),                     // int64_t size,
-        IntegerType::getInt64Ty(M.getContext()));                 // int64_t localID)
+        "deallocHook", fnAttrs,
+        Type::getVoidTy(M.getContext()),          // void deallocHook(
+        Type::getInt8PtrTy(M.getContext()),       // rust_ptr ptr,
+        IntegerType::get(M.getContext(), 64),     // int64_t size,
+        IntegerType::getInt64Ty(M.getContext())); // int64_t localID)
     deallocHook = cast<Function>(deallocHookFunc);
     deallocHook->setLinkage(GlobalValue::LinkageTypes::ExternalLinkage);
 
@@ -141,10 +145,9 @@ public:
 #ifdef MPK_STATS
       alloc_hook_counter++;
 #endif
-      return CallInst::Create(
-          (Function *)allocHook,
-          {CS->getInstruction(), CS->getArgument(0), getDummyID(M), 
-           GlobalNullStr, GlobalNullStr});
+      return CallInst::Create((Function *)allocHook,
+                              {CS->getInstruction(), CS->getArgument(0),
+                               getDummyID(M), GlobalNullStr, GlobalNullStr});
     } else if (F == M.getFunction("__rust_realloc")) {
 #ifdef MPK_STATS
       realloc_hook_counter++;
@@ -268,9 +271,9 @@ public:
         llvm::GlobalValue::LinkageTypes::ExternalLinkage);
     if (rust_untrusted_alloc_zeroed) {
       rust_untrusted_alloc_zeroed->setLinkage(
-        llvm::GlobalValue::LinkageTypes::ExternalLinkage);
+          llvm::GlobalValue::LinkageTypes::ExternalLinkage);
     }
-   
+
     for (Function &F : M) {
       if (F.hasFnAttribute(Attribute::RustAllocator)) {
         // Dont inline any functions that may be altered or hooked in the

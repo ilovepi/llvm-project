@@ -43,10 +43,10 @@
 
 #include <fstream>
 #include <map>
+#include <set>
 #include <string>
 #include <utility>
 #include <vector>
-#include <set>
 
 #define DEBUG_TYPE "dyn-untrusted"
 // Used for printing compile time statistics for DynUntrustedAllocPost pass.
@@ -65,9 +65,9 @@ static cl::opt<bool>
                        cl::desc("Remove hook instructions. This is mainly"
                                 "for test purpose."));
 
-static cl::opt<bool>
-    MPKVerbosePatching("mpk-verbose-patching", cl::init(false), cl::Hidden,
-                       cl::desc("Print out patched instructions on instrumentation pass."));
+static cl::opt<bool> MPKVerbosePatching(
+    "mpk-verbose-patching", cl::init(false), cl::Hidden,
+    cl::desc("Print out patched instructions on instrumentation pass."));
 
 namespace {
 #ifdef MPK_STATS
@@ -85,13 +85,15 @@ enum HookIndex {
 };
 
 /// A mapping between hook function and the position of the localID argument.
-// Note : Changed DeallocHook from 2 (correct position for index) to 
-// -1 to indicate we dont want to number this hook anymore. This is 
+// Note : Changed DeallocHook from 2 (correct position for index) to
+// -1 to indicate we dont want to number this hook anymore. This is
 // to increase stability of mapping between profiling and instrumentation
 // builds. DeallocHook does not use the localID in any meaningful way.
 // TODO : Remove localID from deallocHook.
 const static std::map<std::string, HookIndex> patchArgIndexMap = {
-    {"allocHook", allocHookIndex}, {"reallocHook", reallocHookIndex}, {"deallocHook", deallocHookIndex}};
+    {"allocHook", allocHookIndex},
+    {"reallocHook", reallocHookIndex},
+    {"deallocHook", deallocHookIndex}};
 
 // Currently only patching __rust_alloc and __rust_alloc_zeroed
 const static std::map<std::string, std::string> AllocReplacementMap = {
@@ -101,8 +103,7 @@ const static std::map<std::string, std::string> AllocReplacementMap = {
 
 /// Map for counting total number of hooks split between type.
 static std::map<std::string, int> hookCountMap = {
-    {"allocHook", 0}, {"reallocHook", 0}, {"deallocHook", 0}
-};
+    {"allocHook", 0}, {"reallocHook", 0}, {"deallocHook", 0}};
 
 std::vector<Instruction *> hookList;
 std::vector<CallBase *> patchList;
@@ -137,7 +138,7 @@ public:
   static char ID;
   std::string mpk_profile_path;
   bool remove_hooks;
-  
+
   DynUntrustedAllocPost(std::string mpk_profile_path = "",
                         bool remove_hooks = false)
       : ModulePass(ID), mpk_profile_path(mpk_profile_path),
@@ -164,7 +165,7 @@ public:
       }
     }
 
-    if (remove_hooks) 
+    if (remove_hooks)
       removeHooks(M);
 
     removeInlineAttr(M);
@@ -182,9 +183,9 @@ public:
     return true;
   }
 
-  // Reference for this function can be found in the LLVM JSON support 
+  // Reference for this function can be found in the LLVM JSON support
   // library documentation, `llvm/include/llvm/Support/JSON.h` titled:
-  // "Converting JSON values to C++ types". This describes a function: 
+  // "Converting JSON values to C++ types". This describes a function:
   // fromJSON(const json::Value&, T&) -> bool
   // which passes the JSON object as its first argument and a reference
   // to the data structure you are deserializing as the second argument.
@@ -218,7 +219,8 @@ public:
     F.bbName = temp_bbName;
     F.funcName = temp_funcName;
 
-    return O && temp_id_result && temp_pkey_result && temp_bbName_result && temp_funcName_result;
+    return O && temp_id_result && temp_pkey_result && temp_bbName_result &&
+           temp_funcName_result;
   }
 
   std::vector<std::string> getFaultPaths() {
@@ -313,20 +315,20 @@ public:
     LLVM_DEBUG(errs() << "Search for modified functions!\n");
 
     auto fault_map = getFaultingAllocMap();
-    
+
     // Note on ModuleSlotTracker:
     // The MST is used for "naming" BasicBlocks that do not already
-    // have a name by getting the module slot associated with a 
+    // have a name by getting the module slot associated with a
     // BasicBlock in a given function. From testing and documentation,
     // it appears as though BasicBlocks almost never have names (especially
     // when building optimized binaries).
     //
     // The code for getting the BasicBlock numbers (and building names)
-    // is taken from llvm/lib/CodeGen/MIRPrinter.cpp functions: 
-    // - void MIRPrinter::print(const MachineFunction &MF) and 
+    // is taken from llvm/lib/CodeGen/MIRPrinter.cpp functions:
+    // - void MIRPrinter::print(const MachineFunction &MF) and
     // - void MIRPrinter::print(const MachineBasicBlock &MBB)
     ModuleSlotTracker MST(&M, /*shouldInitializeAllMetaData*/ false);
-    
+
     for (Function *F : WorkList) {
       MST.incorporateFunction(*F);
       ReversePostOrderTraversal<Function *> RPOT(F);
@@ -357,7 +359,7 @@ public:
 
           auto index = index_iter->second;
           auto callInst = CS.getInstruction();
-          
+
 #ifdef MPK_STATS
           ++total_hooks;
 #endif
@@ -365,9 +367,9 @@ public:
           if (remove_hooks)
             hookList.push_back(callInst);
 
-          // If index == deallocHookIndex, then this is a deallocHook. We can skip the rest 
-          // of the code since we know we dont need to patch this call and we
-          // dont want it to be part of the count either.
+          // If index == deallocHookIndex, then this is a deallocHook. We can
+          // skip the rest of the code since we know we dont need to patch this
+          // call and we dont want it to be part of the count either.
           if (index == deallocHookIndex)
             continue;
 
@@ -383,9 +385,9 @@ public:
           auto id = LocalIDG.getConstID(M);
           CS.setArgument(index, id);
           if (!remove_hooks) {
-            // We only want to create these global strings if they are going to be used in 
-            // final program execution. When removing the hooks, skip creating (and assigning)
-            // the Global String identifiers.
+            // We only want to create these global strings if they are going to
+            // be used in final program execution. When removing the hooks, skip
+            // creating (and assigning) the Global String identifiers.
             IRBuilder<> IRB(&*callInst);
             // Set the Basic Block name, which is at index + 1
             CS.setArgument(index + 1, IRB.CreateGlobalStringPtr(bbName));
@@ -412,8 +414,9 @@ public:
               }
 
               if (bbName.compare(map_iter->second.bbName) != 0) {
-                errs() << "ERROR : Faulting allocation site found in non-matching BasicBlock:\n"
-                       << "AllocSite(" << map_iter->second.localID << ", " 
+                errs() << "ERROR : Faulting allocation site found in "
+                          "non-matching BasicBlock:\n"
+                       << "AllocSite(" << map_iter->second.localID << ", "
                        << map_iter->second.funcName << ")\n"
                        << "TraceBlock(" << map_iter->second.bbName << ") -> "
                        << "InstrBlock(" << bbName << ")\n";
@@ -423,7 +426,8 @@ public:
 
               patchList.push_back(allocInst);
             } else {
-                LLVM_DEBUG(errs() << "Alloc Func expected, found: " << *allocFunc << "\n");
+              LLVM_DEBUG(errs() << "Alloc Func expected, found: " << *allocFunc
+                                << "\n");
             }
           }
         }
@@ -457,7 +461,7 @@ public:
 #endif
   }
 
-  // Working under the assumption that all missed cases of Hook calls is 
+  // Working under the assumption that all missed cases of Hook calls is
   // due to the blocks containing them no longer being reachable, we remove
   // those instructions from their respective blocks.
   void removeFunctionUsers(Function *F) {
@@ -493,7 +497,7 @@ public:
     auto reallocHook = M.getFunction("reallocHook");
     if (reallocHook)
       removeFunctionUsers(reallocHook);
-    
+
     auto deallocHook = M.getFunction("deallocHook");
     if (deallocHook)
       removeFunctionUsers(deallocHook);

@@ -37,7 +37,6 @@ namespace __mpk_untrusted {
  * @param isRealloc Simple marker for determining if an allocation site is
  * an alloc call or a realloc call. Mostly used for confirming results of
  * traces.
- * @param associatedSet Set for tracking re-allocations across AllocationSites.
  *
  *
  * @note For each call to alloc (and realloc), an AllocSite will be created to
@@ -45,10 +44,7 @@ namespace __mpk_untrusted {
  * <localID, basicBlockName, funcName> tuple for tracking the call to alloc back
  * to its position in the source code. This information is intended to be used
  * in the compilation process for changing Allocation Site found to be unsafe to
- * unsafe alloc calls. Calls to realloc will first find AllocSites that are
- * being tracked under the given pointer, then add them to the associated set of
- * the newly generated AllocSite to ensure that if a reallocated site is found
- * to be unsafe, the original allocation can also be marked unsafe.
+ * unsafe alloc calls.
  *
  * @note A note on thread safety: The only parameter that is changed at any
  * point after object creation is the PKey that the object faults on, thus this
@@ -113,11 +109,7 @@ public:
 
   bool isReAlloc() { return isRealloc; }
 
-  // For use with re-allocation tracking. The associated set should contain all
-  // previous allocation sites for a given reallocated pointer.
-  // alloc_set_type &getAssociatedSet() { return associatedSet; }
-
-  // Additionally required for AllocSite to be hashable.
+  // Required for AllocSite to be hashable.
   bool operator==(const AllocSite &ac) const {
     return funcName.compare(ac.getFuncName()) == 0 &&
            bbName.compare(ac.getBBName()) == 0 && localID == ac.id();
@@ -145,11 +137,11 @@ public:
 } // namespace __mpk_untrusted
 
 namespace std {
+// Required to make AllocSite Hashable.
 template <> struct hash<__mpk_untrusted::AllocSite> {
   std::size_t operator()(const __mpk_untrusted::AllocSite &AS) const {
     return ((std::hash<std::string>()(AS.getFuncName()) ^
-             (std::hash<std::string>()(AS.getBBName()) << 1)) >>
-            1) ^
+             (std::hash<std::string>()(AS.getBBName()) << 1)) >> 1) ^
            (std::hash<int64_t>()(AS.id()) << 1);
   }
 };
@@ -167,6 +159,7 @@ namespace __mpk_untrusted {
  * to its Allocation Site metadata.
  * @param fault_set Contains the set of faulted Allocation Sites.
  * @param pkey_by_tid_map Maps a given thread-id to its PendingPKeyInfo.
+ * @param FM Maps Allocation Sites to their associated set.
  *
  * @note AllocSiteHandler is accessed through a global pointer so that
  * all threads access the same handler and data can be synchronized between
@@ -194,6 +187,7 @@ private:
 
   // Map AllocSites to their reallocation chain
   realloc_map_t FM;
+  // FM mutex
   std::mutex realloc_map_mx;
 
 public:
