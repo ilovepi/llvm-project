@@ -1828,6 +1828,9 @@ void CodeGenModule::getDefaultFunctionAttributes(StringRef Name,
     case CodeGenOptions::FramePointerKind::NonLeaf:
       FpKind = "non-leaf";
       break;
+    case CodeGenOptions::FramePointerKind::ShrinkWrap:
+      FpKind = "shrink-wrap";
+      break;
     case CodeGenOptions::FramePointerKind::All:
       FpKind = "all";
       break;

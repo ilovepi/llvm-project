@@ -104,6 +104,19 @@ bool X86FrameLowering::hasFP(const MachineFunction &MF) const {
           (isWin64Prologue(MF) && MFI.hasCopyImplyingStackAdjustment()));
 }
 
+bool X86FrameLowering::hasFPShrinkWrap(const MachineFunction &MF) const {
+  if (!hasFP(MF))
+    return false;
+  const Function &F = MF.getFunction();
+
+  if (F.hasFnAttribute("frame-pointer")) {
+    StringRef FP = F.getFnAttribute("frame-pointer").getValueAsString();
+    if (FP == "shrink-wrap")
+      return true;
+  }
+  return false;
+}
+
 static unsigned getSUBriOpcode(bool IsLP64, int64_t Imm) {
   if (IsLP64) {
     if (isInt<8>(Imm))
@@ -1489,6 +1502,7 @@ void X86FrameLowering::emitPrologue(MachineFunction &MF,
       MF.hasEHFunclets() && Personality == EHPersonality::CoreCLR;
   bool IsClrFunclet = IsFunclet && FnHasClrFunclet;
   bool HasFP = hasFP(MF);
+  bool HasFPShrinkWrap = hasFPShrinkWrap(MF);
   bool IsWin64Prologue = isWin64Prologue(MF);
   bool NeedsWin64CFI = IsWin64Prologue && Fn.needsUnwindTableEntry();
   // FIXME: Emit FPO data for EH funclets.
@@ -1621,7 +1635,7 @@ void X86FrameLowering::emitPrologue(MachineFunction &MF,
   }
 
   if (HasFP) {
-    assert(MF.getRegInfo().isReserved(MachineFramePtr) && "FP reserved");
+    assert((MF.getRegInfo().isReserved(MachineFramePtr) || HasFPShrinkWrap)&& "FP reserved");
 
     // Calculate required stack adjustment.
     uint64_t FrameSize = StackSize - SlotSize;

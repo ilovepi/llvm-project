@@ -1161,6 +1161,8 @@ void TargetPassConfig::addMachinePasses() {
   if (TM->Options.EnableIPRA)
     addPass(createRegUsageInfoPropPass());
 
+  addPass(createFramePointerShrinkWrapPass());
+
   // Run pre-ra passes.
   addPreRegAlloc();
 

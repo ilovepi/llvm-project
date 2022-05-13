@@ -284,6 +284,12 @@ public:
   /// has variable sized allocas or if frame pointer elimination is disabled.
   virtual bool hasFP(const MachineFunction &MF) const = 0;
 
+  /// hasFPShrinkWrap - Return true if the specified function should shrink wrap
+  /// the frame pointer register. This is true only if the function has frame
+  /// pointers and the FP shrink wrap option is set.
+  virtual bool hasFPShrinkWrap(const MachineFunction &MF) const {return false;}
+
+
   /// hasReservedCallFrame - Under normal circumstances, when a frame pointer is
   /// not required, we reserve argument space for call sites in the function
   /// immediately on entry to the current function. This eliminates the need for

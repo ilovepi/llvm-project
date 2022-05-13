@@ -63,6 +63,7 @@ add_llvm_component_library(LLVMCodeGen
   FEntryInserter.cpp
   FinalizeISel.cpp
   FixupStatepointCallerSaved.cpp
+  FramePointerShrinkWrap.cpp
   FuncletLayout.cpp
   GCMetadata.cpp
   GCMetadataPrinter.cpp

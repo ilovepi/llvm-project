@@ -67,7 +67,7 @@ namespace llvm {
   };
 
   // Specify what functions should keep the frame pointer.
-  enum class FramePointerKind { None, NonLeaf, All };
+  enum class FramePointerKind { None, NonLeaf, All, ShrinkWrap };
 
   // Specify what type of zeroing callee-used registers.
   namespace ZeroCallUsedRegs {
