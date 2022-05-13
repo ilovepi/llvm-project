@@ -104,6 +104,16 @@ bool X86FrameLowering::hasFP(const MachineFunction &MF) const {
           (isWin64Prologue(MF) && MFI.hasCopyImplyingStackAdjustment()));
 }
 
+bool X86FrameLowering::hasFPShrinkWrap(const MachineFunction &MF) const {
+  if (hasFP(MF))
+    return false;
+  const Function &F = MF.getFunction();
+  if (!F.hasFnAttribute("frame-pointer"))
+    return false;
+  StringRef FP = F.getFnAttribute("frame-pointer").getValueAsString();
+  return FP == "shrink-wrap";
+}
+
 static unsigned getSUBriOpcode(bool IsLP64, int64_t Imm) {
   if (IsLP64) {
     if (isInt<8>(Imm))
@@ -1492,6 +1502,7 @@ void X86FrameLowering::emitPrologue(MachineFunction &MF,
       MF.hasEHFunclets() && Personality == EHPersonality::CoreCLR;
   bool IsClrFunclet = IsFunclet && FnHasClrFunclet;
   bool HasFP = hasFP(MF);
+  bool HasFPShrinkWrap = hasFPShrinkWrap(MF);
   bool IsWin64Prologue = isWin64Prologue(MF);
   bool NeedsWin64CFI = IsWin64Prologue && Fn.needsUnwindTableEntry();
   // FIXME: Emit FPO data for EH funclets.
@@ -1573,7 +1584,7 @@ void X86FrameLowering::emitPrologue(MachineFunction &MF,
       !MF.shouldSplitStack()) {                // Regular stack
     uint64_t MinSize =
         X86FI->getCalleeSavedFrameSize() - X86FI->getTCReturnAddrDelta();
-    if (HasFP) MinSize += SlotSize;
+    if (HasFP || HasFPShrinkWrap) MinSize += SlotSize;
     X86FI->setUsesRedZone(MinSize > 0 || StackSize > 0);
     StackSize = std::max(MinSize, StackSize > 128 ? StackSize - 128 : 0);
     MFI.setStackSize(StackSize);
@@ -1740,6 +1751,36 @@ void X86FrameLowering::emitPrologue(MachineFunction &MF,
     assert(!IsFunclet && "funclets without FPs not yet implemented");
     NumBytes = StackSize -
                (X86FI->getCalleeSavedFrameSize() + TailCallArgReserveSize);
+
+    if (HasFPShrinkWrap) {
+      NumBytes -= SlotSize;
+      // Callee-saved registers are pushed on stack before the stack is
+      // realigned.
+      if (TRI->hasStackRealignment(MF) && !IsWin64Prologue)
+        NumBytes = alignTo(NumBytes, MaxAlign);
+
+      // Save EBP/RBP into the appropriate stack slot.
+      Register FP = Is64Bit ? X86::RBP : X86::EBP;
+      BuildMI(MBB, MBBI, DL, TII.get(Is64Bit ? X86::PUSH64r : X86::PUSH32r))
+          .addReg(FP, RegState::Kill)
+          .setMIFlag(MachineInstr::FrameSetup);
+
+      if (NeedsDwarfCFI) {
+        // Mark the place where EBP/RBP was saved.
+        // Define the current CFA rule to use the provided offset.
+        assert(StackSize);
+        BuildCFI(MBB, MBBI, DL,
+                 MCCFIInstruction::cfiDefCfaOffset(nullptr, -2 * stackGrowth),
+                 MachineInstr::FrameSetup);
+
+        // Change the rule for the FramePtr to be an "offset" rule.
+        unsigned DwarfFramePtr = TRI->getDwarfRegNum(FP, true);
+        BuildCFI(MBB, MBBI, DL,
+                 MCCFIInstruction::createOffset(nullptr, DwarfFramePtr,
+                                                2 * stackGrowth),
+                 MachineInstr::FrameSetup);
+      }
+    }
   }
 
   // Update the offset adjustment, which is mainly used by codeview to translate
@@ -1769,7 +1810,7 @@ void X86FrameLowering::emitPrologue(MachineFunction &MF,
     Register Reg = MBBI->getOperand(0).getReg();
     ++MBBI;
 
-    if (!HasFP && NeedsDwarfCFI) {
+    if (( !HasFP && !HasFPShrinkWrap  )&& NeedsDwarfCFI) {
       // Mark callee-saved push instruction.
       // Define the current CFA rule to use the provided offset.
       assert(StackSize);
@@ -2064,6 +2105,18 @@ void X86FrameLowering::emitPrologue(MachineFunction &MF,
     emitCalleeSavedFrameMoves(MBB, MBBI, DL, true);
   }
 
+  if (HasFPShrinkWrap) {
+    Register FP = Is64Bit ? X86::RBP : X86::EBP;
+    MBBI = BuildMI(MBB, MBBI, DL, TII.get(IsLP64 ? X86::LEA64r : X86::LEA64_32r),
+        FP)
+      .addReg(X86::RSP)
+      .addImm(1)
+      .addReg(0)
+      .addImm(-StackSize)
+      .addReg(0);
+    MBBI++;
+  }
+
   // X86 Interrupt handling function cannot assume anything about the direction
   // flag (DF in EFLAGS register). Clear this flag by creating "cld" instruction
   // in each prologue of interrupt handler function.
@@ -2190,6 +2243,7 @@ void X86FrameLowering::emitEpilogue(MachineFunction &MF,
   unsigned CSSize = X86FI->getCalleeSavedFrameSize();
   unsigned TailCallArgReserveSize = -X86FI->getTCReturnAddrDelta();
   bool HasFP = hasFP(MF);
+  bool HasFPShrinkWrap = hasFPShrinkWrap(MF);
   uint64_t NumBytes = 0;
 
   bool NeedsDwarfCFI = (!MF.getTarget().getTargetTriple().isOSDarwin() &&
@@ -2199,7 +2253,7 @@ void X86FrameLowering::emitEpilogue(MachineFunction &MF,
   if (IsFunclet) {
     assert(HasFP && "EH funclets without FP not yet implemented");
     NumBytes = getWinEHFuncletFrameSize(MF);
-  } else if (HasFP) {
+  } else if (HasFP || HasFPShrinkWrap) {
     // Calculate required stack adjustment.
     uint64_t FrameSize = StackSize - SlotSize;
     NumBytes = FrameSize - CSSize - TailCallArgReserveSize;
@@ -2244,6 +2298,31 @@ void X86FrameLowering::emitEpilogue(MachineFunction &MF,
                MachineInstr::FrameDestroy);
       if (!MBB.succ_empty() && !MBB.isReturnBlock()) {
         unsigned DwarfFramePtr = TRI->getDwarfRegNum(MachineFramePtr, true);
+        BuildCFI(MBB, AfterPop, DL,
+                 MCCFIInstruction::createRestore(nullptr, DwarfFramePtr),
+                 MachineInstr::FrameDestroy);
+        --MBBI;
+        --AfterPop;
+      }
+      --MBBI;
+    }
+  }
+
+  if(HasFPShrinkWrap){
+      Register FP = Is64Bit ? X86::RBP : X86::EBP;
+  // Pop EBP.
+    BuildMI(MBB, MBBI, DL, TII.get(Is64Bit ? X86::POP64r : X86::POP32r),
+            FP)
+        .setMIFlag(MachineInstr::FrameDestroy);
+
+    if (NeedsDwarfCFI) {
+      unsigned DwarfStackPtr =
+          TRI->getDwarfRegNum(Is64Bit ? X86::RSP : X86::ESP, true);
+      BuildCFI(MBB, MBBI, DL,
+               MCCFIInstruction::cfiDefCfa(nullptr, DwarfStackPtr, SlotSize),
+               MachineInstr::FrameDestroy);
+      if (!MBB.succ_empty() && !MBB.isReturnBlock()) {
+        unsigned DwarfFramePtr = TRI->getDwarfRegNum(FP, true);
         BuildCFI(MBB, AfterPop, DL,
                  MCCFIInstruction::createRestore(nullptr, DwarfFramePtr),
                  MachineInstr::FrameDestroy);
@@ -2605,7 +2684,7 @@ bool X86FrameLowering::assignCalleeSavedSpillSlots(
     }
   }
 
-  if (hasFP(MF)) {
+  if (hasFP(MF) || hasFPShrinkWrap(MF)) {
     // emitPrologue always spills frame register the first thing.
     SpillSlotOffset -= SlotSize;
     MFI.CreateFixedSpillStackObject(SlotSize, SpillSlotOffset);
@@ -2621,7 +2700,7 @@ bool X86FrameLowering::assignCalleeSavedSpillSlots(
     // Since emitPrologue and emitEpilogue will handle spilling and restoring of
     // the frame register, we can delete it from CSI list and not have to worry
     // about avoiding it later.
-    Register FPReg = TRI->getFrameRegister(MF);
+    Register FPReg = hasFPShrinkWrap(MF) ? (Is64Bit ? X86::RBP :X86::EBP) : TRI->getFrameRegister(MF);
     for (unsigned i = 0; i < CSI.size(); ++i) {
       if (TRI->regsOverlap(CSI[i].getReg(),FPReg)) {
         CSI.erase(CSI.begin() + i);

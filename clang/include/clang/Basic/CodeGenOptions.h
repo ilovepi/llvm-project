@@ -135,6 +135,7 @@ public:
     None,        // Omit all frame pointers.
     NonLeaf,     // Keep non-leaf frame pointers.
     All,         // Keep all frame pointers.
+    ShrinkWrap,  // Shrink wrap frame pointers.
   };
 
   static StringRef getFramePointerKindName(FramePointerKind Kind) {

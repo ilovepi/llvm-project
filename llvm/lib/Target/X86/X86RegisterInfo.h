@@ -145,6 +145,7 @@ public:
 
   // Debug information queries.
   Register getFrameRegister(const MachineFunction &MF) const override;
+  Register getFPReg(const MachineFunction &MF) const override;
   unsigned getPtrSizedFrameRegister(const MachineFunction &MF) const;
   unsigned getPtrSizedStackRegister(const MachineFunction &MF) const;
   Register getStackRegister() const { return StackPtr; }

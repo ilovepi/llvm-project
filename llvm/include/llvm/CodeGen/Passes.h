@@ -72,6 +72,8 @@ namespace llvm {
   /// stack frame to the given stream as a debugging tool.
   MachineFunctionPass *createStackFrameLayoutAnalysisPass();
 
+  MachineFunctionPass* createFramePointerShrinkWrapPass();
+
   /// MIRPrinting pass - this pass prints out the LLVM IR into the given stream
   /// using the MIR serialization format.
   MachineFunctionPass *createPrintMIRPass(raw_ostream &OS);
@@ -240,6 +242,8 @@ namespace llvm {
 
   /// MachineFunctionPrinterPass - This pass prints out MachineInstr's.
   extern char &MachineFunctionPrinterPassID;
+
+  extern char &FramePointerShrinkWrapPassID;
 
   /// MIRPrintingPass - this pass prints out the LLVM IR using the MIR
   /// serialization format.

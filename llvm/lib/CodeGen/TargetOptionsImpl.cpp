@@ -32,6 +32,8 @@ bool TargetOptions::DisableFramePointerElim(const MachineFunction &MF) const {
   StringRef FP = F.getFnAttribute("frame-pointer").getValueAsString();
   if (FP == "all")
     return true;
+  if (FP == "shrink-wrap")
+    return false;
   if (FP == "non-leaf")
     return MF.getFrameInfo().hasCalls();
   if (FP == "none")

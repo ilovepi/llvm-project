@@ -137,6 +137,8 @@ void initializeFixIrreduciblePass(PassRegistry &);
 void initializeFixupStatepointCallerSavedPass(PassRegistry&);
 void initializeFlattenCFGLegacyPassPass(PassRegistry &);
 void initializeForceFunctionAttrsLegacyPassPass(PassRegistry&);
+void initializeForwardControlFlowIntegrityPass(PassRegistry&);
+void initializeFramePointerShrinkWrapPassPass(PassRegistry &);
 void initializeFuncletLayoutPass(PassRegistry&);
 void initializeGCMachineCodeAnalysisPass(PassRegistry&);
 void initializeGCModuleInfoPass(PassRegistry&);
