@@ -1862,6 +1862,11 @@ void CodeGenModule::getDefaultFunctionAttributes(StringRef Name,
       // This is the default behavior.
       break;
     case CodeGenOptions::FramePointerKind::NonLeaf:
+      FpKind = "non-leaf";
+      break;
+    case CodeGenOptions::FramePointerKind::ShrinkWrap:
+      FpKind = "shrink-wrap";
+      break;
     case CodeGenOptions::FramePointerKind::All:
       FuncAttrs.addAttribute("frame-pointer",
                              CodeGenOptions::getFramePointerKindName(

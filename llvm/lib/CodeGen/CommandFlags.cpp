@@ -199,7 +199,9 @@ codegen::RegisterCodeGenFlags::RegisterCodeGenFlags() {
           clEnumValN(FramePointerKind::NonLeaf, "non-leaf",
                      "Disable frame pointer elimination for non-leaf frame"),
           clEnumValN(FramePointerKind::None, "none",
-                     "Enable frame pointer elimination")));
+                     "Enable frame pointer elimination"),
+          clEnumValN(FramePointerKind::ShrinkWrap, "shrink-wrap",
+                     "Enable frame pointer shrink-wrap")));
   CGBINDOPT(FramePointerUsage);
 
   static cl::opt<bool> EnableUnsafeFPMath(
@@ -653,6 +655,8 @@ void codegen::setFunctionAttributes(StringRef CPU, StringRef Features,
       NewAttrs.addAttribute("frame-pointer", "all");
     else if (getFramePointerUsage() == FramePointerKind::NonLeaf)
       NewAttrs.addAttribute("frame-pointer", "non-leaf");
+    else if (getFramePointerUsage() == FramePointerKind::ShrinkWrap)
+      NewAttrs.addAttribute("frame-pointer", "shrink-wrap");
     else if (getFramePointerUsage() == FramePointerKind::None)
       NewAttrs.addAttribute("frame-pointer", "none");
   }

@@ -532,8 +532,14 @@ getFramePointerKind(const ArgList &Args, const llvm::Triple &Triple) {
       Args.hasFlag(options::OPT_momit_leaf_frame_pointer,
                    options::OPT_mno_omit_leaf_frame_pointer,
                    Triple.isAArch64() || Triple.isPS() || Triple.isVE());
+  bool ShrinkWrap =
+      Args.hasFlag(options::OPT_fframe_pointer_shrink_wrap,
+                   options::OPT_fno_frame_pointer_shrink_wrap, false);
   if (NoOmitFP || mustUseNonLeafFramePointerForTarget(Triple) ||
       (!OmitFP && useFramePointerForTargetByDefault(Args, Triple))) {
+    // TODO: Revistit this ordering.
+    if(ShrinkWrap)
+      return CodeGenOptions::FramePointerKind::ShrinkWrap;
     if (OmitLeafFP)
       return CodeGenOptions::FramePointerKind::NonLeaf;
     return CodeGenOptions::FramePointerKind::All;
@@ -5314,9 +5320,13 @@ void Clang::ConstructJob(Compilation &C, const JobAction &JA,
   case CodeGenOptions::FramePointerKind::NonLeaf:
     FPKeepKindStr = "-mframe-pointer=non-leaf";
     break;
+  case CodeGenOptions::FramePointerKind::ShrinkWrap:
+    FPKeepKindStr = "-mframe-pointer=all";
+    break;
   case CodeGenOptions::FramePointerKind::All:
     FPKeepKindStr = "-mframe-pointer=all";
     break;
+
   }
   assert(FPKeepKindStr && "unknown FramePointerKind");
   CmdArgs.push_back(FPKeepKindStr);
