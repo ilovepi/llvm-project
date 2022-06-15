@@ -537,13 +537,13 @@ getFramePointerKind(const ArgList &Args, const llvm::Triple &Triple) {
                    options::OPT_fno_frame_pointer_shrink_wrap, false);
   if (NoOmitFP || mustUseNonLeafFramePointerForTarget(Triple) ||
       (!OmitFP && useFramePointerForTargetByDefault(Args, Triple))) {
-    // TODO: Revistit this ordering.
-    if(ShrinkWrap)
-      return CodeGenOptions::FramePointerKind::ShrinkWrap;
     if (OmitLeafFP)
       return CodeGenOptions::FramePointerKind::NonLeaf;
     return CodeGenOptions::FramePointerKind::All;
   }
+  // TODO: Revistit this ordering.
+  if (ShrinkWrap)
+    return CodeGenOptions::FramePointerKind::ShrinkWrap;
   return CodeGenOptions::FramePointerKind::None;
 }
 

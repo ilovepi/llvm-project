@@ -64,8 +64,8 @@ struct FramePointerShrinkWrapPass : public MachineFunctionPass {
   }
 
   bool hasFPShrinkWrap(const MachineFunction &MF) const {
-    if (!hasFP(MF))
-      return false;
+    //if (hasFP(MF))
+      //return false;
     const Function &F = MF.getFunction();
 
     if (F.hasFnAttribute("frame-pointer")) {
@@ -108,6 +108,9 @@ struct FramePointerShrinkWrapPass : public MachineFunctionPass {
           DL = MBBI->getDebugLoc();
           MBBI = BuildMI(MBB, *MBBI, DL, TII->get(TargetOpcode::COPY), FramePtr)
                      .addReg(VReg);
+          llvm::errs() << "Load FP: " << *MBBI << "\n";
+          llvm::errs() << MBB;
+          llvm::errs() << "\n";
           MBBI++;
         }
       }

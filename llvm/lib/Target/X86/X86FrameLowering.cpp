@@ -105,7 +105,7 @@ bool X86FrameLowering::hasFP(const MachineFunction &MF) const {
 }
 
 bool X86FrameLowering::hasFPShrinkWrap(const MachineFunction &MF) const {
-  if (!hasFP(MF))
+  if (hasFP(MF))
     return false;
   const Function &F = MF.getFunction();
 
@@ -1587,7 +1587,7 @@ void X86FrameLowering::emitPrologue(MachineFunction &MF,
       !MF.shouldSplitStack()) {                // Regular stack
     uint64_t MinSize =
         X86FI->getCalleeSavedFrameSize() - X86FI->getTCReturnAddrDelta();
-    if (HasFP) MinSize += SlotSize;
+    if (HasFP || HasFPShrinkWrap) MinSize += SlotSize;
     X86FI->setUsesRedZone(MinSize > 0 || StackSize > 0);
     StackSize = std::max(MinSize, StackSize > 128 ? StackSize - 128 : 0);
     MFI.setStackSize(StackSize);
@@ -1638,7 +1638,7 @@ void X86FrameLowering::emitPrologue(MachineFunction &MF,
   }
 
   if (HasFP) {
-    assert((MF.getRegInfo().isReserved(MachineFramePtr) || HasFPShrinkWrap)&& "FP reserved");
+    assert(MF.getRegInfo().isReserved(MachineFramePtr) && "FP reserved");
 
     // Calculate required stack adjustment.
     uint64_t FrameSize = StackSize - SlotSize;
@@ -1754,6 +1754,35 @@ void X86FrameLowering::emitPrologue(MachineFunction &MF,
     assert(!IsFunclet && "funclets without FPs not yet implemented");
     NumBytes = StackSize -
                (X86FI->getCalleeSavedFrameSize() + TailCallArgReserveSize);
+
+    if (HasFPShrinkWrap) {
+      NumBytes -= SlotSize;
+      // Callee-saved registers are pushed on stack before the stack is
+      // realigned.
+      if (TRI->hasStackRealignment(MF) && !IsWin64Prologue)
+        NumBytes = alignTo(NumBytes, MaxAlign);
+
+      // Save EBP/RBP into the appropriate stack slot.
+      BuildMI(MBB, MBBI, DL, TII.get(Is64Bit ? X86::PUSH64r : X86::PUSH32r))
+          .addReg(MachineFramePtr, RegState::Kill)
+          .setMIFlag(MachineInstr::FrameSetup);
+
+      if (NeedsDwarfCFI) {
+        // Mark the place where EBP/RBP was saved.
+        // Define the current CFA rule to use the provided offset.
+        assert(StackSize);
+        BuildCFI(MBB, MBBI, DL,
+                 MCCFIInstruction::cfiDefCfaOffset(nullptr, -2 * stackGrowth),
+                 MachineInstr::FrameSetup);
+
+        // Change the rule for the FramePtr to be an "offset" rule.
+        unsigned DwarfFramePtr = TRI->getDwarfRegNum(MachineFramePtr, true);
+        BuildCFI(MBB, MBBI, DL,
+                 MCCFIInstruction::createOffset(nullptr, DwarfFramePtr,
+                                                2 * stackGrowth),
+                 MachineInstr::FrameSetup);
+      }
+    }
   }
 
   // Update the offset adjustment, which is mainly used by codeview to translate

@@ -33,7 +33,7 @@ bool TargetOptions::DisableFramePointerElim(const MachineFunction &MF) const {
   if (FP == "all")
     return true;
   if (FP == "shrink-wrap")
-    return true;
+    return false;
   if (FP == "non-leaf")
     return MF.getFrameInfo().hasCalls();
   if (FP == "none")
