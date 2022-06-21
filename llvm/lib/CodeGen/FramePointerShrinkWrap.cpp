@@ -50,6 +50,8 @@ struct FramePointerShrinkWrapPass : public MachineFunctionPass {
     MachineFunctionPass::getAnalysisUsage(AU);
   }
 
+  //TODO: don't copy these functions from target/x86
+
   bool hasFP(const MachineFunction &MF) const {
     const MachineFrameInfo &MFI = MF.getFrameInfo();
     auto &STI = MF.getSubtarget();
@@ -63,18 +65,18 @@ struct FramePointerShrinkWrapPass : public MachineFunctionPass {
              MFI.hasCopyImplyingStackAdjustment()));
   }
 
-  bool hasFPShrinkWrap(const MachineFunction &MF) const {
-    //if (hasFP(MF))
-      //return false;
-    const Function &F = MF.getFunction();
 
-    if (F.hasFnAttribute("frame-pointer")) {
-      StringRef FP = F.getFnAttribute("frame-pointer").getValueAsString();
-      if (FP == "shrink-wrap")
-        return true;
-    }
+bool hasFPShrinkWrap(const MachineFunction &MF) const {
+  if (hasFP(MF))
     return false;
-  }
+  const Function &F = MF.getFunction();
+  if (!F.hasFnAttribute("frame-pointer"))
+    return false;
+  StringRef FP = F.getFnAttribute("frame-pointer").getValueAsString();
+  return FP == "shrink-wrap";
+}
+
+
 
   bool runOnMachineFunction(MachineFunction &MF) override {
     // only modify functions when shrink warp is enabled
@@ -85,7 +87,7 @@ struct FramePointerShrinkWrapPass : public MachineFunctionPass {
     auto *TII = STI.getInstrInfo();
     auto *TRI = STI.getRegisterInfo();
     MachineRegisterInfo &MRI = MF.getRegInfo();
-    Register FramePtr = TRI->getFrameRegister(MF);
+    Register FramePtr = TRI->getFPReg(MF);
 
     //TODO: Rematerialize FP instead.
 
@@ -94,6 +96,8 @@ struct FramePointerShrinkWrapPass : public MachineFunctionPass {
     auto VReg = MRI.createVirtualRegister(RegClass);
     auto &Entry = MF.front();
     auto I = Entry.begin();
+
+   Entry.addLiveIn(FramePtr);
 
     auto DL = I->getDebugLoc();
     BuildMI(Entry, Entry.begin(), DL, TII->get(TargetOpcode::COPY), VReg)
@@ -108,9 +112,6 @@ struct FramePointerShrinkWrapPass : public MachineFunctionPass {
           DL = MBBI->getDebugLoc();
           MBBI = BuildMI(MBB, *MBBI, DL, TII->get(TargetOpcode::COPY), FramePtr)
                      .addReg(VReg);
-          llvm::errs() << "Load FP: " << *MBBI << "\n";
-          llvm::errs() << MBB;
-          llvm::errs() << "\n";
           MBBI++;
         }
       }

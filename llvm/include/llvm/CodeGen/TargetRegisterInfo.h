@@ -1129,6 +1129,8 @@ public:
   /// for values allocated in the current stack frame.
   virtual Register getFrameRegister(const MachineFunction &MF) const = 0;
 
+  virtual Register getFPReg(const MachineFunction &MF) const{return getFrameRegister(MF);}
+
   /// Mark a register and all its aliases as reserved in the given set.
   void markSuperRegs(BitVector &RegisterSet, MCRegister Reg) const;
 

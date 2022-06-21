@@ -5602,8 +5602,8 @@ def mdebug_pass : Separate<["-"], "mdebug-pass">,
   HelpText<"Enable additional debug output">,
   MarshallingInfoString<CodeGenOpts<"DebugPass">>;
 def mframe_pointer_EQ : Joined<["-"], "mframe-pointer=">,
-  HelpText<"Specify which frame pointers to retain.">, Values<"all,non-leaf,none">,
-  NormalizedValuesScope<"CodeGenOptions::FramePointerKind">, NormalizedValues<["All", "NonLeaf", "None"]>,
+  HelpText<"Specify which frame pointers to retain.">, Values<"all,non-leaf,none,shrink-wrap">,
+  NormalizedValuesScope<"CodeGenOptions::FramePointerKind">, NormalizedValues<["All", "NonLeaf", "None", "ShrinkWrap"]>,
   MarshallingInfoEnum<CodeGenOpts<"FramePointer">, "None">;
 def mabi_EQ_ieeelongdouble : Flag<["-"], "mabi=ieeelongdouble">,
   HelpText<"Use IEEE 754 quadruple-precision for long double">,

@@ -5321,7 +5321,7 @@ void Clang::ConstructJob(Compilation &C, const JobAction &JA,
     FPKeepKindStr = "-mframe-pointer=non-leaf";
     break;
   case CodeGenOptions::FramePointerKind::ShrinkWrap:
-    FPKeepKindStr = "-mframe-pointer=all";
+    FPKeepKindStr = "-mframe-pointer=shrink-wrap";
     break;
   case CodeGenOptions::FramePointerKind::All:
     FPKeepKindStr = "-mframe-pointer=all";

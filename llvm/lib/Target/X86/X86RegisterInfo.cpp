@@ -913,6 +913,10 @@ Register X86RegisterInfo::getFrameRegister(const MachineFunction &MF) const {
   return TFI->hasFP(MF) ? FramePtr : StackPtr;
 }
 
+Register X86RegisterInfo::getFPReg(const MachineFunction &MF) const {
+  return getFramePtr();
+}
+
 unsigned
 X86RegisterInfo::getPtrSizedFrameRegister(const MachineFunction &MF) const {
   const X86Subtarget &Subtarget = MF.getSubtarget<X86Subtarget>();
