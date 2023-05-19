@@ -89,6 +89,9 @@ void initializeRISCVO0PreLegalizerCombinerPass(PassRegistry &);
 
 FunctionPass *createRISCVPreLegalizerCombiner();
 void initializeRISCVPreLegalizerCombinerPass(PassRegistry &);
+
+void initializeRISCVLDTLSCleanupPass(PassRegistry &);
+FunctionPass *createRISCVCleanupLocalDynamicTLSPass();
 } // namespace llvm
 
 #endif
