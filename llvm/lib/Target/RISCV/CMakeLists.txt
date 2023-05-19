@@ -28,6 +28,7 @@ add_llvm_target(RISCVCodeGen
   RISCVAsmPrinter.cpp
   RISCVCodeGenPrepare.cpp
   RISCVDeadRegisterDefinitions.cpp
+  RISCVCleanupLocalDynamicTLSPass.cpp
   RISCVMakeCompressible.cpp
   RISCVExpandAtomicPseudoInsts.cpp
   RISCVExpandPseudoInsts.cpp

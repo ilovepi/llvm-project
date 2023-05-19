@@ -328,6 +328,11 @@ bool RISCVPassConfig::addPreISel() {
 bool RISCVPassConfig::addInstSelector() {
   addPass(createRISCVISelDag(getRISCVTargetMachine(), getOptLevel()));
 
+  // For ELF, cleanup any local-dynamic TLS accesses.
+  if (EnableRISCVTLSDESC && TM->getTargetTriple().isOSBinFormatELF() &&
+      getOptLevel() != CodeGenOptLevel::None)
+    addPass(createRISCVCleanupLocalDynamicTLSPass());
+
   return false;
 }
 
