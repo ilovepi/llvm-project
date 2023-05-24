@@ -6,14 +6,6 @@
 ; RUN: llc -mtriple=riscv32 < %s | FileCheck -check-prefix=RV32-NOPIC %s
 ; RUN: llc -mtriple=riscv64 < %s | FileCheck -check-prefix=RV64-NOPIC %s
 
-; RUN: llc -mtriple=riscv32 -relocation-model=pic -riscv-enable-tlsdesc < %s \
-; RUN:     | FileCheck -check-prefix=RV32-PIC-TLSDESC %s
-; RUN: llc -mtriple=riscv64 -relocation-model=pic -riscv-enable-tlsdesc < %s \
-; RUN:     | FileCheck -check-prefix=RV64-PIC-TLSDESC %s
-; RUN: llc -mtriple=riscv32 < %s  -riscv-enable-tlsdesc | FileCheck -check-prefix=RV32-NOPIC-TLSDESC %s
-; RUN: llc -mtriple=riscv64 < %s  -riscv-enable-tlsdesc | FileCheck -check-prefix=RV64-NOPIC-TLSDESC %s
-
-
 ; Check that TLS symbols are lowered correctly based on the specified
 ; model. Make sure they're external to avoid them all being optimised to Local
 ; Exec for the executable.
@@ -31,26 +23,22 @@
 define ptr @f1() nounwind {
 ; RV32-PIC-LABEL: f1:
 ; RV32-PIC:       # %bb.0: # %entry
-; RV32-PIC-NEXT:    addi sp, sp, -16
-; RV32-PIC-NEXT:    sw ra, 12(sp) # 4-byte Folded Spill
-; RV32-PIC-NEXT:  .Lpcrel_hi0:
-; RV32-PIC-NEXT:    auipc a0, %tls_gd_pcrel_hi(unspecified)
-; RV32-PIC-NEXT:    addi a0, a0, %pcrel_lo(.Lpcrel_hi0)
-; RV32-PIC-NEXT:    call __tls_get_addr@plt
-; RV32-PIC-NEXT:    lw ra, 12(sp) # 4-byte Folded Reload
-; RV32-PIC-NEXT:    addi sp, sp, 16
+; RV32-PIC-NEXT:  .Ltlsdesc_hi0:
+; RV32-PIC-NEXT:    auipc a0, %tlsdesc_hi(unspecified)
+; RV32-PIC-NEXT:    lw a1, %tlsdesc_load_lo(.Ltlsdesc_hi0)(a0)
+; RV32-PIC-NEXT:    addi a0, a0, %tlsdesc_add_lo(.Ltlsdesc_hi0)
+; RV32-PIC-NEXT:    jalr t0, 0(a1), %tlsdesc_call(.Ltlsdesc_hi0)
+; RV32-PIC-NEXT:    add a0, a0, tp
 ; RV32-PIC-NEXT:    ret
 ;
 ; RV64-PIC-LABEL: f1:
 ; RV64-PIC:       # %bb.0: # %entry
-; RV64-PIC-NEXT:    addi sp, sp, -16
-; RV64-PIC-NEXT:    sd ra, 8(sp) # 8-byte Folded Spill
-; RV64-PIC-NEXT:  .Lpcrel_hi0:
-; RV64-PIC-NEXT:    auipc a0, %tls_gd_pcrel_hi(unspecified)
-; RV64-PIC-NEXT:    addi a0, a0, %pcrel_lo(.Lpcrel_hi0)
-; RV64-PIC-NEXT:    call __tls_get_addr@plt
-; RV64-PIC-NEXT:    ld ra, 8(sp) # 8-byte Folded Reload
-; RV64-PIC-NEXT:    addi sp, sp, 16
+; RV64-PIC-NEXT:  .Ltlsdesc_hi0:
+; RV64-PIC-NEXT:    auipc a0, %tlsdesc_hi(unspecified)
+; RV64-PIC-NEXT:    ld a1, %tlsdesc_load_lo(.Ltlsdesc_hi0)(a0)
+; RV64-PIC-NEXT:    addi a0, a0, %tlsdesc_add_lo(.Ltlsdesc_hi0)
+; RV64-PIC-NEXT:    jalr t0, 0(a1), %tlsdesc_call(.Ltlsdesc_hi0)
+; RV64-PIC-NEXT:    add a0, a0, tp
 ; RV64-PIC-NEXT:    ret
 ;
 ; RV32-NOPIC-LABEL: f1:
@@ -68,7 +56,6 @@ define ptr @f1() nounwind {
 ; RV64-NOPIC-NEXT:    ld a0, %pcrel_lo(.Lpcrel_hi0)(a0)
 ; RV64-NOPIC-NEXT:    add a0, a0, tp
 ; RV64-NOPIC-NEXT:    ret
-;
 ; RV32-PIC-TLSDESC-LABEL: f1:
 ; RV32-PIC-TLSDESC:       # %bb.0: # %entry
 ; RV32-PIC-TLSDESC-NEXT:  .Ltlsdesc_hi0:
@@ -78,7 +65,6 @@ define ptr @f1() nounwind {
 ; RV32-PIC-TLSDESC-NEXT:    jalr t0, 0(a1), %tlsdesc_call(.Ltlsdesc_hi0)
 ; RV32-PIC-TLSDESC-NEXT:    add a0, a0, tp
 ; RV32-PIC-TLSDESC-NEXT:    ret
-;
 ; RV64-PIC-TLSDESC-LABEL: f1:
 ; RV64-PIC-TLSDESC:       # %bb.0: # %entry
 ; RV64-PIC-TLSDESC-NEXT:  .Ltlsdesc_hi0:
@@ -88,7 +74,6 @@ define ptr @f1() nounwind {
 ; RV64-PIC-TLSDESC-NEXT:    jalr t0, 0(a1), %tlsdesc_call(.Ltlsdesc_hi0)
 ; RV64-PIC-TLSDESC-NEXT:    add a0, a0, tp
 ; RV64-PIC-TLSDESC-NEXT:    ret
-;
 ; RV32-NOPIC-TLSDESC-LABEL: f1:
 ; RV32-NOPIC-TLSDESC:       # %bb.0: # %entry
 ; RV32-NOPIC-TLSDESC-NEXT:  .Lpcrel_hi0:
@@ -96,7 +81,6 @@ define ptr @f1() nounwind {
 ; RV32-NOPIC-TLSDESC-NEXT:    lw a0, %pcrel_lo(.Lpcrel_hi0)(a0)
 ; RV32-NOPIC-TLSDESC-NEXT:    add a0, a0, tp
 ; RV32-NOPIC-TLSDESC-NEXT:    ret
-;
 ; RV64-NOPIC-TLSDESC-LABEL: f1:
 ; RV64-NOPIC-TLSDESC:       # %bb.0: # %entry
 ; RV64-NOPIC-TLSDESC-NEXT:  .Lpcrel_hi0:
@@ -114,26 +98,28 @@ entry:
 define ptr @f2() nounwind {
 ; RV32-PIC-LABEL: f2:
 ; RV32-PIC:       # %bb.0: # %entry
-; RV32-PIC-NEXT:    addi sp, sp, -16
-; RV32-PIC-NEXT:    sw ra, 12(sp) # 4-byte Folded Spill
-; RV32-PIC-NEXT:  .Lpcrel_hi1:
-; RV32-PIC-NEXT:    auipc a0, %tls_gd_pcrel_hi(ld)
-; RV32-PIC-NEXT:    addi a0, a0, %pcrel_lo(.Lpcrel_hi1)
-; RV32-PIC-NEXT:    call __tls_get_addr@plt
-; RV32-PIC-NEXT:    lw ra, 12(sp) # 4-byte Folded Reload
-; RV32-PIC-NEXT:    addi sp, sp, 16
+; RV32-PIC-NEXT:  .Ltlsdesc_hi1:
+; RV32-PIC-NEXT:    auipc a0, %tlsdesc_hi(_TLS_MODULE_BASE_)
+; RV32-PIC-NEXT:    lw a1, %tlsdesc_load_lo(.Ltlsdesc_hi1)(a0)
+; RV32-PIC-NEXT:    addi a0, a0, %tlsdesc_add_lo(.Ltlsdesc_hi1)
+; RV32-PIC-NEXT:    jalr t0, 0(a1), %tlsdesc_call(.Ltlsdesc_hi1)
+; RV32-PIC-NEXT:    add a0, a0, tp
+; RV32-PIC-NEXT:    lui a1, %tprel_hi(ld)
+; RV32-PIC-NEXT:    add a0, a1, a0
+; RV32-PIC-NEXT:    addi a0, a0, %tprel_lo(ld)
 ; RV32-PIC-NEXT:    ret
 ;
 ; RV64-PIC-LABEL: f2:
 ; RV64-PIC:       # %bb.0: # %entry
-; RV64-PIC-NEXT:    addi sp, sp, -16
-; RV64-PIC-NEXT:    sd ra, 8(sp) # 8-byte Folded Spill
-; RV64-PIC-NEXT:  .Lpcrel_hi1:
-; RV64-PIC-NEXT:    auipc a0, %tls_gd_pcrel_hi(ld)
-; RV64-PIC-NEXT:    addi a0, a0, %pcrel_lo(.Lpcrel_hi1)
-; RV64-PIC-NEXT:    call __tls_get_addr@plt
-; RV64-PIC-NEXT:    ld ra, 8(sp) # 8-byte Folded Reload
-; RV64-PIC-NEXT:    addi sp, sp, 16
+; RV64-PIC-NEXT:  .Ltlsdesc_hi1:
+; RV64-PIC-NEXT:    auipc a0, %tlsdesc_hi(_TLS_MODULE_BASE_)
+; RV64-PIC-NEXT:    ld a1, %tlsdesc_load_lo(.Ltlsdesc_hi1)(a0)
+; RV64-PIC-NEXT:    addi a0, a0, %tlsdesc_add_lo(.Ltlsdesc_hi1)
+; RV64-PIC-NEXT:    jalr t0, 0(a1), %tlsdesc_call(.Ltlsdesc_hi1)
+; RV64-PIC-NEXT:    add a0, a0, tp
+; RV64-PIC-NEXT:    lui a1, %tprel_hi(ld)
+; RV64-PIC-NEXT:    add a0, a1, a0
+; RV64-PIC-NEXT:    addi a0, a0, %tprel_lo(ld)
 ; RV64-PIC-NEXT:    ret
 ;
 ; RV32-NOPIC-LABEL: f2:
@@ -151,7 +137,6 @@ define ptr @f2() nounwind {
 ; RV64-NOPIC-NEXT:    ld a0, %pcrel_lo(.Lpcrel_hi1)(a0)
 ; RV64-NOPIC-NEXT:    add a0, a0, tp
 ; RV64-NOPIC-NEXT:    ret
-;
 ; RV32-PIC-TLSDESC-LABEL: f2:
 ; RV32-PIC-TLSDESC:       # %bb.0: # %entry
 ; RV32-PIC-TLSDESC-NEXT:  .Ltlsdesc_hi1:
@@ -164,7 +149,6 @@ define ptr @f2() nounwind {
 ; RV32-PIC-TLSDESC-NEXT:    add a0, a1, a0
 ; RV32-PIC-TLSDESC-NEXT:    addi a0, a0, %tprel_lo(ld)
 ; RV32-PIC-TLSDESC-NEXT:    ret
-;
 ; RV64-PIC-TLSDESC-LABEL: f2:
 ; RV64-PIC-TLSDESC:       # %bb.0: # %entry
 ; RV64-PIC-TLSDESC-NEXT:  .Ltlsdesc_hi1:
@@ -177,7 +161,6 @@ define ptr @f2() nounwind {
 ; RV64-PIC-TLSDESC-NEXT:    add a0, a1, a0
 ; RV64-PIC-TLSDESC-NEXT:    addi a0, a0, %tprel_lo(ld)
 ; RV64-PIC-TLSDESC-NEXT:    ret
-;
 ; RV32-NOPIC-TLSDESC-LABEL: f2:
 ; RV32-NOPIC-TLSDESC:       # %bb.0: # %entry
 ; RV32-NOPIC-TLSDESC-NEXT:  .Lpcrel_hi1:
@@ -185,7 +168,6 @@ define ptr @f2() nounwind {
 ; RV32-NOPIC-TLSDESC-NEXT:    lw a0, %pcrel_lo(.Lpcrel_hi1)(a0)
 ; RV32-NOPIC-TLSDESC-NEXT:    add a0, a0, tp
 ; RV32-NOPIC-TLSDESC-NEXT:    ret
-;
 ; RV64-NOPIC-TLSDESC-LABEL: f2:
 ; RV64-NOPIC-TLSDESC:       # %bb.0: # %entry
 ; RV64-NOPIC-TLSDESC-NEXT:  .Lpcrel_hi1:
@@ -203,17 +185,17 @@ entry:
 define ptr @f3() nounwind {
 ; RV32-PIC-LABEL: f3:
 ; RV32-PIC:       # %bb.0: # %entry
-; RV32-PIC-NEXT:  .Lpcrel_hi2:
+; RV32-PIC-NEXT:  .Lpcrel_hi0:
 ; RV32-PIC-NEXT:    auipc a0, %tls_ie_pcrel_hi(ie)
-; RV32-PIC-NEXT:    lw a0, %pcrel_lo(.Lpcrel_hi2)(a0)
+; RV32-PIC-NEXT:    lw a0, %pcrel_lo(.Lpcrel_hi0)(a0)
 ; RV32-PIC-NEXT:    add a0, a0, tp
 ; RV32-PIC-NEXT:    ret
 ;
 ; RV64-PIC-LABEL: f3:
 ; RV64-PIC:       # %bb.0: # %entry
-; RV64-PIC-NEXT:  .Lpcrel_hi2:
+; RV64-PIC-NEXT:  .Lpcrel_hi0:
 ; RV64-PIC-NEXT:    auipc a0, %tls_ie_pcrel_hi(ie)
-; RV64-PIC-NEXT:    ld a0, %pcrel_lo(.Lpcrel_hi2)(a0)
+; RV64-PIC-NEXT:    ld a0, %pcrel_lo(.Lpcrel_hi0)(a0)
 ; RV64-PIC-NEXT:    add a0, a0, tp
 ; RV64-PIC-NEXT:    ret
 ;
@@ -232,7 +214,6 @@ define ptr @f3() nounwind {
 ; RV64-NOPIC-NEXT:    ld a0, %pcrel_lo(.Lpcrel_hi2)(a0)
 ; RV64-NOPIC-NEXT:    add a0, a0, tp
 ; RV64-NOPIC-NEXT:    ret
-;
 ; RV32-PIC-TLSDESC-LABEL: f3:
 ; RV32-PIC-TLSDESC:       # %bb.0: # %entry
 ; RV32-PIC-TLSDESC-NEXT:  .Lpcrel_hi0:
@@ -240,7 +221,6 @@ define ptr @f3() nounwind {
 ; RV32-PIC-TLSDESC-NEXT:    lw a0, %pcrel_lo(.Lpcrel_hi0)(a0)
 ; RV32-PIC-TLSDESC-NEXT:    add a0, a0, tp
 ; RV32-PIC-TLSDESC-NEXT:    ret
-;
 ; RV64-PIC-TLSDESC-LABEL: f3:
 ; RV64-PIC-TLSDESC:       # %bb.0: # %entry
 ; RV64-PIC-TLSDESC-NEXT:  .Lpcrel_hi0:
@@ -248,7 +228,6 @@ define ptr @f3() nounwind {
 ; RV64-PIC-TLSDESC-NEXT:    ld a0, %pcrel_lo(.Lpcrel_hi0)(a0)
 ; RV64-PIC-TLSDESC-NEXT:    add a0, a0, tp
 ; RV64-PIC-TLSDESC-NEXT:    ret
-;
 ; RV32-NOPIC-TLSDESC-LABEL: f3:
 ; RV32-NOPIC-TLSDESC:       # %bb.0: # %entry
 ; RV32-NOPIC-TLSDESC-NEXT:  .Lpcrel_hi2:
@@ -256,7 +235,6 @@ define ptr @f3() nounwind {
 ; RV32-NOPIC-TLSDESC-NEXT:    lw a0, %pcrel_lo(.Lpcrel_hi2)(a0)
 ; RV32-NOPIC-TLSDESC-NEXT:    add a0, a0, tp
 ; RV32-NOPIC-TLSDESC-NEXT:    ret
-;
 ; RV64-NOPIC-TLSDESC-LABEL: f3:
 ; RV64-NOPIC-TLSDESC:       # %bb.0: # %entry
 ; RV64-NOPIC-TLSDESC-NEXT:  .Lpcrel_hi2:
@@ -299,28 +277,24 @@ define ptr @f4() nounwind {
 ; RV64-NOPIC-NEXT:    add a0, a0, tp, %tprel_add(le)
 ; RV64-NOPIC-NEXT:    addi a0, a0, %tprel_lo(le)
 ; RV64-NOPIC-NEXT:    ret
-;
 ; RV32-PIC-TLSDESC-LABEL: f4:
 ; RV32-PIC-TLSDESC:       # %bb.0: # %entry
 ; RV32-PIC-TLSDESC-NEXT:    lui a0, %tprel_hi(le)
 ; RV32-PIC-TLSDESC-NEXT:    add a0, a0, tp, %tprel_add(le)
 ; RV32-PIC-TLSDESC-NEXT:    addi a0, a0, %tprel_lo(le)
 ; RV32-PIC-TLSDESC-NEXT:    ret
-;
 ; RV64-PIC-TLSDESC-LABEL: f4:
 ; RV64-PIC-TLSDESC:       # %bb.0: # %entry
 ; RV64-PIC-TLSDESC-NEXT:    lui a0, %tprel_hi(le)
 ; RV64-PIC-TLSDESC-NEXT:    add a0, a0, tp, %tprel_add(le)
 ; RV64-PIC-TLSDESC-NEXT:    addi a0, a0, %tprel_lo(le)
 ; RV64-PIC-TLSDESC-NEXT:    ret
-;
 ; RV32-NOPIC-TLSDESC-LABEL: f4:
 ; RV32-NOPIC-TLSDESC:       # %bb.0: # %entry
 ; RV32-NOPIC-TLSDESC-NEXT:    lui a0, %tprel_hi(le)
 ; RV32-NOPIC-TLSDESC-NEXT:    add a0, a0, tp, %tprel_add(le)
 ; RV32-NOPIC-TLSDESC-NEXT:    addi a0, a0, %tprel_lo(le)
 ; RV32-NOPIC-TLSDESC-NEXT:    ret
-;
 ; RV64-NOPIC-TLSDESC-LABEL: f4:
 ; RV64-NOPIC-TLSDESC:       # %bb.0: # %entry
 ; RV64-NOPIC-TLSDESC-NEXT:    lui a0, %tprel_hi(le)
@@ -336,60 +310,48 @@ entry:
 define i32 @dedup_localdynamic() nounwind {
 ; RV32-PIC-LABEL: dedup_localdynamic:
 ; RV32-PIC:       # %bb.0: # %entry
-; RV32-PIC-NEXT:    addi sp, sp, -16
-; RV32-PIC-NEXT:    sw ra, 12(sp) # 4-byte Folded Spill
-; RV32-PIC-NEXT:    sw s0, 8(sp) # 4-byte Folded Spill
-; RV32-PIC-NEXT:  .Lpcrel_hi3:
-; RV32-PIC-NEXT:    auipc a0, %tls_gd_pcrel_hi(ld)
-; RV32-PIC-NEXT:    addi a0, a0, %pcrel_lo(.Lpcrel_hi3)
-; RV32-PIC-NEXT:    call __tls_get_addr@plt
-; RV32-PIC-NEXT:    lw s0, 0(a0)
-; RV32-PIC-NEXT:    bnez s0, .LBB4_2
+; RV32-PIC-NEXT:  .Ltlsdesc_hi2:
+; RV32-PIC-NEXT:    auipc a0, %tlsdesc_hi(_TLS_MODULE_BASE_)
+; RV32-PIC-NEXT:    lw a1, %tlsdesc_load_lo(.Ltlsdesc_hi2)(a0)
+; RV32-PIC-NEXT:    addi a0, a0, %tlsdesc_add_lo(.Ltlsdesc_hi2)
+; RV32-PIC-NEXT:    jalr t0, 0(a1), %tlsdesc_call(.Ltlsdesc_hi2)
+; RV32-PIC-NEXT:    add a0, a0, tp
+; RV32-PIC-NEXT:    lui a1, %tprel_hi(ld)
+; RV32-PIC-NEXT:    add a1, a1, a0
+; RV32-PIC-NEXT:    lw a1, %tprel_lo(ld)(a1)
+; RV32-PIC-NEXT:    bnez a1, .LBB4_2
 ; RV32-PIC-NEXT:  # %bb.1:
-; RV32-PIC-NEXT:  .Lpcrel_hi4:
-; RV32-PIC-NEXT:    auipc a0, %tls_gd_pcrel_hi(ld2)
-; RV32-PIC-NEXT:    addi a0, a0, %pcrel_lo(.Lpcrel_hi4)
-; RV32-PIC-NEXT:    call __tls_get_addr@plt
-; RV32-PIC-NEXT:    lw s0, 0(a0)
+; RV32-PIC-NEXT:    lui a1, %tprel_hi(ld2)
+; RV32-PIC-NEXT:    add a1, a1, a0
+; RV32-PIC-NEXT:    lw a1, %tprel_lo(ld2)(a1)
 ; RV32-PIC-NEXT:  .LBB4_2:
-; RV32-PIC-NEXT:  .Lpcrel_hi5:
-; RV32-PIC-NEXT:    auipc a0, %tls_gd_pcrel_hi(ld3)
-; RV32-PIC-NEXT:    addi a0, a0, %pcrel_lo(.Lpcrel_hi5)
-; RV32-PIC-NEXT:    call __tls_get_addr@plt
-; RV32-PIC-NEXT:    lw a0, 0(a0)
-; RV32-PIC-NEXT:    add a0, s0, a0
-; RV32-PIC-NEXT:    lw ra, 12(sp) # 4-byte Folded Reload
-; RV32-PIC-NEXT:    lw s0, 8(sp) # 4-byte Folded Reload
-; RV32-PIC-NEXT:    addi sp, sp, 16
+; RV32-PIC-NEXT:    lui a2, %tprel_hi(ld3)
+; RV32-PIC-NEXT:    add a0, a2, a0
+; RV32-PIC-NEXT:    lw a0, %tprel_lo(ld3)(a0)
+; RV32-PIC-NEXT:    add a0, a1, a0
 ; RV32-PIC-NEXT:    ret
 ;
 ; RV64-PIC-LABEL: dedup_localdynamic:
 ; RV64-PIC:       # %bb.0: # %entry
-; RV64-PIC-NEXT:    addi sp, sp, -16
-; RV64-PIC-NEXT:    sd ra, 8(sp) # 8-byte Folded Spill
-; RV64-PIC-NEXT:    sd s0, 0(sp) # 8-byte Folded Spill
-; RV64-PIC-NEXT:  .Lpcrel_hi3:
-; RV64-PIC-NEXT:    auipc a0, %tls_gd_pcrel_hi(ld)
-; RV64-PIC-NEXT:    addi a0, a0, %pcrel_lo(.Lpcrel_hi3)
-; RV64-PIC-NEXT:    call __tls_get_addr@plt
-; RV64-PIC-NEXT:    lw s0, 0(a0)
-; RV64-PIC-NEXT:    bnez s0, .LBB4_2
+; RV64-PIC-NEXT:  .Ltlsdesc_hi2:
+; RV64-PIC-NEXT:    auipc a0, %tlsdesc_hi(_TLS_MODULE_BASE_)
+; RV64-PIC-NEXT:    ld a1, %tlsdesc_load_lo(.Ltlsdesc_hi2)(a0)
+; RV64-PIC-NEXT:    addi a0, a0, %tlsdesc_add_lo(.Ltlsdesc_hi2)
+; RV64-PIC-NEXT:    jalr t0, 0(a1), %tlsdesc_call(.Ltlsdesc_hi2)
+; RV64-PIC-NEXT:    add a0, a0, tp
+; RV64-PIC-NEXT:    lui a1, %tprel_hi(ld)
+; RV64-PIC-NEXT:    add a1, a1, a0
+; RV64-PIC-NEXT:    lw a1, %tprel_lo(ld)(a1)
+; RV64-PIC-NEXT:    bnez a1, .LBB4_2
 ; RV64-PIC-NEXT:  # %bb.1:
-; RV64-PIC-NEXT:  .Lpcrel_hi4:
-; RV64-PIC-NEXT:    auipc a0, %tls_gd_pcrel_hi(ld2)
-; RV64-PIC-NEXT:    addi a0, a0, %pcrel_lo(.Lpcrel_hi4)
-; RV64-PIC-NEXT:    call __tls_get_addr@plt
-; RV64-PIC-NEXT:    lw s0, 0(a0)
+; RV64-PIC-NEXT:    lui a1, %tprel_hi(ld2)
+; RV64-PIC-NEXT:    add a1, a1, a0
+; RV64-PIC-NEXT:    lw a1, %tprel_lo(ld2)(a1)
 ; RV64-PIC-NEXT:  .LBB4_2:
-; RV64-PIC-NEXT:  .Lpcrel_hi5:
-; RV64-PIC-NEXT:    auipc a0, %tls_gd_pcrel_hi(ld3)
-; RV64-PIC-NEXT:    addi a0, a0, %pcrel_lo(.Lpcrel_hi5)
-; RV64-PIC-NEXT:    call __tls_get_addr@plt
-; RV64-PIC-NEXT:    lw a0, 0(a0)
-; RV64-PIC-NEXT:    addw a0, s0, a0
-; RV64-PIC-NEXT:    ld ra, 8(sp) # 8-byte Folded Reload
-; RV64-PIC-NEXT:    ld s0, 0(sp) # 8-byte Folded Reload
-; RV64-PIC-NEXT:    addi sp, sp, 16
+; RV64-PIC-NEXT:    lui a2, %tprel_hi(ld3)
+; RV64-PIC-NEXT:    add a0, a2, a0
+; RV64-PIC-NEXT:    lw a0, %tprel_lo(ld3)(a0)
+; RV64-PIC-NEXT:    addw a0, a1, a0
 ; RV64-PIC-NEXT:    ret
 ;
 ; RV32-NOPIC-LABEL: dedup_localdynamic:
@@ -437,7 +399,6 @@ define i32 @dedup_localdynamic() nounwind {
 ; RV64-NOPIC-NEXT:    lw a1, 0(a1)
 ; RV64-NOPIC-NEXT:    addw a0, a0, a1
 ; RV64-NOPIC-NEXT:    ret
-;
 ; RV32-PIC-TLSDESC-LABEL: dedup_localdynamic:
 ; RV32-PIC-TLSDESC:       # %bb.0: # %entry
 ; RV32-PIC-TLSDESC-NEXT:  .Ltlsdesc_hi2:
@@ -460,7 +421,6 @@ define i32 @dedup_localdynamic() nounwind {
 ; RV32-PIC-TLSDESC-NEXT:    lw a0, %tprel_lo(ld3)(a0)
 ; RV32-PIC-TLSDESC-NEXT:    add a0, a1, a0
 ; RV32-PIC-TLSDESC-NEXT:    ret
-;
 ; RV64-PIC-TLSDESC-LABEL: dedup_localdynamic:
 ; RV64-PIC-TLSDESC:       # %bb.0: # %entry
 ; RV64-PIC-TLSDESC-NEXT:  .Ltlsdesc_hi2:
@@ -483,7 +443,6 @@ define i32 @dedup_localdynamic() nounwind {
 ; RV64-PIC-TLSDESC-NEXT:    lw a0, %tprel_lo(ld3)(a0)
 ; RV64-PIC-TLSDESC-NEXT:    addw a0, a1, a0
 ; RV64-PIC-TLSDESC-NEXT:    ret
-;
 ; RV32-NOPIC-TLSDESC-LABEL: dedup_localdynamic:
 ; RV32-NOPIC-TLSDESC:       # %bb.0: # %entry
 ; RV32-NOPIC-TLSDESC-NEXT:  .Lpcrel_hi3:
@@ -506,7 +465,6 @@ define i32 @dedup_localdynamic() nounwind {
 ; RV32-NOPIC-TLSDESC-NEXT:    lw a1, 0(a1)
 ; RV32-NOPIC-TLSDESC-NEXT:    add a0, a0, a1
 ; RV32-NOPIC-TLSDESC-NEXT:    ret
-;
 ; RV64-NOPIC-TLSDESC-LABEL: dedup_localdynamic:
 ; RV64-NOPIC-TLSDESC:       # %bb.0: # %entry
 ; RV64-NOPIC-TLSDESC-NEXT:  .Lpcrel_hi3:
