@@ -43,6 +43,8 @@ void RISCVMCExpr::printImpl(raw_ostream &OS, const MCAsmInfo *MAI) const {
   Expr->print(OS, MAI);
   if (Kind == VK_RISCV_CALL_PLT)
     OS << "@plt";
+  // else if (Kind == VK_RISCV_TLS_DTPREL)
+  //   OS << "@dtprel";
   if (HasVariant)
     OS << ')';
 }
@@ -126,6 +128,7 @@ RISCVMCExpr::VariantKind RISCVMCExpr::getVariantKindForName(StringRef name) {
       .Case("tlsdesc_load_lo", VK_RISCV_TLSDESC_LOAD_LO)
       .Case("tlsdesc_add_lo", VK_RISCV_TLSDESC_ADD_LO)
       .Case("tlsdesc_call", VK_RISCV_TLSDESC_CALL)
+      .Case("tls_dtprel", VK_RISCV_TLS_DTPREL)
       .Default(VK_RISCV_Invalid);
 }
 
@@ -168,6 +171,8 @@ StringRef RISCVMCExpr::getVariantKindName(VariantKind Kind) {
     return "call_plt";
   case VK_RISCV_32_PCREL:
     return "32_pcrel";
+  case VK_RISCV_TLS_DTPREL:
+    return "tls_dtprel";
   }
   llvm_unreachable("Invalid ELF symbol kind");
 }
@@ -226,6 +231,7 @@ bool RISCVMCExpr::evaluateAsConstant(int64_t &Res) const {
       Kind == VK_RISCV_TLS_GOT_HI || Kind == VK_RISCV_TLS_GD_HI ||
       Kind == VK_RISCV_TLSDESC_HI || Kind == VK_RISCV_TLSDESC_LOAD_LO ||
       Kind == VK_RISCV_TLSDESC_ADD_LO || Kind == VK_RISCV_TLSDESC_CALL ||
+       Kind == VK_RISCV_TLS_DTPREL ||
       Kind == VK_RISCV_CALL || Kind == VK_RISCV_CALL_PLT)
     return false;
 

@@ -6,6 +6,14 @@
 ; RUN: llc -mtriple=riscv32 < %s | FileCheck -check-prefix=RV32-NOPIC %s
 ; RUN: llc -mtriple=riscv64 < %s | FileCheck -check-prefix=RV64-NOPIC %s
 
+; RUN: llc -mtriple=riscv32 -relocation-model=pic -riscv-enable-tlsdesc < %s \
+; RUN:     | FileCheck -check-prefix=RV32-PIC-TLSDESC %s
+; RUN: llc -mtriple=riscv64 -relocation-model=pic -riscv-enable-tlsdesc < %s \
+; RUN:     | FileCheck -check-prefix=RV64-PIC-TLSDESC %s
+; RUN: llc -mtriple=riscv32 < %s  -riscv-enable-tlsdesc | FileCheck -check-prefix=RV32-NOPIC-TLSDESC %s
+; RUN: llc -mtriple=riscv64 < %s  -riscv-enable-tlsdesc | FileCheck -check-prefix=RV64-NOPIC-TLSDESC %s
+
+
 ; Check that TLS symbols are lowered correctly based on the specified
 ; model. Make sure they're external to avoid them all being optimised to Local
 ; Exec for the executable.
@@ -141,6 +149,48 @@ define ptr @f2() nounwind {
 ; RV64-NOPIC-NEXT:    ld a0, %pcrel_lo(.Lpcrel_hi1)(a0)
 ; RV64-NOPIC-NEXT:    add a0, a0, tp
 ; RV64-NOPIC-NEXT:    ret
+;
+; RV32-PIC-TLSDESC-LABEL: f2:
+; RV32-PIC-TLSDESC:       # %bb.0: # %entry
+; RV32-PIC-TLSDESC-NEXT:  .Ltlsdesc_hi1:
+; RV32-PIC-TLSDESC-NEXT:    auipc a0, %tlsdesc_hi(_TLS_MODULE_BASE_)
+; RV32-PIC-TLSDESC-NEXT:    lw a1, %tlsdesc_load_lo(.Ltlsdesc_hi1)(a0)
+; RV32-PIC-TLSDESC-NEXT:    addi a0, a0, %tlsdesc_add_lo(.Ltlsdesc_hi1)
+; RV32-PIC-TLSDESC-NEXT:    jalr t0, 0(a1), %tlsdesc_call(.Ltlsdesc_hi1)
+; RV32-PIC-TLSDESC-NEXT:    add a0, a0, tp
+; RV32-PIC-TLSDESC-NEXT:    lui a1, %tprel_hi(ld)
+; RV32-PIC-TLSDESC-NEXT:    add a0, a1, a0
+; RV32-PIC-TLSDESC-NEXT:    addi a0, a0, %tprel_lo(ld)
+; RV32-PIC-TLSDESC-NEXT:    ret
+;
+; RV64-PIC-TLSDESC-LABEL: f2:
+; RV64-PIC-TLSDESC:       # %bb.0: # %entry
+; RV64-PIC-TLSDESC-NEXT:  .Ltlsdesc_hi1:
+; RV64-PIC-TLSDESC-NEXT:    auipc a0, %tlsdesc_hi(_TLS_MODULE_BASE_)
+; RV64-PIC-TLSDESC-NEXT:    ld a1, %tlsdesc_load_lo(.Ltlsdesc_hi1)(a0)
+; RV64-PIC-TLSDESC-NEXT:    addi a0, a0, %tlsdesc_add_lo(.Ltlsdesc_hi1)
+; RV64-PIC-TLSDESC-NEXT:    jalr t0, 0(a1), %tlsdesc_call(.Ltlsdesc_hi1)
+; RV64-PIC-TLSDESC-NEXT:    add a0, a0, tp
+; RV64-PIC-TLSDESC-NEXT:    lui a1, %tprel_hi(ld)
+; RV64-PIC-TLSDESC-NEXT:    add a0, a1, a0
+; RV64-PIC-TLSDESC-NEXT:    addi a0, a0, %tprel_lo(ld)
+; RV64-PIC-TLSDESC-NEXT:    ret
+;
+; RV32-NOPIC-TLSDESC-LABEL: f2:
+; RV32-NOPIC-TLSDESC:       # %bb.0: # %entry
+; RV32-NOPIC-TLSDESC-NEXT:  .Lpcrel_hi1:
+; RV32-NOPIC-TLSDESC-NEXT:    auipc a0, %tls_ie_pcrel_hi(ld)
+; RV32-NOPIC-TLSDESC-NEXT:    lw a0, %pcrel_lo(.Lpcrel_hi1)(a0)
+; RV32-NOPIC-TLSDESC-NEXT:    add a0, a0, tp
+; RV32-NOPIC-TLSDESC-NEXT:    ret
+;
+; RV64-NOPIC-TLSDESC-LABEL: f2:
+; RV64-NOPIC-TLSDESC:       # %bb.0: # %entry
+; RV64-NOPIC-TLSDESC-NEXT:  .Lpcrel_hi1:
+; RV64-NOPIC-TLSDESC-NEXT:    auipc a0, %tls_ie_pcrel_hi(ld)
+; RV64-NOPIC-TLSDESC-NEXT:    ld a0, %pcrel_lo(.Lpcrel_hi1)(a0)
+; RV64-NOPIC-TLSDESC-NEXT:    add a0, a0, tp
+; RV64-NOPIC-TLSDESC-NEXT:    ret
 entry:
   ret ptr @ld
 }

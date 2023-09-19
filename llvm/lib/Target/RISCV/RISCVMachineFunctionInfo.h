@@ -65,6 +65,9 @@ private:
   uint64_t RVVPadding = 0;
   /// Size of stack frame to save callee saved registers
   unsigned CalleeSavedStackSize = 0;
+  /// Number of TLS accesses using the special (combinable)
+  /// _TLS_MODULE_BASE_ symbol.
+  unsigned NumLocalDynamicTLSAccesses = 0;
   /// Is there any vector argument or return?
   bool IsVectorCall = false;
 
@@ -153,6 +156,11 @@ public:
 
   bool isVectorCall() const { return IsVectorCall; }
   void setIsVectorCall() { IsVectorCall = true; }
+
+  void incNumLocalDynamicTLSAccesses() { ++NumLocalDynamicTLSAccesses; }
+  unsigned getNumLocalDynamicTLSAccesses() const {
+    return NumLocalDynamicTLSAccesses;
+  }
 };
 
 } // end namespace llvm

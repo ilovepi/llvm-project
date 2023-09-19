@@ -540,6 +540,12 @@ public:
            VK == RISCVMCExpr::VK_RISCV_TPREL_ADD;
   }
 
+  bool isDTPRelSymbol() const {
+    RISCVMCExpr::VariantKind VK = RISCVMCExpr::VK_RISCV_None;
+    return RISCVAsmParser::classifySymbolRef(getImm(), VK) &&
+           VK == RISCVMCExpr::VK_RISCV_TLS_DTPREL;
+  }
+
   bool isTLSDESCCallSymbol() const {
     int64_t Imm;
     RISCVMCExpr::VariantKind VK = RISCVMCExpr::VK_RISCV_None;
@@ -603,6 +609,7 @@ public:
     bool IsConstantImm = evaluateConstantImm(getImm(), Imm, VK);
     if (VK == RISCVMCExpr::VK_RISCV_LO ||
         VK == RISCVMCExpr::VK_RISCV_PCREL_LO ||
+        VK == RISCVMCExpr::VK_RISCV_TLS_DTPREL ||
         VK == RISCVMCExpr::VK_RISCV_TLSDESC_LOAD_LO ||
         VK == RISCVMCExpr::VK_RISCV_TLSDESC_ADD_LO)
       return true;
@@ -849,6 +856,7 @@ public:
     bool IsValid;
     if (!isImm())
       return false;
+
     bool IsConstantImm = evaluateConstantImm(getImm(), Imm, VK);
     if (!IsConstantImm)
       IsValid = RISCVAsmParser::classifySymbolRef(getImm(), VK);
@@ -858,6 +866,7 @@ public:
                        VK == RISCVMCExpr::VK_RISCV_LO ||
                        VK == RISCVMCExpr::VK_RISCV_PCREL_LO ||
                        VK == RISCVMCExpr::VK_RISCV_TPREL_LO ||
+                       VK == RISCVMCExpr::VK_RISCV_TLS_DTPREL ||
                        VK == RISCVMCExpr::VK_RISCV_TLSDESC_LOAD_LO ||
                        VK == RISCVMCExpr::VK_RISCV_TLSDESC_ADD_LO);
   }
@@ -2014,6 +2023,9 @@ ParseStatus RISCVAsmParser::parseBareSymbol(OperandVector &Operands) {
     return ParseStatus::Failure;
 
   SMLoc E = SMLoc::getFromPointer(S.getPointer() + Identifier.size());
+
+  if (Identifier.consume_back("@dtprel"))
+    return Error(getLoc(), "'@dtprel' operand not valid for instruction");
 
   if (Identifier.consume_back("@plt"))
     return Error(getLoc(), "'@plt' operand not valid for instruction");

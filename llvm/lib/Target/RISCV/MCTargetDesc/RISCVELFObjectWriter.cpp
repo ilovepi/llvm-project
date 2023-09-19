@@ -97,6 +97,8 @@ unsigned RISCVELFObjectWriter::getRelocType(MCContext &Ctx,
       return ELF::R_RISCV_CALL_PLT;
     case RISCV::fixup_riscv_call_plt:
       return ELF::R_RISCV_CALL_PLT;
+    case RISCV::fixup_riscv_tls_dtprel:
+      return is64Bit() ? ELF::R_RISCV_TLS_DTPREL64 : ELF::R_RISCV_TLS_DTPREL32;
     }
   }
 
@@ -110,6 +112,8 @@ unsigned RISCVELFObjectWriter::getRelocType(MCContext &Ctx,
     return ELF::R_RISCV_TLSDESC_ADD_LO12;
   case RISCV::fixup_riscv_tlsdesc_call:
     return ELF::R_RISCV_TLSDESC_CALL;
+  case RISCV::fixup_riscv_tls_dtprel:
+    return is64Bit() ? ELF::R_RISCV_TLS_DTPREL64 : ELF::R_RISCV_TLS_DTPREL32;
 
   case FK_Data_1:
     Ctx.reportError(Fixup.getLoc(), "1-byte data relocations not supported");
