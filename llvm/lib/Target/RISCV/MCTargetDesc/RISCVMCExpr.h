@@ -41,6 +41,7 @@ public:
     VK_RISCV_TLSDESC_LOAD_LO,
     VK_RISCV_TLSDESC_ADD_LO,
     VK_RISCV_TLSDESC_CALL,
+    VK_RISCV_TLS_DTPREL,
     VK_RISCV_Invalid // Must be the last item
   };
 

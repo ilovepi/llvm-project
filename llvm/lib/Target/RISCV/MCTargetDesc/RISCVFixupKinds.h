@@ -83,6 +83,8 @@ enum Fixups {
   // Fixup representing a function call to TLS descriptor resolve function,
   // %tlsdesc_call
   fixup_riscv_tlsdesc_call,
+  // Fixup 
+  fixup_riscv_tls_dtprel,
 
   // Used as a sentinel, must be the last
   fixup_riscv_invalid,

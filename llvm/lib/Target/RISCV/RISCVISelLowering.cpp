@@ -6512,6 +6512,41 @@ RISCVTargetLowering::getGeneralDynamicTLSDescAddr(GlobalAddressSDNode *N,
   return DAG.getNode(RISCVISD::LA_TLSDESC, DL, Ty, Addr);
 }
 
+SDValue
+RISCVTargetLowering::getLocalDynamicTLSDescAddr(GlobalAddressSDNode *N,
+                                                SelectionDAG &DAG) const {
+  // Local-dynamic accesses proceed in two phases. A general-dynamic TLS
+  // descriptor call against the special symbol _TLS_MODULE_BASE_ to calculate
+  // the beginning of the module's TLS region, followed by a DTPREL offset
+  // calculation.
+
+  SDValue ModAddr;
+  EVT Ty = getPointerTy(DAG.getDataLayout());
+  const GlobalValue *GV = N->getGlobal();
+  SDLoc DL(N);
+
+  // These accesses will need deduplicating if there's more than one.
+  RISCVMachineFunctionInfo *MFI =
+      DAG.getMachineFunction().getInfo<RISCVMachineFunctionInfo>();
+  MFI->incNumLocalDynamicTLSAccesses();
+
+  SDValue SymAddr =
+      DAG.getTargetExternalSymbol("_TLS_MODULE_BASE_", Ty, RISCVII::MO_GOT_HI);
+
+  ModAddr = DAG.getNode(RISCVISD::LA_TLSDESC, DL, Ty, SymAddr);
+
+  // Generate a sequence for accessing the address relative to the TLS module
+  SDValue ModOffset =
+      DAG.getTargetGlobalAddress(GV, DL, Ty, 0, RISCVII::MO_TLS_DTPREL);
+  // SDValue AddrLo =
+  //     DAG.getTargetGlobalAddress(GV, DL, Ty, 0, RISCVII::MO_TPREL_LO);
+
+  // SDValue MNHi = DAG.getNode(RISCVISD::HI, DL, Ty, AddrHi);
+  SDValue MNAdd = DAG.getNode(ISD::ADD, DL, Ty, ModAddr, ModOffset);
+  return MNAdd;
+  // return DAG.getNode(RISCVISD::ADD_LO, DL, Ty, MNAdd, AddrLo);
+}
+
 SDValue RISCVTargetLowering::lowerGlobalTLSAddress(SDValue Op,
                                                    SelectionDAG &DAG) const {
   GlobalAddressSDNode *N = cast<GlobalAddressSDNode>(Op);
@@ -6535,6 +6570,9 @@ SDValue RISCVTargetLowering::lowerGlobalTLSAddress(SDValue Op,
     Addr = getStaticTLSAddr(N, DAG, /*UseGOT=*/true);
     break;
   case TLSModel::LocalDynamic:
+    Addr = EnableRISCVTLSDESC ? getLocalDynamicTLSDescAddr(N, DAG)
+                              : getDynamicTLSAddr(N, DAG);
+    break;
   case TLSModel::GeneralDynamic:
     Addr = EnableRISCVTLSDESC ? getGeneralDynamicTLSDescAddr(N, DAG)
                               : getDynamicTLSAddr(N, DAG);
@@ -17269,6 +17307,7 @@ const char *RISCVTargetLowering::getTargetNodeName(unsigned Opcode) const {
   NODE_NAME_CASE(ADD_TPREL)
   NODE_NAME_CASE(LA_TLS_IE)
   NODE_NAME_CASE(LA_TLS_GD)
+  NODE_NAME_CASE(LA_TLSDESC)
   NODE_NAME_CASE(MULHSU)
   NODE_NAME_CASE(SLLW)
   NODE_NAME_CASE(SRAW)
