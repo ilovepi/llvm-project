@@ -1036,21 +1036,11 @@ struct CounterCoverageMappingBuilder
     // lexer may not be able to report back precise token end locations for
     // these children nodes (llvm.org/PR39822), and moreover users will not be
     // able to see coverage for them.
-    Counter BodyCounter = getRegionCounter(Body);
     bool Defaulted = false;
     if (auto *Method = dyn_cast<CXXMethodDecl>(D))
       Defaulted = Method->isDefaulted();
-    if (auto *Ctor = dyn_cast<CXXConstructorDecl>(D)) {
-      for (auto *Initializer : Ctor->inits()) {
-        if (Initializer->isWritten()) {
-          auto *Init = Initializer->getInit();
-          if (getStart(Init).isValid() && getEnd(Init).isValid())
-            propagateCounts(BodyCounter, Init);
-        }
-      }
-    }
 
-    propagateCounts(BodyCounter, Body,
+    propagateCounts(getRegionCounter(Body), Body,
                     /*VisitChildren=*/!Defaulted);
     assert(RegionStack.empty() && "Regions entered but never exited");
   }
