@@ -542,11 +542,11 @@ PassBuilder::buildFunctionSimplificationPipeline(OptimizationLevel Level,
     FPM.addPass(AssumeSimplifyPass());
 
   // Hoisting of scalars and load expressions.
-  if (EnableGVNHoist)
+  if (EnableGVNHoist || Level.isOptimizingForSize())
     FPM.addPass(GVNHoistPass());
 
   // Global value numbering based sinking.
-  if (EnableGVNSink) {
+  if (EnableGVNSink || Level.isOptimizingForSize()) {
     FPM.addPass(GVNSinkPass());
     FPM.addPass(
         SimplifyCFGPass(SimplifyCFGOptions().convertSwitchRangeToICmp(true)));
