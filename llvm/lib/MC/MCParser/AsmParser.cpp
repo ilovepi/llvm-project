@@ -1008,7 +1008,7 @@ bool AsmParser::Run(bool NoInitialTextSection, bool NoFinalize) {
     }
 
     // parseStatement returned true so may need to emit an error.
-    printPendingErrors();
+    HadError |= printPendingErrors();
 
     // Skipping to the next line if needed.
     if (Parsed && !getLexer().isAtStartOfStatement())
@@ -1016,7 +1016,7 @@ bool AsmParser::Run(bool NoInitialTextSection, bool NoFinalize) {
   }
 
   getTargetParser().onEndOfFile();
-  printPendingErrors();
+  HadError |= printPendingErrors();
 
   // All errors should have been emitted.
   assert(!hasPendingError() && "unexpected error from parseStatement");
