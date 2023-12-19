@@ -277,20 +277,20 @@ void splitAndWriteThinLTOBitcode(
     function_ref<AAResults &(Function &)> AARGetter, Module &M) {
   std::string ModuleId = getUniqueModuleId(&M);
   if (ModuleId.empty()) {
-    assert(!enableUnifiedLTO(M));
+    bool UnifiedLTO = enableUnifiedLTO(M);
     // We couldn't generate a module ID for this module, write it out as a
     // regular LTO module with an index for summary-based dead stripping.
     ProfileSummaryInfo PSI(M);
     M.addModuleFlag(Module::Error, "ThinLTO", uint32_t(0));
     ModuleSummaryIndex Index = buildModuleSummaryIndex(M, nullptr, &PSI);
     WriteBitcodeToFile(M, OS, /*ShouldPreserveUseListOrder=*/false, &Index,
-                       /*UnifiedLTO=*/false);
+                       UnifiedLTO);
 
     if (ThinLinkOS)
       // We don't have a ThinLTO part, but still write the module to the
       // ThinLinkOS if requested so that the expected output file is produced.
       WriteBitcodeToFile(M, *ThinLinkOS, /*ShouldPreserveUseListOrder=*/false,
-                         &Index, /*UnifiedLTO=*/false);
+                         &Index, UnifiedLTO);
 
     return;
   }
