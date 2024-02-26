@@ -222,6 +222,11 @@ static cl::opt<bool>
     EnableDFAJumpThreading("enable-dfa-jump-thread",
                            cl::desc("Enable DFA jump threading"),
                            cl::init(false), cl::Hidden);
+static cl::opt<bool>
+    OptSizeDFAJumpThreading("optsize-dfa-jump-thread",
+                           cl::desc("Enable DFA jump threading when optimizing for size"),
+                           cl::init(false), cl::Hidden);
+
 
 // TODO: turn on and remove flag
 static cl::opt<bool> EnablePGOForceFunctionAttrs(
@@ -717,7 +722,8 @@ PassBuilder::buildFunctionSimplificationPipeline(OptimizationLevel Level,
 
   // Re-consider control flow based optimizations after redundancy elimination,
   // redo DCE, etc.
-  if (EnableDFAJumpThreading && Level.getSizeLevel() == 0)
+  if (EnableDFAJumpThreading &&
+      ((Level.getSizeLevel() == 0) || OptSizeDFAJumpThreading))
     FPM.addPass(DFAJumpThreadingPass());
 
   FPM.addPass(JumpThreadingPass());
