@@ -65,7 +65,7 @@ static cl::opt<uint32_t> MisExpectTolerance(
     cl::desc("Prevents emitting diagnostics when profile counts are "
              "within N% of the threshold.."));
 
-// Command line option to enable/disable the Remparks when profile data suggests
+// Command line option to enable/disable the Remarks when profile data suggests
 // that the llvm.expect intrinsic may be profitable
 static cl::opt<bool>
     PGOMissingAnnotations("pgo-missing-annotations", cl::init(false),
@@ -100,8 +100,10 @@ std::optional<uint64_t> getScaledThreshold(const ProfDataSummary &PDS) {
   // We cannot calculate branch probability if either of these invariants aren't
   // met. However, MisExpect diagnostics should not prevent code from compiling,
   // so we simply forgo emitting diagnostics here, and return early.
-  // assert((TotalBranchWeight >= LikelyBranchWeight) && (TotalBranchWeight > 0)
-  //              && "TotalBranchWeight is less than the Likely branch weight");
+  //
+  // Failing this assert means that we have corrupted metadata.
+  // assert((TotalBranchWeight >= PDS.Likely) && (TotalBranchWeight > 0) &&
+  //        "TotalBranchWeight is less than the Likely branch weight");
   if ((TotalBranchWeight == 0) || (TotalBranchWeight <= PDS.Likely))
     return std::nullopt;
 
@@ -236,7 +238,7 @@ void verifyMisExpect(Instruction &I, ArrayRef<uint32_t> RealWeights,
   // To determine if we emit a diagnostic, we need to compare the branch weights
   // from the profile to those added by the llvm.expect intrinsic.
   // So first, we extract the "likely" and "unlikely" weights from
-  // ExpectedWeights And determine the correct weight in the profile to compare
+  // ExpectedWeights and determine the correct weight in the profile to compare
   // against.
   uint64_t LikelyBranchWeight = 0,
            UnlikelyBranchWeight = std::numeric_limits<uint32_t>::max();
@@ -294,8 +296,8 @@ void checkExpectAnnotations(Instruction &I,
 
 void verifyMissingAnnotations(Instruction &I, ArrayRef<uint32_t> RealWeights) {
   // To determine if we emit a diagnostic, we need to compare the branch weights
-  // from the profile to those that would be added by the llvm.expect intrinsic.
-  // And compare it to the real profile to see if it would be profitable.
+  // from the profile to those that would be added by the llvm.expect intrinsic
+  // and compare it to the real profile to see if it would be profitable.
   uint32_t ProfiledWeight =
       *std::max_element(RealWeights.begin(), RealWeights.end());
 
@@ -311,20 +313,12 @@ void checkMissingAnnotations(Instruction &I,
                              const ArrayRef<uint32_t> ExistingWeights,
                              bool IsFrontendInstr) {
 
-  // TODO: Ironically, this is probably a branch that should be marked UNLIKELY
   //  exit early if these diagnostics weren't requested
-  if (!isAnnotationDiagEnabled(I.getContext()))
+  if (LLVM_LIKELY(!isAnnotationDiagEnabled(I.getContext())))
     return;
 
   if (IsFrontendInstr) {
-    // TODO: Fronend checking will have to be thought through, since we need
-    // to do the check on branches that don't have expect intrinsics
-
-    // auto RealWeightsOpt = extractWeights(&I, I.getContext());
-    // if (!RealWeightsOpt)
-    // return;
-    // auto RealWeights = RealWeightsOpt.getValue();
-    // verifyMissingAnnotations(I, RealWeights, ExistingWeights);
+    verifyMissingAnnotations(I, ExistingWeights);
   } else {
     SmallVector<uint32_t> ExpectedWeights;
     if (extractBranchWeights(I, ExpectedWeights))
