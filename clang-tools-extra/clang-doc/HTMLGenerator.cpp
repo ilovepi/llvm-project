@@ -457,7 +457,6 @@ static std::unique_ptr<TagNode> writeSourceFileRef(const ClangDocContext &CDCtx,
     return std::make_unique<TagNode>(
         HTMLTag::TAG_P, "Defined at line " + std::to_string(L.StartLineNumber) +
                             " of file " + L.Filename);
-
   SmallString<128> FileURL(CDCtx.RepositoryUrl.value_or(""));
   llvm::sys::path::append(
       FileURL, llvm::sys::path::Style::posix,

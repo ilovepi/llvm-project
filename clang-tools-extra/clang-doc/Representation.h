@@ -60,6 +60,7 @@ struct CommentInfo {
   // the vector.
   bool operator<(const CommentInfo &Other) const;
 
+  // TODO: The Kind field should be an enum, so we can switch on it easily
   SmallString<16>
       Kind; // Kind of comment (FullComment, ParagraphComment, TextComment,
             // InlineCommandComment, HTMLStartTagComment, HTMLEndTagComment,
@@ -152,7 +153,9 @@ struct ScopeChildren {
 
 // A base struct for TypeInfos
 struct TypeInfo {
+
   TypeInfo() = default;
+
   TypeInfo(const Reference &R) : Type(R) {}
 
   // Convenience constructor for when there is no symbol ID or info type
@@ -163,6 +166,9 @@ struct TypeInfo {
   bool operator==(const TypeInfo &Other) const { return Type == Other.Type; }
 
   Reference Type; // Referenced type in this info.
+
+  bool IsTemplate = false;
+  bool IsBuiltIn = false;
 };
 
 // Represents one template parameter.
@@ -262,8 +268,8 @@ struct Location {
            std::tie(Other.StartLineNumber, Other.EndLineNumber, Other.Filename);
   }
 
-  int StartLineNumber = 0; // Line number of this Location.
-  int EndLineNumber = 0;
+  int StartLineNumber = 0;      // Line number of this Location.
+  int EndLineNumber = 0;        // End line number of this Location.
   SmallString<32> Filename;     // File for this Location.
   bool IsFileInRootDir = false; // Indicates if file is inside root directory
 };
@@ -362,6 +368,9 @@ struct FunctionInfo : public SymbolInfo {
   // specializations.
   SmallString<16> FullName;
 
+  // Function Prototype
+  SmallString<256> ProtoType;
+
   // When present, this function is a template or specialization.
   std::optional<TemplateInfo> Template;
 };
@@ -414,12 +423,15 @@ struct TypedefInfo : public SymbolInfo {
   void merge(TypedefInfo &&I);
 
   TypeInfo Underlying;
-
-  // Inidicates if this is a new C++ "using"-style typedef:
+  // Underlying type declaration
+  SmallString<16> TypeDeclaration;
+  // Indicates if this is a new C++ "using"-style typedef:
   //   using MyVector = std::vector<int>
   // False means it's a C-style typedef:
   //   typedef std::vector<int> MyVector;
   bool IsUsing = false;
+
+  std::vector<CommentInfo> Description;
 };
 
 struct BaseRecordInfo : public RecordInfo {
@@ -458,7 +470,8 @@ struct EnumValueInfo {
   // constant. This will be empty for implicit enumeration values.
   SmallString<16> ValueExpr;
 
-  std::vector<CommentInfo> Description; /// Comment description of this field.
+  /// Comment description of this field.
+  std::vector<CommentInfo> Description;
 };
 
 // TODO: Expand to allow for documenting templating.
@@ -527,7 +540,10 @@ struct ClangDocContext {
   std::vector<std::string> UserStylesheets;
   // JavaScript files that will be imported in all HTML files.
   std::vector<std::string> JsScripts;
+  // Base directory for remote repositories.
   StringRef Base;
+  // Mustache Template files
+  llvm::StringMap<std::string> MustacheTemplates;
   Index Idx;
 };
 
