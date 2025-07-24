@@ -13,17 +13,19 @@
 //===----------------------------------------------------------------------===//
 
 #include "llvm/Transforms/Utils/NoBuiltinsWorld.h"
+#include "llvm/IR/Module.h"
 
 using namespace llvm;
 
 #define DEBUG_TYPE "no-builtins-world"
 
-
-
-PreservedAnalyses NoBuiltinsWorldPass::run(Module &M, ModuleAnalysisManager &AM) {
-  for(auto &F: M){
+PreservedAnalyses NoBuiltinsWorld::run(Module &M, ModuleAnalysisManager &AM) {
+  for (auto &F : M) {
+    // Do we need to check if the attr exists?
     F.addFnAttr("no-builtins");
   }
+
+  // TODO: Do we need a module flag for this?
 
   return PreservedAnalyses::all();
 }

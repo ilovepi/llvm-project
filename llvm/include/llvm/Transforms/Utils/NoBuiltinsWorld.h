@@ -16,8 +16,9 @@ namespace llvm {
 class Module;
 class ModuleSummaryIndex;
 
-class NoBuiltinsWorldPass : public PassInfoMixin<NoBuiltinsWorldPass> {
+class NoBuiltinsWorld : public PassInfoMixin<NoBuiltinsWorld> {
 public:
+  NoBuiltinsWorld() = default;
   PreservedAnalyses run(Module &M, ModuleAnalysisManager &AM);
 };
 
