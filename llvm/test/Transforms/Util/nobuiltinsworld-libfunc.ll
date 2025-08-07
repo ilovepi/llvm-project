@@ -20,7 +20,7 @@ define i1 @foo(ptr %0, [2 x i64] %1) {
   ret i1 %eq
 }
 
-; CHECK: declare i32 @memcmp(ptr, ptr, i64)
+; CHECK: declare i32 @memcmp(ptr, ptr, i64)-----
 declare i32 @memcmp(ptr, ptr, i64)
 
 ; CHECK: define internal i32 @bcmp(ptr %0, ptr %1, i64 %2) {

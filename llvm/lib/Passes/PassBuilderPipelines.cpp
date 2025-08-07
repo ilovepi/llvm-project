@@ -140,6 +140,7 @@
 #include "llvm/Transforms/Utils/Mem2Reg.h"
 #include "llvm/Transforms/Utils/MoveAutoInit.h"
 #include "llvm/Transforms/Utils/NameAnonGlobals.h"
+#include "llvm/Transforms/Utils/NoBuiltinsWorld.h"
 #include "llvm/Transforms/Utils/RelLookupTableConverter.h"
 #include "llvm/Transforms/Utils/SimplifyCFGOptions.h"
 #include "llvm/Transforms/Vectorize/LoopVectorize.h"
@@ -2178,6 +2179,10 @@ PassBuilder::buildLTODefaultPipeline(OptimizationLevel Level,
 
   // Drop bodies of available eternally objects to improve GlobalDCE.
   MPM.addPass(EliminateAvailableExternallyPass());
+
+  // Transition to no-builtins world
+  MPM.addPass(NoBuiltinsWorld());
+
 
   // Now that we have optimized the program, discard unreachable functions.
   MPM.addPass(GlobalDCEPass(/*InLTOPostLink=*/true));
