@@ -19,6 +19,8 @@
 #include "llvm/Support/MemoryBuffer.h"
 #include "llvm/Support/Mustache.h"
 #include "llvm/Support/Path.h"
+#include "llvm/Support/ThreadPool.h"
+#include "llvm/Support/Threading.h"
 #include "llvm/Support/TimeProfiler.h"
 
 using namespace llvm;
@@ -27,6 +29,7 @@ using namespace llvm::mustache;
 
 namespace clang {
 namespace doc {
+
 static Error generateDocForJSON(json::Value &JSON, StringRef Filename,
                                 StringRef Path, raw_fd_ostream &OS,
                                 const ClangDocContext &CDCtx);
@@ -78,8 +81,8 @@ public:
   void render(json::Value &V, raw_ostream &OS) { T.render(V, OS); }
 
   MustacheTemplateFile(std::unique_ptr<MemoryBuffer> &&B)
-      : Saver(Allocator), Ctx(Allocator, Saver),
-        T(B->getBuffer(), Ctx), Buffer(std::move(B)) {}
+      : Saver(Allocator), Ctx(Allocator, Saver), T(B->getBuffer(), Ctx),
+        Buffer(std::move(B)) {}
 };
 
 static std::unique_ptr<MustacheTemplateFile> NamespaceTemplate = nullptr;
@@ -133,6 +136,8 @@ static Error setupTemplateFiles(const clang::doc::ClangDocContext &CDCtx) {
   return Error::success();
 }
 
+
+
 Error MustacheHTMLGenerator::generateDocs(
     StringRef RootDir, StringMap<std::unique_ptr<doc::Info>> Infos,
     const clang::doc::ClangDocContext &CDCtx) {
@@ -167,6 +172,9 @@ Error MustacheHTMLGenerator::generateDocs(
     SmallString<128> HTMLDirPath(RootDir.str() + "/html/");
     if (auto EC = sys::fs::create_directories(HTMLDirPath))
       return createFileError(HTMLDirPath, EC);
+
+    llvm::ExitOnError ExitOnErr("clang-doc error: ");
+    llvm::DefaultThreadPool Pool;
     while (JSONIter != sys::fs::directory_iterator()) {
       if (EC)
         return createFileError("Failed to iterate: " + JSONIter->path(), EC);
@@ -177,30 +185,34 @@ Error MustacheHTMLGenerator::generateDocs(
         continue;
       }
 
-      auto File = MemoryBuffer::getFile(Path);
-      if (EC = File.getError(); EC)
-        // TODO: Buffer errors to report later, look into using Clang
-        // diagnostics.
-        llvm::errs() << "Failed to open file: " << Path << " " << EC.message()
-                     << '\n';
+      Pool.async([&, Path = JSONIter->path(), HTMLDirPath]() {
+        auto File = MemoryBuffer::getFile(Path);
+        if (auto EC = File.getError()) {
+          errs() << "Failed to open file: " << Path << ": " << EC.message()
+                 << '\n';
+          return;
+        }
 
-      auto Parsed = json::parse((*File)->getBuffer());
-      if (!Parsed)
-        return Parsed.takeError();
+        auto Parsed = json::parse((*File)->getBuffer());
+        if (!Parsed)
+          ExitOnErr(Parsed.takeError());
 
-      std::error_code FileErr;
-      SmallString<128> HTMLFilePath(HTMLDirPath);
-      sys::path::append(HTMLFilePath, sys::path::filename(Path));
-      sys::path::replace_extension(HTMLFilePath, "html");
-      raw_fd_ostream InfoOS(HTMLFilePath, FileErr, sys::fs::OF_None);
-      if (FileErr)
-        return createFileOpenError(Path, FileErr);
+        std::error_code FileErr;
+        SmallString<128> HTMLFilePath(HTMLDirPath);
+        sys::path::append(HTMLFilePath, sys::path::filename(Path));
+        sys::path::replace_extension(HTMLFilePath, "html");
+        raw_fd_ostream InfoOS(HTMLFilePath, FileErr, sys::fs::OF_None);
+        if (FileErr)
+          ExitOnErr(createFileOpenError(Path, FileErr));
 
-      if (Error Err = generateDocForJSON(*Parsed, sys::path::stem(HTMLFilePath),
-                                         HTMLFilePath, InfoOS, CDCtx))
-        return Err;
+        if (Error Err =
+                generateDocForJSON(*Parsed, sys::path::stem(HTMLFilePath),
+                                   HTMLFilePath, InfoOS, CDCtx))
+          ExitOnErr(std::move(Err));
+      });
       JSONIter.increment(EC);
     }
+    Pool.wait();
   }
 
   return Error::success();

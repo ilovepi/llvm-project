@@ -627,6 +627,7 @@ Error JSONGenerator::generateDocs(
     Info->DocumentationFileName = FileName;
   }
 
+  llvm::ExitOnError ExitOnErr("clang-doc error: ");
   llvm::DefaultThreadPool Pool;
   for (const auto &Group : FileToInfos) {
     Pool.async([&]() {
