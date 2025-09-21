@@ -126,7 +126,7 @@ static llvm::cl::opt<OutputFormatTy> FormatEnum(
                                 "Documentation in JSON format")),
     llvm::cl::init(OutputFormatTy::yaml), llvm::cl::cat(ClangDocCategory));
 
-static llvm::ExitOnError ExitOnErr;
+llvm::ExitOnError ExitOnErr;
 
 static std::string getFormatString() {
   switch (FormatEnum) {

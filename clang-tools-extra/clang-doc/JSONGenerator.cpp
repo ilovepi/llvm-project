@@ -1,6 +1,10 @@
 #include "Generators.h"
 #include "clang/Basic/Specifiers.h"
 #include "llvm/Support/JSON.h"
+#include "llvm/Support/ThreadPool.h"
+
+#include <atomic>
+#include <mutex>
 
 using namespace llvm;
 using namespace llvm::json;
@@ -591,6 +595,12 @@ static SmallString<16> determineFileName(Info *I, SmallString<128> &Path) {
   return FileName;
 }
 
+#include "llvm/Support/ThreadPool.h"
+#include <atomic>
+#include <mutex>
+
+#include "llvm/Support/ThreadPool.h"
+
 Error JSONGenerator::generateDocs(
     StringRef RootDir, llvm::StringMap<std::unique_ptr<doc::Info>> Infos,
     const ClangDocContext &CDCtx) {
@@ -617,16 +627,25 @@ Error JSONGenerator::generateDocs(
     Info->DocumentationFileName = FileName;
   }
 
+  llvm::DefaultThreadPool Pool;
   for (const auto &Group : FileToInfos) {
-    std::error_code FileErr;
-    raw_fd_ostream InfoOS(Group.getKey(), FileErr, sys::fs::OF_Text);
-    if (FileErr)
-      return createFileError("cannot open file " + Group.getKey(), FileErr);
+    Pool.async([&]() {
+      std::error_code FileErr;
+      raw_fd_ostream InfoOS(Group.getKey(), FileErr, sys::fs::OF_Text);
+      if (FileErr) {
+        ExitOnErr(createFileError("cannot open file " + Group.getKey(), FileErr));
+        return;
+      }
 
-    for (const auto &Info : Group.getValue())
-      if (Error Err = generateDocForInfo(Info, InfoOS, CDCtx))
-        return Err;
+      for (const auto &Info : Group.getValue()) {
+        if (Error Err = generateDocForInfo(Info, InfoOS, CDCtx)) {
+          ExitOnErr(std::move(Err));
+          return;
+        }
+      }
+    });
   }
+  Pool.wait();
 
   return Error::success();
 }

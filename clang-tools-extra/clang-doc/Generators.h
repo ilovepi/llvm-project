@@ -16,6 +16,8 @@
 #include "llvm/Support/Error.h"
 #include "llvm/Support/Registry.h"
 
+extern llvm::ExitOnError ExitOnErr;
+
 namespace clang {
 namespace doc {
 
