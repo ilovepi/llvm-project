@@ -1723,8 +1723,9 @@ PassBuilder::buildFatLTODefaultPipeline(OptimizationLevel Level, bool ThinLTO,
     }
 
     // otherwise, just use module optimization
-    MPM.addPass(
-        buildModuleOptimizationPipeline(Level, ThinOrFullLTOPhase::None));
+    MPM.addPass(buildModuleOptimizationPipeline(
+        Level, (ThinLTO ? ThinOrFullLTOPhase::ThinLTOPostLink
+                        : ThinOrFullLTOPhase::FullLTOPostLink)));
     // Emit annotation remarks.
     addAnnotationRemarksPass(MPM);
   }
