@@ -735,7 +735,7 @@ AST Matchers
 - Added ``hasExplicitParameters`` for ``LambdaExpr`` as an output attribute to
   AST JSON dumps.
 - Add ``arrayTypeLoc`` matcher for matching ``ArrayTypeLoc``.
-- Add missing support for ``TraveralKind`` in some ``addMatcher()`` overloads.
+- Add missing support for ``TraversalKind`` in some ``addMatcher()`` overloads.
 
 clang-format
 ------------
