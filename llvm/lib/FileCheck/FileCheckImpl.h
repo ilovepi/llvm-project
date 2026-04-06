@@ -730,7 +730,8 @@ public:
   /// current values of FileCheck numeric variables and is updated if this
   /// match defines new numeric values.
   LLVM_ABI_FOR_TEST MatchResult match(StringRef Buffer,
-                                      const SourceMgr &SM) const;
+                                      const SourceMgr &SM,
+                                      const FileCheckRequest &Req) const;
   /// Prints the value of successful substitutions.
   void printSubstitutions(const SourceMgr &SM, StringRef Buffer,
                           SMRange MatchRange, FileCheckDiag::MatchType MatchTy,

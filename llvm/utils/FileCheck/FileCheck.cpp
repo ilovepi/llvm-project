@@ -103,7 +103,7 @@ static cl::opt<bool> AllowDeprecatedDagOverlap(
              "non-overlapping CHECK-DAG implementation.\n"));
 
 static cl::opt<FileCheckMatcherMode> MatcherMode(
-    "matcher-mode", cl::init(FileCheckMatcherMode::Standard),
+    "matcher-mode", cl::init(FileCheckMatcherMode::SIMD),
     cl::desc("Select matcher mode"),
     cl::values(
         clEnumValN(FileCheckMatcherMode::Standard, "standard", "Standard matcher"),

@@ -908,7 +908,7 @@ public:
 
   Expected<size_t> match(StringRef Buffer) {
     StringRef BufferRef = bufferize(SM, Buffer);
-    Pattern::MatchResult Res = P.match(BufferRef, SM);
+    Pattern::MatchResult Res = P.match(BufferRef, SM, Req);
     if (Res.TheError)
       return std::move(Res.TheError);
     return Res.TheMatch->Pos;
@@ -1528,7 +1528,7 @@ TEST_F(FileCheckTest, FileCheckContext) {
   FileCheckRequest Req;
   Cxt.createLineVariable();
   ASSERT_FALSE(P.parsePattern("[[@LINE]]", "CHECK", SM, Req));
-  Pattern::MatchResult Res = P.match("1", SM);
+  Pattern::MatchResult Res = P.match("1", SM, Req);
   ASSERT_THAT_ERROR(std::move(Res.TheError), Succeeded());
 
 #ifndef NDEBUG

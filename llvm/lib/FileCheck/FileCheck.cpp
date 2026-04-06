@@ -26,6 +26,10 @@
 #include <tuple>
 #include <utility>
 
+#if defined(__x86_64__) || defined(_M_X64)
+#include <emmintrin.h>
+#endif
+
 using namespace llvm;
 
 constexpr static int BackrefLimit = 20;
@@ -1122,16 +1126,65 @@ void Pattern::AddBackrefToRegEx(unsigned BackrefNum) {
   RegExStr += Backref;
 }
 
+static size_t matchFixedStrSIMD(StringRef Buffer, StringRef FixedStr, bool IgnoreCase) {
+  if (IgnoreCase || FixedStr.size() < 2 || Buffer.size() < 17)
+    return IgnoreCase ? Buffer.find_insensitive(FixedStr) : Buffer.find(FixedStr);
+
+#if defined(__x86_64__) || defined(_M_X64)
+  char C1 = FixedStr[0];
+  char C2 = FixedStr[1];
+  __m128i V1 = _mm_set1_epi8(C1);
+  __m128i V2 = _mm_set1_epi8(C2);
+
+  const char *Start = Buffer.data();
+  const char *Ptr = Start;
+  const char *End = Start + Buffer.size();
+  const char *Stop = End - 16;
+
+  while (Ptr < Stop) {
+    __m128i Hay = _mm_loadu_si128((const __m128i *)Ptr);
+    __m128i M1 = _mm_cmpeq_epi8(Hay, V1);
+    
+    __m128i Hay2 = _mm_loadu_si128((const __m128i *)(Ptr + 1));
+    __m128i M2 = _mm_cmpeq_epi8(Hay2, V2);
+
+    __m128i Mask = _mm_and_si128(M1, M2);
+    int Bits = _mm_movemask_epi8(Mask);
+
+    while (Bits != 0) {
+      int Pos = __builtin_ctz(Bits);
+      if (Ptr + Pos + FixedStr.size() <= End) {
+        if (std::memcmp(Ptr + Pos + 2, FixedStr.data() + 2, FixedStr.size() - 2) == 0)
+          return Ptr + Pos - Start;
+      }
+      Bits &= Bits - 1;
+    }
+    Ptr += 16;
+  }
+  // Fallback for the rest of the buffer
+  StringRef Rest = Buffer.substr(Ptr - Start);
+  size_t Pos = Rest.find(FixedStr);
+  return Pos == StringRef::npos ? StringRef::npos : Pos + (Ptr - Start);
+#else
+  return Buffer.find(FixedStr);
+#endif
+}
+
 Pattern::MatchResult Pattern::match(StringRef Buffer,
-                                    const SourceMgr &SM) const {
+                                    const SourceMgr &SM,
+                                    const FileCheckRequest &Req) const {
   // If this is the EOF pattern, match it immediately.
   if (CheckTy == Check::CheckEOF)
     return MatchResult(Buffer.size(), 0, Error::success());
 
   // If this is a fixed string pattern, just match it now.
   if (!FixedStr.empty()) {
-    size_t Pos =
-        IgnoreCase ? Buffer.find_insensitive(FixedStr) : Buffer.find(FixedStr);
+    size_t Pos;
+    if (Req.MatcherMode == FileCheckMatcherMode::SIMD) {
+      Pos = matchFixedStrSIMD(Buffer, FixedStr, IgnoreCase);
+    } else {
+      Pos = IgnoreCase ? Buffer.find_insensitive(FixedStr) : Buffer.find(FixedStr);
+    }
     if (Pos == StringRef::npos)
       return make_error<NotFoundError>();
     return MatchResult(Pos, /*MatchLen=*/FixedStr.size(), Error::success());
@@ -2246,7 +2299,7 @@ size_t FileCheckString::Check(const SourceMgr &SM, StringRef Buffer,
   for (int i = 1; i <= Pat.getCount(); i++) {
     StringRef MatchBuffer = Buffer.substr(LastMatchEnd);
     // get a match at current start point
-    Pattern::MatchResult MatchResult = Pat.match(MatchBuffer, SM);
+    Pattern::MatchResult MatchResult = Pat.match(MatchBuffer, SM, Req);
 
     // report
     if (Error Err = reportMatchResult(/*ExpectedMatch=*/true, SM, Prefix, Loc,
@@ -2369,7 +2422,7 @@ bool FileCheckString::CheckNot(
   for (auto NotInfo : NotStrings) {
     assert((NotInfo->DagNotPat.getCheckTy() == Check::CheckNot) &&
            "Expect CHECK-NOT!");
-    Pattern::MatchResult MatchResult = NotInfo->DagNotPat.match(Buffer, SM);
+    Pattern::MatchResult MatchResult = NotInfo->DagNotPat.match(Buffer, SM, Req);
     if (Error Err = reportMatchResult(
             /*ExpectedMatch=*/false, SM, NotInfo->DagNotPrefix,
             NotInfo->DagNotPat.getLoc(), NotInfo->DagNotPat, 1, Buffer,
@@ -2426,7 +2479,7 @@ FileCheckString::CheckDag(const SourceMgr &SM, StringRef Buffer,
     // CHECK-DAG group.
     for (auto MI = MatchRanges.begin(), ME = MatchRanges.end(); true; ++MI) {
       StringRef MatchBuffer = Buffer.substr(MatchPos);
-      Pattern::MatchResult MatchResult = Pat.match(MatchBuffer, SM);
+      Pattern::MatchResult MatchResult = Pat.match(MatchBuffer, SM, Req);
       // With a group of CHECK-DAGs, a single mismatching means the match on
       // that group of CHECK-DAGs fails immediately.
       if (MatchResult.TheError || Req.VerboseVerbose) {
