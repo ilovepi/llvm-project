@@ -102,6 +102,16 @@ static cl::opt<bool> AllowDeprecatedDagOverlap(
              "provided for convenience as old tests are migrated to the new\n"
              "non-overlapping CHECK-DAG implementation.\n"));
 
+static cl::opt<FileCheckMatcherMode> MatcherMode(
+    "matcher-mode", cl::init(FileCheckMatcherMode::Standard),
+    cl::desc("Select matcher mode"),
+    cl::values(
+        clEnumValN(FileCheckMatcherMode::Standard, "standard", "Standard matcher"),
+        clEnumValN(FileCheckMatcherMode::SIMD, "simd", "SIMD accelerated matcher"),
+        clEnumValN(FileCheckMatcherMode::GPU, "gpu", "GPU accelerated matcher"),
+        clEnumValN(FileCheckMatcherMode::FMV, "fmv", "Function Multiversioning matcher")
+    ));
+
 static cl::opt<bool> Verbose(
     "v",
     cl::desc("Print directive pattern matches, or add them to the input dump\n"
@@ -796,6 +806,7 @@ int main(int argc, char **argv) {
   Req.NoCanonicalizeWhiteSpace = NoCanonicalizeWhiteSpace;
   Req.MatchFullLines = MatchFullLines;
   Req.IgnoreCase = IgnoreCase;
+  Req.MatcherMode = MatcherMode;
 
   if (VerboseVerbose)
     Req.Verbose = true;

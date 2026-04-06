@@ -1,0 +1,12 @@
+; RUN: FileCheck -matcher-mode=standard -v %s < %s 2>&1 | FileCheck -check-prefix=STANDARD %s
+; RUN: FileCheck -matcher-mode=simd -v %s < %s 2>&1 | FileCheck -check-prefix=SIMD %s
+; RUN: FileCheck -matcher-mode=gpu -v %s < %s 2>&1 | FileCheck -check-prefix=GPU %s
+; RUN: FileCheck -matcher-mode=fmv -v %s < %s 2>&1 | FileCheck -check-prefix=FMV %s
+
+; STANDARD: FileCheck MatcherMode: Standard
+; SIMD: FileCheck MatcherMode: SIMD
+; GPU: FileCheck MatcherMode: GPU
+; FMV: FileCheck MatcherMode: FMV
+
+hello
+CHECK: hello

@@ -2726,6 +2726,16 @@ void FileCheckPatternContext::clearLocalVars() {
 
 bool FileCheck::checkInput(SourceMgr &SM, StringRef Buffer,
                            std::vector<FileCheckDiag> *Diags) {
+  if (Req.Verbose) {
+    errs() << "FileCheck MatcherMode: ";
+    switch (Req.MatcherMode) {
+    case FileCheckMatcherMode::Standard: errs() << "Standard\n"; break;
+    case FileCheckMatcherMode::SIMD: errs() << "SIMD\n"; break;
+    case FileCheckMatcherMode::GPU: errs() << "GPU\n"; break;
+    case FileCheckMatcherMode::FMV: errs() << "FMV\n"; break;
+    }
+  }
+
   bool ChecksFailed = false;
 
   unsigned i = 0, j = 0, e = CheckStrings.size();

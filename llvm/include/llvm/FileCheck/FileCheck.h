@@ -27,6 +27,8 @@ class MemoryBuffer;
 class SourceMgr;
 template <typename T> class SmallVectorImpl;
 
+enum class FileCheckMatcherMode { Standard, SIMD, GPU, FMV };
+
 /// Contains info about various FileCheck options.
 struct FileCheckRequest {
   std::vector<StringRef> CheckPrefixes;
@@ -43,6 +45,7 @@ struct FileCheckRequest {
   bool AllowDeprecatedDagOverlap = false;
   bool Verbose = false;
   bool VerboseVerbose = false;
+  FileCheckMatcherMode MatcherMode = FileCheckMatcherMode::Standard;
 };
 
 namespace Check {
