@@ -46,6 +46,9 @@ struct FileCheckRequest {
   bool Verbose = false;
   bool VerboseVerbose = false;
   FileCheckMatcherMode MatcherMode = FileCheckMatcherMode::Standard;
+  bool EnableSIMDLineSplitting = false;
+  bool EnableFingerprinting = false;
+  bool EnableParallelMatching = false;
 };
 
 namespace Check {

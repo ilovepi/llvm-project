@@ -665,6 +665,9 @@ public:
   /// FileCheck instance.
   FileCheckPatternContext *getContext() const { return Context; }
 
+  /// \returns the fixed string to match, or empty if it's a regex pattern.
+  StringRef getFixedStr() const { return FixedStr; }
+
   /// \returns whether \p C is a valid first character for a variable name.
   LLVM_ABI_FOR_TEST static bool isValidVarNameStart(char C);
 
@@ -834,6 +837,9 @@ private:
                 std::optional<size_t> LineNumber,
                 FileCheckPatternContext *Context, const SourceMgr &SM);
 };
+
+std::vector<size_t> buildLineIndexSIMD(StringRef Buffer);
+std::vector<uint64_t> buildFingerprints(StringRef Buffer, const std::vector<size_t> &LineIndices);
 
 //===----------------------------------------------------------------------===//
 // Check Strings.

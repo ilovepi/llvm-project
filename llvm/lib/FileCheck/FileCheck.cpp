@@ -25,6 +25,7 @@
 #include <set>
 #include <tuple>
 #include <utility>
+#include "llvm/Support/TimeProfiler.h"
 
 #if defined(__x86_64__) || defined(_M_X64)
 #include <emmintrin.h>
@@ -1173,6 +1174,7 @@ static size_t matchFixedStrSIMD(StringRef Buffer, StringRef FixedStr, bool Ignor
 Pattern::MatchResult Pattern::match(StringRef Buffer,
                                     const SourceMgr &SM,
                                     const FileCheckRequest &Req) const {
+  TimeTraceScope TTS("Pattern::match");
   // If this is the EOF pattern, match it immediately.
   if (CheckTy == Check::CheckEOF)
     return MatchResult(Buffer.size(), 0, Error::success());
@@ -2276,6 +2278,7 @@ size_t FileCheckString::Check(const SourceMgr &SM, StringRef Buffer,
                               bool IsLabelScanMode, size_t &MatchLen,
                               FileCheckRequest &Req,
                               std::vector<FileCheckDiag> *Diags) const {
+  TimeTraceScope TTS("FileCheckString::Check");
   size_t LastPos = 0;
   std::vector<const DagNotPrefixInfo *> NotStrings;
 
@@ -2777,8 +2780,75 @@ void FileCheckPatternContext::clearLocalVars() {
     GlobalNumericVariableTable.erase(Var);
 }
 
+namespace llvm {
+std::vector<size_t> buildLineIndexSIMD(StringRef Buffer) {
+  TimeTraceScope TTS("buildLineIndexSIMD");
+  std::vector<size_t> Indices;
+  Indices.push_back(0); // Start of first line
+  const char *Ptr = Buffer.data();
+  size_t Size = Buffer.size();
+  size_t i = 0;
+
+  // Align to 16 bytes
+  while (i < Size && reinterpret_cast<uintptr_t>(Ptr + i) % 16 != 0) {
+    if (Ptr[i] == '\n')
+      Indices.push_back(i + 1);
+    i++;
+  }
+
+  // SIMD loop
+  __m128i Eol = _mm_set1_epi8('\n');
+  for (; i + 15 < Size; i += 16) {
+    __m128i Data = _mm_load_si128(reinterpret_cast<const __m128i *>(Ptr + i));
+    __m128i Cmp = _mm_cmpeq_epi8(Data, Eol);
+    int Mask = _mm_movemask_epi8(Cmp);
+    while (Mask != 0) {
+      int idx = __builtin_ctz(Mask);
+      Indices.push_back(i + idx + 1);
+      Mask &= Mask - 1; // Clear lowest set bit
+    }
+  }
+
+  // Remainder
+  for (; i < Size; i++) {
+    if (Ptr[i] == '\n')
+      Indices.push_back(i + 1);
+  }
+
+  return Indices;
+}
+
+static uint64_t computeFingerprint(StringRef S) {
+  uint64_t Mask = 0;
+  for (char c : S) {
+    Mask |= (1ULL << (static_cast<uint8_t>(c) % 64));
+  }
+  return Mask;
+}
+
+std::vector<uint64_t> buildFingerprints(StringRef Buffer, const std::vector<size_t> &LineIndices) {
+  std::vector<uint64_t> Fingerprints;
+  Fingerprints.reserve(LineIndices.size());
+
+  for (size_t i = 0; i < LineIndices.size(); i++) {
+    size_t Start = LineIndices[i];
+    size_t End = (i + 1 < LineIndices.size()) ? LineIndices[i + 1] - 1 : Buffer.size();
+    StringRef Line = Buffer.substr(Start, End - Start);
+
+    uint64_t Mask = 0;
+    for (char c : Line) {
+      Mask |= (1ULL << (static_cast<uint8_t>(c) % 64));
+    }
+    Fingerprints.push_back(Mask);
+  }
+
+  return Fingerprints;
+}
+} // namespace llvm
+
 bool FileCheck::checkInput(SourceMgr &SM, StringRef Buffer,
                            std::vector<FileCheckDiag> *Diags) {
+  TimeTraceScope TTS("checkInput");
   if (Req.Verbose) {
     errs() << "FileCheck MatcherMode: ";
     switch (Req.MatcherMode) {
@@ -2789,11 +2859,30 @@ bool FileCheck::checkInput(SourceMgr &SM, StringRef Buffer,
     }
   }
 
+  std::vector<size_t> LineIndices;
+  if (Req.EnableSIMDLineSplitting || Req.EnableFingerprinting) {
+    LineIndices = buildLineIndexSIMD(Buffer);
+    if (Req.Verbose)
+      errs() << "Built line index with " << LineIndices.size() << " lines.\n";
+  }
+
+  std::vector<uint64_t> Fingerprints;
+  if (Req.EnableFingerprinting) {
+    Fingerprints = buildFingerprints(Buffer, LineIndices);
+    if (Req.Verbose)
+      errs() << "Built fingerprints for " << Fingerprints.size() << " lines.\n";
+  }
+
   bool ChecksFailed = false;
 
   unsigned i = 0, j = 0, e = CheckStrings.size();
+  size_t ConsumedBytes = 0;
+  size_t CurrentLineIdx = 0;
+  
   while (true) {
     StringRef CheckRegion;
+    size_t CurrentRegionOffset = ConsumedBytes;
+    
     if (j == e) {
       CheckRegion = Buffer;
     } else {
@@ -2811,8 +2900,10 @@ bool FileCheck::checkInput(SourceMgr &SM, StringRef Buffer,
         // Immediately bail if CHECK-LABEL fails, nothing else we can do.
         return false;
 
-      CheckRegion = Buffer.substr(0, MatchLabelPos + MatchLabelLen);
-      Buffer = Buffer.substr(MatchLabelPos + MatchLabelLen);
+      size_t RegionSize = MatchLabelPos + MatchLabelLen;
+      CheckRegion = Buffer.substr(0, RegionSize);
+      Buffer = Buffer.substr(RegionSize);
+      ConsumedBytes += RegionSize;
       ++j;
     }
 
@@ -2825,11 +2916,39 @@ bool FileCheck::checkInput(SourceMgr &SM, StringRef Buffer,
     for (; i != j; ++i) {
       const FileCheckString &CheckStr = CheckStrings[i];
 
+      StringRef ActiveRegion = CheckRegion;
+      
+      if (Req.EnableFingerprinting && !Fingerprints.empty()) {
+        StringRef FixedStr = CheckStr.Pat.getFixedStr();
+        if (!FixedStr.empty()) {
+          uint64_t NeedleFP = computeFingerprint(FixedStr);
+          
+          size_t RegionStart = CurrentRegionOffset;
+          size_t RegionEnd = CurrentRegionOffset + CheckRegion.size();
+          
+          while (CurrentLineIdx < LineIndices.size() && LineIndices[CurrentLineIdx] < RegionStart)
+            CurrentLineIdx++;
+            
+          bool FoundPotentialMatch = false;
+          for (size_t l = CurrentLineIdx; l < LineIndices.size() && LineIndices[l] < RegionEnd; l++) {
+            if ((NeedleFP & ~Fingerprints[l]) == 0) {
+              FoundPotentialMatch = true;
+              break;
+            }
+          }
+          
+          if (!FoundPotentialMatch) {
+            // Pass empty buffer at the right location to trigger failure/success correctly
+            ActiveRegion = StringRef(CheckRegion.data(), 0);
+          }
+        }
+      }
+
       // Check each string within the scanned region, including a second check
       // of any final CHECK-LABEL (to verify CHECK-NOT and CHECK-DAG)
       size_t MatchLen = 0;
       size_t MatchPos =
-          CheckStr.Check(SM, CheckRegion, false, MatchLen, Req, Diags);
+          CheckStr.Check(SM, ActiveRegion, false, MatchLen, Req, Diags);
 
       if (MatchPos == StringRef::npos) {
         ChecksFailed = true;

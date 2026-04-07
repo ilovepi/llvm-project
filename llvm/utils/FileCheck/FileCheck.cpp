@@ -21,6 +21,7 @@
 #include "llvm/Support/MemoryBuffer.h"
 #include "llvm/Support/Process.h"
 #include "llvm/Support/SourceMgr.h"
+#include "llvm/Support/TimeProfiler.h"
 #include "llvm/Support/WithColor.h"
 #include "llvm/Support/raw_ostream.h"
 #include <cmath>
@@ -111,6 +112,22 @@ static cl::opt<FileCheckMatcherMode> MatcherMode(
         clEnumValN(FileCheckMatcherMode::GPU, "gpu", "GPU accelerated matcher"),
         clEnumValN(FileCheckMatcherMode::FMV, "fmv", "Function Multiversioning matcher")
     ));
+
+static cl::opt<bool> EnableSIMDLineSplitting(
+    "enable-simd-line-splitting", cl::init(false),
+    cl::desc("Enable SIMD-accelerated line indexing."));
+
+static cl::opt<bool> EnableFingerprinting(
+    "enable-fingerprinting", cl::init(false),
+    cl::desc("Enable line/block fingerprinting to skip non-matching regions."));
+
+static cl::opt<bool> EnableParallelMatching(
+    "enable-parallel-matching", cl::init(false),
+    cl::desc("Enable distributing matching work across threads."));
+
+static cl::opt<bool> EnableTimeTrace(
+    "ftime-trace", cl::init(false),
+    cl::desc("Enable time trace profiler."));
 
 static cl::opt<bool> Verbose(
     "v",
@@ -746,6 +763,9 @@ int main(int argc, char **argv) {
   cl::ParseCommandLineOptions(argc, argv, /*Overview*/ "", /*Errs*/ nullptr,
                               /*VFS*/ nullptr, "FILECHECK_OPTS");
 
+  if (EnableTimeTrace)
+    timeTraceProfilerInitialize(500, "FileCheck");
+
   // Select -dump-input* values.  The -help documentation specifies the default
   // value and which value to choose if an option is specified multiple times.
   // In the latter case, the general rule of thumb is to choose the value that
@@ -807,6 +827,9 @@ int main(int argc, char **argv) {
   Req.MatchFullLines = MatchFullLines;
   Req.IgnoreCase = IgnoreCase;
   Req.MatcherMode = MatcherMode;
+  Req.EnableSIMDLineSplitting = EnableSIMDLineSplitting;
+  Req.EnableFingerprinting = EnableFingerprinting;
+  Req.EnableParallelMatching = EnableParallelMatching;
 
   if (VerboseVerbose)
     Req.Verbose = true;
@@ -883,6 +906,15 @@ int main(int argc, char **argv) {
                           Annotations, LabelWidth);
     DumpAnnotatedInput(errs(), Req, DumpInputFilter, DumpInputContext,
                        InputFileText, Annotations, LabelWidth);
+  }
+
+  if (EnableTimeTrace) {
+    if (auto E = timeTraceProfilerWrite("filecheck.json", "filecheck.json")) {
+      handleAllErrors(std::move(E), [&](const ErrorInfoBase &EIB) {
+        errs() << "Failed to write time trace: " << EIB.message() << "\n";
+      });
+    }
+    timeTraceProfilerCleanup();
   }
 
   return ExitCode;
