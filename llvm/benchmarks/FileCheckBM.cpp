@@ -131,8 +131,10 @@ static void BM_FingerprintShines(benchmark::State &state) {
       MemoryBuffer::getMemBuffer(Haystack, "InputFile"), SMLoc());
   StringRef HaystackRef = SM.getMemoryBuffer(HaystackBufferID)->getBuffer();
 
+  std::vector<FileCheckDiag> Diags;
   for (auto _ : state) {
-    FC.checkInput(SM, HaystackRef);
+    FC.checkInput(SM, HaystackRef, &Diags);
+    Diags.clear();
   }
 }
 
@@ -140,6 +142,8 @@ static void BM_FingerprintShines(benchmark::State &state) {
 static void BM_BaselineStandsOut(benchmark::State &state) {
   FileCheckRequest Req;
   Req.MatcherMode = static_cast<FileCheckMatcherMode>(state.range(0));
+  Req.EnableSIMDLineSplitting = state.range(1) != 0;
+  Req.EnableFingerprinting = state.range(2) != 0;
   
   size_t HaystackSize = 100000;
   // Long needle
@@ -167,8 +171,10 @@ static void BM_BaselineStandsOut(benchmark::State &state) {
       MemoryBuffer::getMemBuffer(Haystack, "InputFile"), SMLoc());
   StringRef HaystackRef = SM.getMemoryBuffer(HaystackBufferID)->getBuffer();
 
+  std::vector<FileCheckDiag> Diags;
   for (auto _ : state) {
-    FC.checkInput(SM, HaystackRef);
+    FC.checkInput(SM, HaystackRef, &Diags);
+    Diags.clear();
   }
 }
 
@@ -177,15 +183,19 @@ BENCHMARK(BM_FileCheckFull)
   ->Args({1, 0, 0, 0, 1, 100000})
   ->Args({0, 0, 0, 0, 500, 100000})
   ->Args({1, 0, 0, 0, 500, 100000})
+  ->Args({1, 1, 1, 0, 500, 100000}) // SIMD + Fingerprinting
   ->Args({0, 0, 0, 1, 500, 100000})
-  ->Args({1, 0, 0, 1, 500, 100000});
+  ->Args({1, 0, 0, 1, 500, 100000})
+  ->Args({1, 1, 1, 1, 500, 100000}); // SIMD + Fingerprinting
 
 BENCHMARK(BM_FingerprintShines)
+  ->Args({0, 0, 0}) // Standard
   ->Args({1, 0, 0}) // SIMD only
   ->Args({1, 1, 1}); // SIMD + Fingerprinting
 
 BENCHMARK(BM_BaselineStandsOut)
-  ->Args({0}) // Standard (Boyer-Moore should shine)
-  ->Args({1}); // SIMD (should suffer from false positives)
+  ->Args({0, 0, 0}) // Standard
+  ->Args({1, 0, 0}) // SIMD only
+  ->Args({1, 1, 1}); // SIMD + Fingerprinting
 
 BENCHMARK_MAIN();

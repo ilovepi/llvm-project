@@ -2849,28 +2849,16 @@ std::vector<uint64_t> buildFingerprints(StringRef Buffer, const std::vector<size
 bool FileCheck::checkInput(SourceMgr &SM, StringRef Buffer,
                            std::vector<FileCheckDiag> *Diags) {
   TimeTraceScope TTS("checkInput");
-  if (Req.Verbose) {
-    errs() << "FileCheck MatcherMode: ";
-    switch (Req.MatcherMode) {
-    case FileCheckMatcherMode::Standard: errs() << "Standard\n"; break;
-    case FileCheckMatcherMode::SIMD: errs() << "SIMD\n"; break;
-    case FileCheckMatcherMode::GPU: errs() << "GPU\n"; break;
-    case FileCheckMatcherMode::FMV: errs() << "FMV\n"; break;
-    }
-  }
+
 
   std::vector<size_t> LineIndices;
   if (Req.EnableSIMDLineSplitting || Req.EnableFingerprinting) {
     LineIndices = buildLineIndexSIMD(Buffer);
-    if (Req.Verbose)
-      errs() << "Built line index with " << LineIndices.size() << " lines.\n";
   }
 
   std::vector<uint64_t> Fingerprints;
   if (Req.EnableFingerprinting) {
     Fingerprints = buildFingerprints(Buffer, LineIndices);
-    if (Req.Verbose)
-      errs() << "Built fingerprints for " << Fingerprints.size() << " lines.\n";
   }
 
   bool ChecksFailed = false;
@@ -2896,6 +2884,7 @@ bool FileCheck::checkInput(SourceMgr &SM, StringRef Buffer,
       size_t MatchLabelLen = 0;
       size_t MatchLabelPos =
           CheckLabelStr.Check(SM, Buffer, true, MatchLabelLen, Req, Diags);
+
       if (MatchLabelPos == StringRef::npos)
         // Immediately bail if CHECK-LABEL fails, nothing else we can do.
         return false;
@@ -2913,6 +2902,8 @@ bool FileCheck::checkInput(SourceMgr &SM, StringRef Buffer,
     if (i != 0 && Req.EnableVarScope)
       PatternContext->clearLocalVars();
 
+    size_t RegionStart = CurrentRegionOffset;
+    size_t RegionEnd = CurrentRegionOffset + CheckRegion.size();
     for (; i != j; ++i) {
       const FileCheckString &CheckStr = CheckStrings[i];
 
@@ -2923,10 +2914,9 @@ bool FileCheck::checkInput(SourceMgr &SM, StringRef Buffer,
         if (!FixedStr.empty()) {
           uint64_t NeedleFP = computeFingerprint(FixedStr);
           
-          size_t RegionStart = CurrentRegionOffset;
-          size_t RegionEnd = CurrentRegionOffset + CheckRegion.size();
+
           
-          while (CurrentLineIdx < LineIndices.size() && LineIndices[CurrentLineIdx] < RegionStart)
+          while (CurrentLineIdx + 1 < LineIndices.size() && LineIndices[CurrentLineIdx + 1] <= RegionStart)
             CurrentLineIdx++;
             
           bool FoundPotentialMatch = false;
