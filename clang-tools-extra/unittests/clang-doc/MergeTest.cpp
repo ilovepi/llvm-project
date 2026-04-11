@@ -95,6 +95,96 @@ TEST_F(MergeTest, mergeNamespaceInfos) {
   CheckNamespaceInfo(InfoAsNamespace(&Expected), InfoAsNamespace(Actual.get()));
 }
 
+TEST_F(MergeTest, mergeSingleNamespaceInfo) {
+  NamespaceInfo One;
+  One.Name = "Namespace";
+  Reference Ns1[] = {Reference(EmptySID, "A", InfoType::IT_namespace)};
+  One.Namespace = llvm::ArrayRef(Ns1);
+
+  Reference RA(NonEmptySID, "ChildNamespace", InfoType::IT_namespace);
+  One.Children.Namespaces.push_back(RA);
+  Reference RC1(NonEmptySID, "ChildStruct", InfoType::IT_record);
+  One.Children.Records.push_back(RC1);
+
+  FunctionInfo F1;
+  F1.Name = "OneFunction";
+  F1.USR = NonEmptySID;
+  One.Children.Functions.push_back(F1);
+
+  EnumInfo E1;
+  E1.Name = "OneEnum";
+  E1.USR = NonEmptySID;
+  One.Children.Enums.push_back(E1);
+
+  NamespaceInfo Two;
+  Two.Name = "Namespace";
+  Reference Ns2[] = {Reference(EmptySID, "A", InfoType::IT_namespace)};
+  Two.Namespace = llvm::ArrayRef(Ns2);
+
+  Reference RB(EmptySID, "OtherChildNamespace", InfoType::IT_namespace);
+  Two.Children.Namespaces.push_back(RB);
+  Reference RC2(EmptySID, "OtherChildStruct", InfoType::IT_record);
+  Two.Children.Records.push_back(RC2);
+
+  FunctionInfo F2;
+  F2.Name = "TwoFunction";
+  Two.Children.Functions.push_back(F2);
+
+  EnumInfo E2;
+  E2.Name = "TwoEnum";
+  Two.Children.Enums.push_back(E2);
+
+  NamespaceInfo Expected;
+  Expected.Name = "Namespace";
+  Reference NsExpected[] = {Reference(EmptySID, "A", InfoType::IT_namespace)};
+  Expected.Namespace = llvm::ArrayRef(NsExpected);
+
+  Reference RC(NonEmptySID, "ChildNamespace", InfoType::IT_namespace);
+  Expected.Children.Namespaces.push_back(RC);
+  Reference RCE1(NonEmptySID, "ChildStruct", InfoType::IT_record);
+  Expected.Children.Records.push_back(RCE1);
+  Reference RD(EmptySID, "OtherChildNamespace", InfoType::IT_namespace);
+  Expected.Children.Namespaces.push_back(RD);
+  Reference RCE2(EmptySID, "OtherChildStruct", InfoType::IT_record);
+  Expected.Children.Records.push_back(RCE2);
+
+  FunctionInfo FE1;
+  FE1.Name = "OneFunction";
+  FE1.USR = NonEmptySID;
+  Expected.Children.Functions.push_back(FE1);
+
+  FunctionInfo FE2;
+  FE2.Name = "TwoFunction";
+  Expected.Children.Functions.push_back(FE2);
+
+  EnumInfo EE1;
+  EE1.Name = "OneEnum";
+  EE1.USR = NonEmptySID;
+  Expected.Children.Enums.push_back(EE1);
+
+  EnumInfo EE2;
+  EE2.Name = "TwoEnum";
+  Expected.Children.Enums.push_back(EE2);
+  NamespaceInfo ReducedObj;
+  ReducedObj.IT = InfoType::IT_namespace;
+  doc::OwnedPtr<doc::Info> Reduced = &ReducedObj;
+  
+  Info* PtrOne = &One;
+  auto Err1 = mergeSingleInfo(Reduced, std::move(PtrOne), doc::PersistentArena);
+  assert(!Err1);
+  
+  Info* PtrTwo = &Two;
+  auto Err2 = mergeSingleInfo(Reduced, std::move(PtrTwo), doc::PersistentArena);
+  assert(!Err2);
+  
+  CheckNamespaceInfo(InfoAsNamespace(&Expected), static_cast<NamespaceInfo*>(getPtr(Reduced)));
+  
+  auto* RedNS = static_cast<NamespaceInfo*>(getPtr(Reduced));
+  // Check that children functions are NOT the same instances as in One or Two
+  ASSERT_NE(&RedNS->Children.Functions.front(), &F1);
+  ASSERT_NE(&RedNS->Children.Functions.back(), &F2);
+}
+
 TEST_F(MergeTest, mergeRecordInfos) {
   RecordInfo One;
   One.Name = "r";

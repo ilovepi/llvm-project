@@ -407,6 +407,7 @@ bool Reference::mergeable(const Reference &Other) {
 
 void Reference::merge(Reference &&Other) {
   assert(mergeable(Other));
+  assert(RefType != InfoType::IT_default && "Merging reference with default InfoType");
   if (Name.empty())
     Name = Other.Name;
   if (Path.empty())
@@ -454,6 +455,7 @@ Info::Info(const Info &Other, llvm::BumpPtrAllocator &Arena)
 
 void Info::mergeBase(Info &&Other) {
   assert(mergeable(Other));
+  assert(IT != InfoType::IT_default && "Merging info with default InfoType");
   if (USR == EmptySID)
     USR = Other.USR;
   if (Name == "")
