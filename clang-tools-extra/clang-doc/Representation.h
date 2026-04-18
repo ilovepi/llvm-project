@@ -87,7 +87,7 @@ llvm::ArrayRef<T> allocateArray(llvm::ArrayRef<T> V,
   if (V.empty())
     return llvm::ArrayRef<T>();
   T *Allocated = static_cast<T *>(Alloc.Allocate<T>(V.size()));
-  std::uninitialized_copy(V.begin(), V.end(), Allocated);
+  std::uninitialized_move(V.begin(), V.end(), Allocated);
   return llvm::ArrayRef<T>(Allocated, V.size());
 }
 
