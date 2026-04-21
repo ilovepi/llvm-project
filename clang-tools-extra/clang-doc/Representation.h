@@ -611,16 +611,15 @@ struct RecordInfo : public SymbolInfo {
   std::optional<TemplateInfo> Template;
 
   llvm::ArrayRef<MemberTypeInfo> Members =
-      {};                                 // List of info about record members.
-  llvm::ArrayRef<Reference> Parents = {}; // List of base/parent records
-                                          // (does not include virtual
-                                          // parents).
+      {}; // List of info about record members.
+  llvm::ArrayRef<Reference> Parents =
+      {}; // List of base/parent records (does not include virtual parents).
   llvm::ArrayRef<Reference> VirtualParents =
       {}; // List of virtual base/parent records.
 
   llvm::ArrayRef<BaseRecordInfo> Bases =
-      {}; // List of base/parent records; this includes
-          // inherited methods and attributes
+      {}; // List of base/parent records; this includes inherited methods and
+          // attributes
 
   llvm::ArrayRef<FriendInfo> Friends = {};
 
