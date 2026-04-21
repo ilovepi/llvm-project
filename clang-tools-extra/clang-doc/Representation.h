@@ -524,8 +524,7 @@ struct SymbolInfo : public Info {
     // generated in the order of the source code.
     // If the declaration location is the same, or not present
     // we sort by defined location otherwise fallback to the extracted name
-    if (!Loc.empty() && !Other.Loc.empty() &&
-        Loc.front() != Other.Loc.front())
+    if (!Loc.empty() && !Other.Loc.empty() && Loc.front() != Other.Loc.front())
       return Loc.front() < Other.Loc.front();
 
     if (DefLoc && Other.DefLoc && *DefLoc != *Other.DefLoc)
