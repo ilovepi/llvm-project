@@ -203,18 +203,18 @@ struct CommentInfo : public llvm::ilist_node<CommentInfo> {
   // the vector.
   bool operator<(const CommentInfo &Other) const;
 
-  llvm::ArrayRef<CommentInfo>
-      Children;              // List of child comments for this CommentInfo.
-  StringRef Direction;       // Parameter direction (for (T)ParamCommand).
-  StringRef Name;            // Name of the comment (for Verbatim and HTML).
-  StringRef ParamName;       // Parameter name (for (T)ParamCommand).
-  StringRef CloseName;       // Closing tag name (for VerbatimBlock).
-  StringRef Text;            // Text of the comment.
-  llvm::ArrayRef<StringRef> AttrKeys; // List of attribute keys (for HTML).
-  llvm::ArrayRef<StringRef>
-      AttrValues; // List of attribute values for each key (for HTML).
-  llvm::ArrayRef<StringRef>
-      Args; // List of arguments to commands (for InlineCommand).
+  llvm::ArrayRef<CommentInfo> Children =
+      {};                   // List of child comments for this CommentInfo.
+  StringRef Direction = {}; // Parameter direction (for (T)ParamCommand).
+  StringRef Name = {};      // Name of the comment (for Verbatim and HTML).
+  StringRef ParamName = {}; // Parameter name (for (T)ParamCommand).
+  StringRef CloseName = {}; // Closing tag name (for VerbatimBlock).
+  StringRef Text = {};      // Text of the comment.
+  llvm::ArrayRef<StringRef> AttrKeys = {}; // List of attribute keys (for HTML).
+  llvm::ArrayRef<StringRef> AttrValues =
+      {}; // List of attribute values for each key (for HTML).
+  llvm::ArrayRef<StringRef> Args =
+      {}; // List of arguments to commands (for InlineCommand).
   CommentKind Kind = CommentKind::
       CK_Unknown; // Kind of comment (FullComment, ParagraphComment,
                   // TextComment, InlineCommandComment, HTMLStartTagComment,
@@ -271,17 +271,17 @@ struct Reference : public llvm::ilist_node<Reference> {
   // Name of type (possibly unresolved). Not including namespaces or template
   // parameters (so for a std::vector<int> this would be "vector"). See also
   // QualName.
-  StringRef Name;
+  StringRef Name = {};
 
   // Full qualified name of this type, including namespaces and template
   // parameter (for example this could be "std::vector<int>"). Contrast to
   // Name.
-  StringRef QualName;
+  StringRef QualName = {};
 
   // Path of directory where the clang-doc generated file will be saved
   // (possibly unresolved)
-  StringRef Path;
-  StringRef DocumentationFileName;
+  StringRef Path = {};
+  StringRef DocumentationFileName = {};
 };
 
 // A Context is a reference that holds a relative path from a certain Info's
@@ -291,7 +291,7 @@ struct Context : public Reference {
           StringRef Path, StringRef DocumentationFileName)
       : Reference(USR, Name, IT, QualName, Path, DocumentationFileName) {}
   explicit Context(const Info &I);
-  StringRef RelativePath;
+  StringRef RelativePath = {};
 };
 
 // Holds the children of a record or namespace.
@@ -345,7 +345,7 @@ struct TemplateParamInfo {
   // The literal contents of the code for that specifies this template parameter
   // for this declaration. Typical values will be "class T" and
   // "typename T = int".
-  StringRef Contents;
+  StringRef Contents = {};
 };
 
 struct TemplateSpecializationInfo {
@@ -353,7 +353,7 @@ struct TemplateSpecializationInfo {
   SymbolID SpecializationOf;
 
   // Template parameters applying to the specialized record/function.
-  llvm::ArrayRef<TemplateParamInfo> Params;
+  llvm::ArrayRef<TemplateParamInfo> Params = {};
 };
 
 struct ConstraintInfo {
@@ -362,18 +362,18 @@ struct ConstraintInfo {
       : ConceptRef(USR, Name, InfoType::IT_concept) {}
   Reference ConceptRef;
 
-  StringRef ConstraintExpr;
+  StringRef ConstraintExpr = {};
 };
 
 // Records the template information for a struct or function that is a template
 // or an explicit template specialization.
 struct TemplateInfo {
   // May be empty for non-partial specializations.
-  llvm::ArrayRef<TemplateParamInfo> Params;
+  llvm::ArrayRef<TemplateParamInfo> Params = {};
 
   // Set when this is a specialization of another record/function.
   std::optional<TemplateSpecializationInfo> Specialization;
-  llvm::ArrayRef<ConstraintInfo> Constraints;
+  llvm::ArrayRef<ConstraintInfo> Constraints = {};
 };
 
 // Info for field types.
@@ -389,11 +389,11 @@ struct FieldTypeInfo : public TypeInfo {
            std::tie(Other.Type, Other.Name, Other.DefaultValue);
   }
 
-  StringRef Name; // Name associated with this info.
+  StringRef Name = {}; // Name associated with this info.
 
   // When used for function parameters, contains the string representing the
   // expression of the default value, if any.
-  StringRef DefaultValue;
+  StringRef DefaultValue = {};
 };
 
 // Info for member types.
@@ -443,7 +443,7 @@ struct Location : public llvm::ilist_node<Location> {
            std::tie(Other.StartLineNumber, Other.EndLineNumber, Other.Filename);
   }
 
-  StringRef Filename;
+  StringRef Filename = {};
   int StartLineNumber = 0;
   int EndLineNumber = 0;
   bool IsFileInRootDir = false;
@@ -472,15 +472,15 @@ struct Info {
   StringRef getFileBaseName() const;
 
   // Path of directory where the clang-doc generated file will be saved.
-  StringRef Path;
+  StringRef Path = {};
 
   // Unqualified name of the decl.
-  StringRef Name;
+  StringRef Name = {};
 
   // The name used for the file that this info is documented in.
   // In the JSON generator, infos are documented in files with mangled names.
   // Thus, we keep track of the physical filename for linking purposes.
-  StringRef DocumentationFileName;
+  StringRef DocumentationFileName = {};
 
   // List of parent namespaces for this decl.
   llvm::ArrayRef<Reference> Namespace;
@@ -535,7 +535,7 @@ struct SymbolInfo : public Info {
 
   std::optional<Location> DefLoc;     // Location where this decl is defined.
   OwningVec<Location> Loc;            // Locations where this decl is declared.
-  StringRef MangledName;
+  StringRef MangledName = {};
   bool IsStatic = false;
 };
 
@@ -551,7 +551,7 @@ struct FriendInfo : public SymbolInfo, public llvm::ilist_node<FriendInfo> {
   Reference Ref;
   std::optional<TemplateInfo> Template;
   std::optional<TypeInfo> ReturnType;
-  llvm::ArrayRef<FieldTypeInfo> Params;
+  llvm::ArrayRef<FieldTypeInfo> Params = {};
   bool IsClass = false;
 };
 
@@ -574,8 +574,8 @@ struct FunctionInfo : public SymbolInfo, public llvm::ilist_node<FunctionInfo> {
 
   Reference Parent;
   TypeInfo ReturnType;
-  llvm::ArrayRef<FieldTypeInfo> Params;
-  StringRef Prototype;
+  llvm::ArrayRef<FieldTypeInfo> Params = {};
+  StringRef Prototype = {};
 
   // When present, this function is a template or specialization.
   std::optional<TemplateInfo> Template;
@@ -610,18 +610,19 @@ struct RecordInfo : public SymbolInfo {
   // When present, this record is a template or specialization.
   std::optional<TemplateInfo> Template;
 
-  llvm::ArrayRef<MemberTypeInfo> Members; // List of info about record members.
-  llvm::ArrayRef<Reference> Parents;      // List of base/parent records
+  llvm::ArrayRef<MemberTypeInfo> Members =
+      {};                                 // List of info about record members.
+  llvm::ArrayRef<Reference> Parents = {}; // List of base/parent records
                                           // (does not include virtual
                                           // parents).
-  llvm::ArrayRef<Reference>
-      VirtualParents; // List of virtual base/parent records.
+  llvm::ArrayRef<Reference> VirtualParents =
+      {}; // List of virtual base/parent records.
 
-  llvm::ArrayRef<BaseRecordInfo>
-      Bases; // List of base/parent records; this includes
-             // inherited methods and attributes
+  llvm::ArrayRef<BaseRecordInfo> Bases =
+      {}; // List of base/parent records; this includes
+          // inherited methods and attributes
 
-  llvm::ArrayRef<FriendInfo> Friends;
+  llvm::ArrayRef<FriendInfo> Friends = {};
 
   ScopeChildren Children;
 };
@@ -639,7 +640,7 @@ struct TypedefInfo : public SymbolInfo, public llvm::ilist_node<TypedefInfo> {
   std::optional<TemplateInfo> Template;
 
   // Underlying type declaration
-  StringRef TypeDeclaration;
+  StringRef TypeDeclaration = {};
 
   // Indicates if this is a new C++ "using"-style typedef:
   //   using MyVector = std::vector<int>
@@ -675,16 +676,16 @@ struct EnumValueInfo {
            std::tie(Other.Name, Other.Value, Other.ValueExpr);
   }
 
-  StringRef Name;
+  StringRef Name = {};
 
   // The computed value of the enumeration constant. This could be the result of
   // evaluating the ValueExpr, or it could be automatically generated according
   // to C rules.
-  StringRef Value;
+  StringRef Value = {};
 
   // Stores the user-supplied initialization expression for this enumeration
   // constant. This will be empty for implicit enumeration values.
-  StringRef ValueExpr;
+  StringRef ValueExpr = {};
 
   /// Comment description of this field.
   OwningVec<CommentInfo> Description;
@@ -706,7 +707,7 @@ struct EnumInfo : public SymbolInfo, public llvm::ilist_node<EnumInfo> {
   // this will be "short".
   std::optional<TypeInfo> BaseType;
 
-  llvm::ArrayRef<EnumValueInfo> Members; // List of enum members.
+  llvm::ArrayRef<EnumValueInfo> Members = {}; // List of enum members.
 };
 
 struct ConceptInfo : public SymbolInfo, public llvm::ilist_node<ConceptInfo> {
@@ -715,9 +716,9 @@ struct ConceptInfo : public SymbolInfo, public llvm::ilist_node<ConceptInfo> {
 
   void merge(ConceptInfo &&I);
 
-  bool IsType;
+  bool IsType = false;
   TemplateInfo Template;
-  StringRef ConstraintExpression;
+  StringRef ConstraintExpression = {};
 };
 
 struct Index : public Reference {
