@@ -197,6 +197,28 @@ bool CommentInfo::operator<(const CommentInfo &Other) const {
   return false;
 }
 
+CommentInfo::CommentInfo(const CommentInfo &Other,
+                         llvm::BumpPtrAllocator &Arena) {
+  Kind = Other.Kind;
+  Direction = Other.Direction;
+  Name = Other.Name;
+  ParamName = Other.ParamName;
+  CloseName = Other.CloseName;
+  SelfClosing = Other.SelfClosing;
+  Explicit = Other.Explicit;
+  Text = Other.Text;
+  AttrKeys = allocateArray(Other.AttrKeys, Arena);
+  AttrValues = allocateArray(Other.AttrValues, Arena);
+  Args = allocateArray(Other.Args, Arena);
+  if (!Other.Children.empty()) {
+    CommentInfo *NewArray = Arena.Allocate<CommentInfo>(Other.Children.size());
+    for (size_t Idx = 0; Idx < Other.Children.size(); ++Idx) {
+      new (NewArray + Idx) CommentInfo(Other.Children[Idx], Arena);
+    }
+    Children = llvm::ArrayRef<CommentInfo>(NewArray, Other.Children.size());
+  }
+}
+
 static llvm::SmallString<64>
 calculateRelativeFilePath(const InfoType &Type, const StringRef &Path,
                           const StringRef &Name, const StringRef &CurrentPath) {

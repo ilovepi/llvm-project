@@ -91,6 +91,18 @@ llvm::ArrayRef<T> allocateArray(llvm::ArrayRef<T> V,
   return llvm::ArrayRef<T>(Allocated, V.size());
 }
 
+template <typename T>
+llvm::ArrayRef<T> deepCopyArray(llvm::ArrayRef<T> V,
+                                llvm::BumpPtrAllocator &Alloc) {
+  if (V.empty())
+    return llvm::ArrayRef<T>();
+  T *Allocated = static_cast<T *>(Alloc.Allocate<T>(V.size()));
+  for (size_t Idx = 0; Idx < V.size(); ++Idx) {
+    new (Allocated + Idx) T(V[Idx], Alloc);
+  }
+  return llvm::ArrayRef<T>(Allocated, V.size());
+}
+
 // An abstraction for owned pointers. Initially mapped to OwnedPtr,
 // to be eventually transitioned to bare pointers in an arena.
 template <typename T> using OwnedPtr = T *;
@@ -180,6 +192,7 @@ struct CommentInfo : public llvm::ilist_node<CommentInfo> {
   CommentInfo() = default;
   CommentInfo(const CommentInfo &Other) = default;
   CommentInfo &operator=(const CommentInfo &Other) = default;
+  CommentInfo(const CommentInfo &Other, llvm::BumpPtrAllocator &Arena);
   CommentInfo(CommentInfo &&Other) = default;
   CommentInfo &operator=(CommentInfo &&Other) = default;
 
