@@ -315,11 +315,11 @@ void SymbolInfo::merge(SymbolInfo &&Other) {
   assert(mergeable(Other));
   if (!DefLoc)
     DefLoc = std::move(Other.DefLoc);
+  if (MangledName.empty())
+    MangledName = std::move(Other.MangledName);
   // Unconditionally extend the list of locations, since we want all of them.
   mergeUnkeyed(Loc, std::move(Other.Loc));
   mergeBase(std::move(Other));
-  if (MangledName.empty())
-    MangledName = std::move(Other.MangledName);
 }
 
 NamespaceInfo::NamespaceInfo(SymbolID USR, StringRef Name, StringRef Path)
@@ -361,9 +361,9 @@ void RecordInfo::merge(RecordInfo &&Other) {
   reduceChildren(Children.Functions, std::move(Other.Children.Functions));
   reduceChildren(Children.Enums, std::move(Other.Children.Enums));
   reduceChildren(Children.Typedefs, std::move(Other.Children.Typedefs));
-  SymbolInfo::merge(std::move(Other));
   if (!Template)
     Template = Other.Template;
+  SymbolInfo::merge(std::move(Other));
 }
 
 void EnumInfo::merge(EnumInfo &&Other) {
@@ -387,9 +387,9 @@ void FunctionInfo::merge(FunctionInfo &&Other) {
     Parent = std::move(Other.Parent);
   if (Params.empty())
     Params = std::move(Other.Params);
-  SymbolInfo::merge(std::move(Other));
   if (!Template)
     Template = Other.Template;
+  SymbolInfo::merge(std::move(Other));
 }
 
 void TypedefInfo::merge(TypedefInfo &&Other) {
