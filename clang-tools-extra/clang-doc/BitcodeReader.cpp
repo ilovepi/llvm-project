@@ -12,6 +12,7 @@
 #include "llvm/Support/TimeProfiler.h"
 #include "llvm/Support/raw_ostream.h"
 #include <optional>
+#include <utility>
 
 namespace clang {
 namespace doc {
@@ -1080,7 +1081,7 @@ static void addChild(Target I, Child &&R) {
     if constexpr (has_children<Pointee>::value) {
       using BareChild = std::remove_cv_t<std::remove_reference_t<Child>>;
       if constexpr (is_valid_child<BareChild>::value) {
-        auto *Node = allocatePtr<BareChild>(std::move(R));
+        auto *Node = allocatePtr<BareChild>(std::forward<Child>(R));
         getList(I->Children, Node).push_back(*Node);
         return;
       }
