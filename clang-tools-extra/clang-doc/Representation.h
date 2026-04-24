@@ -190,8 +190,8 @@ llvm::StringRef commentKindToString(CommentKind Kind);
 struct CommentInfo;
 
 struct CommentInfoNode : public llvm::ilist_node<CommentInfoNode> {
-  CommentInfoNode(CommentInfo* P) : Ptr(P) {}
-  CommentInfo* Ptr;
+  CommentInfoNode(CommentInfo *P) : Ptr(P) {}
+  CommentInfo *Ptr;
 
   bool operator==(const CommentInfoNode &Other) const;
 };

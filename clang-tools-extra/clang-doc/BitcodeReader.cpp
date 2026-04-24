@@ -542,7 +542,7 @@ llvm::Error ClangDocBitcodeReader::readBlock(unsigned ID, CommentInfo *I) {
       [&]() -> llvm::Error {
         if (!LocalChildren.empty())
           I->Children =
-              deepCopyArray<CommentInfo>(LocalChildren, TransientArena);
+              allocateArray<CommentInfo>(LocalChildren, TransientArena);
         if (!AttrKeys.empty())
           I->AttrKeys = allocateArray(AttrKeys, TransientArena);
         if (!AttrValues.empty())
