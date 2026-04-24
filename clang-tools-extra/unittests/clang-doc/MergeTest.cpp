@@ -221,7 +221,8 @@ TEST_F(MergeTest, mergeFunctionInfos) {
   CommentInfo OnePara[] = {
       CommentInfo(CommentKind::CK_ParagraphComment, OneText)};
   CommentInfo TopOne(CommentKind::CK_FullComment, OnePara);
-  One.Description.push_back(TopOne);
+  CommentInfoNode TopOneNode(&TopOne);
+  One.Description.push_back(TopOneNode);
 
   FunctionInfo Two;
   Two.Name = "f";
@@ -241,7 +242,8 @@ TEST_F(MergeTest, mergeFunctionInfos) {
   CommentInfo TwoPara[] = {
       CommentInfo(CommentKind::CK_ParagraphComment, TwoText)};
   CommentInfo TopTwo(CommentKind::CK_FullComment, TwoPara);
-  Two.Description.push_back(TopTwo);
+  CommentInfoNode TopTwoNode(&TopTwo);
+  Two.Description.push_back(TopTwoNode);
 
   OwningPtrVec<Info> Infos;
   Infos.push_back(&One);
@@ -268,7 +270,8 @@ TEST_F(MergeTest, mergeFunctionInfos) {
   CommentInfo ExpectedPara[] = {
       CommentInfo(CommentKind::CK_ParagraphComment, ExpectedText)};
   CommentInfo TopE(CommentKind::CK_FullComment, ExpectedPara);
-  Expected.Description.push_back(TopE);
+  CommentInfoNode TopENode(&TopE);
+  Expected.Description.push_back(TopENode);
 
   auto Actual = mergeInfos(Infos);
   assert(Actual);

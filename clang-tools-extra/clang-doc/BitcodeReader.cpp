@@ -886,7 +886,8 @@ template <typename T> static llvm::Expected<CommentInfo *> getCommentInfo(T I) {
     using Pointee = std::remove_pointer_t<T>;
     if constexpr (has_description<Pointee>::value) {
       auto *NewComment = allocatePtr<CommentInfo>();
-      I->Description.push_back(*NewComment);
+      auto *Node = allocatePtr<CommentInfoNode>(NewComment);
+      I->Description.push_back(*Node);
       return NewComment;
     }
   }

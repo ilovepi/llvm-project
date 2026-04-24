@@ -81,9 +81,9 @@ class TableCommentWriter {
 public:
   explicit TableCommentWriter(llvm::raw_ostream &OS) : OS(OS) {}
 
-  void write(const OwningVec<CommentInfo> &Comments) {
+  void write(const OwningVec<CommentInfoNode> &Comments) {
     for (const auto &C : Comments)
-      writeTableSafeComment(C);
+      writeTableSafeComment(*C.Ptr);
 
     if (!Started)
       OS << "--";
@@ -271,7 +271,7 @@ static void genMarkdown(const ClangDocContext &CDCtx, const EnumInfo &I,
   maybeWriteSourceFileRef(OS, CDCtx, I.DefLoc);
 
   for (const auto &C : I.Description)
-    writeDescription(C, OS);
+    writeDescription(*C.Ptr, OS);
 }
 
 static void genMarkdown(const ClangDocContext &CDCtx, const FunctionInfo &I,
@@ -296,7 +296,7 @@ static void genMarkdown(const ClangDocContext &CDCtx, const FunctionInfo &I,
   maybeWriteSourceFileRef(OS, CDCtx, I.DefLoc);
 
   for (const auto &C : I.Description)
-    writeDescription(C, OS);
+    writeDescription(*C.Ptr, OS);
 }
 
 static void genMarkdown(const ClangDocContext &CDCtx, const NamespaceInfo &I,
@@ -309,7 +309,7 @@ static void genMarkdown(const ClangDocContext &CDCtx, const NamespaceInfo &I,
 
   if (!I.Description.empty()) {
     for (const auto &C : I.Description)
-      writeDescription(C, OS);
+      writeDescription(*C.Ptr, OS);
     writeNewLine(OS);
   }
 
@@ -357,7 +357,7 @@ static void genMarkdown(const ClangDocContext &CDCtx, const RecordInfo &I,
 
   if (!I.Description.empty()) {
     for (const auto &C : I.Description)
-      writeDescription(C, OS);
+      writeDescription(*C.Ptr, OS);
     writeNewLine(OS);
   }
 

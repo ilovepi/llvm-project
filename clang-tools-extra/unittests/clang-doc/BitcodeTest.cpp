@@ -112,7 +112,8 @@ TEST_F(BitcodeTest, emitRecordInfoBitcode) {
   CommentInfo TopCommentChildren[] = {
       CommentInfo(CommentKind::CK_ParagraphComment, BriefChildren)};
   CommentInfo TopComment(CommentKind::CK_FullComment, TopCommentChildren);
-  BM.Description.push_back(TopComment);
+  CommentInfoNode TopCommentNode(&TopComment);
+  BM.Description.push_back(TopCommentNode);
   MemberTypeInfo BMem[] = {std::move(BM)};
   B.Members = llvm::ArrayRef(BMem);
   BaseRecordInfo Bases[] = {std::move(B)};
@@ -226,7 +227,8 @@ TEST_F(BitcodeTest, emitTypedefInfoBitcode) {
       CommentInfo(CommentKind::CK_ParagraphComment, BlankChildren)};
   CommentInfo Top(CommentKind::CK_FullComment, TopChildren);
 
-  I.Description.push_back(Top);
+  CommentInfoNode TopNode(&Top);
+  I.Description.push_back(TopNode);
 
   std::string WriteResult = writeInfo(&I, this->Diags);
   EXPECT_TRUE(WriteResult.size() > 0);
@@ -324,7 +326,8 @@ TEST_F(BitcodeTest, emitInfoWithCommentBitcode) {
                                Verbatim,  ParamOut, ParamIn,  Return};
   CommentInfo Top(CommentKind::CK_FullComment, TopChildren);
 
-  F.Description.push_back(Top);
+  CommentInfoNode TopNode(&Top);
+  F.Description.push_back(TopNode);
 
   std::string WriteResult = writeInfo(&F, this->Diags);
   EXPECT_TRUE(WriteResult.size() > 0);

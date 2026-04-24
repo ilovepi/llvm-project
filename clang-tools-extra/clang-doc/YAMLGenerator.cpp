@@ -498,6 +498,13 @@ template <> struct MappingTraits<TemplateInfo> {
   }
 };
 
+template <> struct MappingTraits<clang::doc::CommentInfoNode> {
+  static void mapping(IO &IO, clang::doc::CommentInfoNode &N) {
+    if (N.Ptr)
+      commentInfoMapping(IO, *N.Ptr);
+  }
+};
+
 template <> struct MappingTraits<CommentInfo> {
   static void mapping(IO &IO, CommentInfo &I) { commentInfoMapping(IO, I); }
 };

@@ -187,8 +187,17 @@ enum OutputFormatTy { md, yaml, html, json, md_mustache };
 CommentKind stringToCommentKind(llvm::StringRef KindStr);
 llvm::StringRef commentKindToString(CommentKind Kind);
 
+struct CommentInfo;
+
+struct CommentInfoNode : public llvm::ilist_node<CommentInfoNode> {
+  CommentInfoNode(CommentInfo* P) : Ptr(P) {}
+  CommentInfo* Ptr;
+
+  bool operator==(const CommentInfoNode &Other) const;
+};
+
 // A representation of a parsed comment.
-struct CommentInfo : public llvm::ilist_node<CommentInfo> {
+struct CommentInfo {
   CommentInfo() = default;
   CommentInfo(const CommentInfo &Other) = default;
   CommentInfo &operator=(const CommentInfo &Other) = default;
@@ -239,6 +248,12 @@ struct CommentInfo : public llvm::ilist_node<CommentInfo> {
   bool Explicit = false;    // Indicates if the direction of a param is explicit
                             // (for (T)ParamCommand).
 };
+
+inline bool CommentInfoNode::operator==(const CommentInfoNode &Other) const {
+  if (!Ptr || !Other.Ptr)
+    return Ptr == Other.Ptr;
+  return *Ptr == *Other.Ptr;
+}
 
 struct Reference : public llvm::ilist_node<Reference> {
   // This variant (that takes no qualified name parameter) uses the Name as the
@@ -424,7 +439,7 @@ struct MemberTypeInfo : public FieldTypeInfo {
                       Other.Description.begin(), Other.Description.end());
   }
 
-  OwningVec<CommentInfo> Description;
+  OwningVec<CommentInfoNode> Description;
 
   // Access level associated with this info (public, protected, private, none).
   // AS_public is set as default because the bitcode writer requires the enum
@@ -508,7 +523,7 @@ struct Info {
   InfoType IT = InfoType::IT_default;
 
   // Comment description of this decl.
-  OwningVec<CommentInfo> Description;
+  OwningVec<CommentInfoNode> Description;
 };
 
 inline Context::Context(const Info &I)
@@ -700,7 +715,7 @@ struct EnumValueInfo {
   StringRef ValueExpr = {};
 
   /// Comment description of this field.
-  OwningVec<CommentInfo> Description;
+  OwningVec<CommentInfoNode> Description;
 };
 
 // TODO: Expand to allow for documenting templating.

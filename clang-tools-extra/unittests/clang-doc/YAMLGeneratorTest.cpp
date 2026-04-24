@@ -106,7 +106,8 @@ TEST_F(YAMLGeneratorTest, emitRecordYAML) {
   CommentInfo TopCommentChildren[] = {
       CommentInfo(CommentKind::CK_ParagraphComment, BriefChildren)};
   CommentInfo TopComment(CommentKind::CK_FullComment, TopCommentChildren);
-  M.Description.push_back(TopComment);
+  CommentInfoNode TopCommentNode(&TopComment);
+  M.Description.push_back(TopCommentNode);
   MemberTypeInfo MemArr[] = {std::move(M)};
   I.Members = llvm::ArrayRef(MemArr);
 
@@ -473,8 +474,8 @@ TEST_F(YAMLGeneratorTest, emitCommentYAML) {
   CommentInfo TopChildren[] = {BlankLine, Brief,    Extended, HTML,
                                Verbatim,  ParamOut, ParamIn,  Return};
   CommentInfo Top(CommentKind::CK_FullComment, TopChildren);
-
-  I.Description.push_back(Top);
+  CommentInfoNode TopNode(&Top);
+  I.Description.push_back(TopNode);
 
   auto G = getYAMLGenerator();
   assert(G);

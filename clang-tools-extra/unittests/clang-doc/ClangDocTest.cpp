@@ -96,12 +96,12 @@ void CheckCommentInfo(ArrayRef<CommentInfo> Expected,
   EXPECT_TRUE(ItE == Expected.end() && ItA == Actual.end());
 }
 
-void CheckCommentInfo(const OwningVec<CommentInfo> &Expected,
-                      const OwningVec<CommentInfo> &Actual) {
+void CheckCommentInfo(const OwningVec<CommentInfoNode> &Expected,
+                      const OwningVec<CommentInfoNode> &Actual) {
   auto ItE = Expected.begin();
   auto ItA = Actual.begin();
   while (ItE != Expected.end() && ItA != Actual.end()) {
-    CheckCommentInfo(*ItE, *ItA);
+    CheckCommentInfo(*ItE->Ptr, *ItA->Ptr);
     ++ItE;
     ++ItA;
   }

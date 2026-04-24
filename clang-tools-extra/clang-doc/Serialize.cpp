@@ -613,8 +613,9 @@ void Serializer::parseEnumerators(EnumInfo &I, const EnumDecl *D) {
       Comment->setAttached();
       if (comments::FullComment *Fc = Comment->parse(Context, nullptr, E)) {
         CommentInfo *NewCI = allocatePtr<CommentInfo>();
-        Member.Description.push_back(*NewCI);
-        parseFullComment(Fc, Member.Description.back());
+        auto *Node = allocatePtr<CommentInfoNode>(NewCI);
+        Member.Description.push_back(*Node);
+        parseFullComment(Fc, *NewCI);
       }
     }
   }
@@ -796,8 +797,9 @@ void Serializer::populateInfo(Info &I, const T *D, const FullComment *C,
   if (C) {
 
     CommentInfo *NewCI = allocatePtr<CommentInfo>();
-    I.Description.push_back(*NewCI);
-    parseFullComment(C, I.Description.back());
+    auto *Node = allocatePtr<CommentInfoNode>(NewCI);
+    I.Description.push_back(*Node);
+    parseFullComment(C, *NewCI);
   }
 }
 
@@ -933,8 +935,9 @@ void Serializer::populateMemberTypeInfo(T &I, const Decl *D) {
   Comment->setAttached();
   if (comments::FullComment *Fc = Comment->parse(Context, nullptr, D)) {
     CommentInfo *NewCI = allocatePtr<CommentInfo>();
-    I.Description.push_back(*NewCI);
-    parseFullComment(Fc, I.Description.back());
+    auto *Node = allocatePtr<CommentInfoNode>(NewCI);
+    I.Description.push_back(*Node);
+    parseFullComment(Fc, *NewCI);
   }
 }
 
@@ -1218,7 +1221,8 @@ void Serializer::extractCommentFromDecl(const Decl *D, TypedefInfo &Info) {
   Comment->setAttached();
   if (comments::FullComment *Fc = Comment->parse(Context, nullptr, D)) {
     CommentInfo *NewCI = allocatePtr<CommentInfo>();
-    Info.Description.push_back(*NewCI);
+    auto *Node = allocatePtr<CommentInfoNode>(NewCI);
+    Info.Description.push_back(*Node);
     parseFullComment(Fc, *NewCI);
   }
 }

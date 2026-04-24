@@ -370,7 +370,8 @@ TEST_F(MDGeneratorTest, emitCommentMD) {
 
   Top.Children = TopChildren;
 
-  I.Description.push_back(Top);
+  CommentInfoNode TopNode(&Top);
+  I.Description.push_back(TopNode);
 
   auto G = getMDGenerator();
   assert(G);

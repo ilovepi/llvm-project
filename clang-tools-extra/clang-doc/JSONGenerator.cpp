@@ -384,13 +384,13 @@ void JSONGenerator::generateContext(const Info &I, Object &Obj) {
   ContextArrayRef.back().getAsObject()->insert({"End", true});
 }
 
-static void serializeDescription(const OwningVec<CommentInfo> &Description,
+static void serializeDescription(const OwningVec<CommentInfoNode> &Description,
                                  json::Object &Obj, StringRef Key = "") {
   if (Description.empty())
     return;
 
   // Skip straight to the FullComment's children
-  auto &Comments = Description.front().Children;
+  auto &Comments = Description.front().Ptr->Children;
   Object DescriptionObj = Object();
   for (const auto &CommentInfo : Comments) {
     json::Value Comment = serializeComment(CommentInfo, DescriptionObj);
