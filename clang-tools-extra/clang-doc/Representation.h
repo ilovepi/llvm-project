@@ -321,7 +321,7 @@ struct Reference {
 
   bool operator==(const Reference &Other) const {
     return std::tie(USR, Name, QualName, RefType) ==
-           std::tie(Other.USR, Other.Name, QualName, Other.RefType);
+           std::tie(Other.USR, Other.Name, Other.QualName, Other.RefType);
   }
 
   bool mergeable(const Reference &Other);
