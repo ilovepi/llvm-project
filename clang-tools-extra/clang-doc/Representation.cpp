@@ -105,15 +105,15 @@ static llvm::Expected<OwnedPtr<Info>> reduce(OwningPtrArray<Info> &Values) {
   return std::move(Merged);
 }
 
-template <typename T>
-static void reduceChildren(OwningVec<T> &Children,
-                           OwningVec<T> &&ChildrenToMerge) {
+template <typename Container>
+static void reduceChildren(Container &Children,
+                           Container &&ChildrenToMerge) {
   while (!ChildrenToMerge.empty()) {
-    InfoNode<T> *ChildToMerge = &ChildrenToMerge.front();
+    auto *ChildToMerge = &ChildrenToMerge.front();
     ChildrenToMerge.pop_front();
 
     auto It = llvm::find_if(
-        Children, [&](const InfoNode<T> &C) { return C.Ptr->USR == ChildToMerge->Ptr->USR; });
+        Children, [&](const auto &C) { return C.Ptr->USR == ChildToMerge->Ptr->USR; });
     if (It == Children.end()) {
       Children.push_back(*ChildToMerge);
     } else {
