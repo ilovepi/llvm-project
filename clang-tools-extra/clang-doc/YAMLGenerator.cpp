@@ -69,6 +69,13 @@ template <typename T> struct SequenceTraits<llvm::simple_ilist<T>> {
   }
 };
 
+template <typename T> struct SequenceTraits<clang::doc::OwningVec<T>> {
+  static size_t size(IO &io, clang::doc::OwningVec<T> &seq) { return seq.size(); }
+  static T &element(IO &io, clang::doc::OwningVec<T> &seq, size_t index) {
+    return *(std::next(seq.begin(), index));
+  }
+};
+
 // Map pointers to the value mappings as clang-doc only does output
 // serialization.
 template <typename T> struct PointerMappingTraits {
@@ -498,12 +505,6 @@ template <> struct MappingTraits<TemplateInfo> {
   }
 };
 
-template <> struct MappingTraits<clang::doc::CommentInfoNode> {
-  static void mapping(IO &IO, clang::doc::CommentInfoNode &N) {
-    if (N.Ptr)
-      commentInfoMapping(IO, *N.Ptr);
-  }
-};
 
 template <> struct MappingTraits<CommentInfo> {
   static void mapping(IO &IO, CommentInfo &I) { commentInfoMapping(IO, I); }

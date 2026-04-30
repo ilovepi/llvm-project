@@ -458,37 +458,35 @@ bool Serializer::shouldSerializeInfo(bool PublicOnly,
 //
 // See MakeAndInsertIntoParent().
 void Serializer::InsertChild(ScopeChildren &Scope, const NamespaceInfo &Info) {
-  Reference *R = allocatePtr<Reference>(TransientArena, Info.USR, Info.Name,
-                                        InfoType::IT_namespace, Info.Name,
-                                        getInfoRelativePath(Info.Namespace));
-  Scope.Namespaces.push_back(*R);
+  Scope.Namespaces.push_back(
+      *allocateListNodeTransient<Reference>(Info.USR, Info.Name, InfoType::IT_namespace,
+                                  Info.Name, getInfoRelativePath(Info.Namespace)));
 }
 
 void Serializer::InsertChild(ScopeChildren &Scope, const RecordInfo &Info) {
-  Reference *R = allocatePtr<Reference>(
-      Info.USR, Info.Name, InfoType::IT_record, Info.Name,
-      getInfoRelativePath(Info.Namespace), Info.MangledName);
-  Scope.Records.push_back(*R);
+  Scope.Records.push_back(
+      *allocateListNodeTransient<Reference>(Info.USR, Info.Name, InfoType::IT_record,
+                                  Info.Name, getInfoRelativePath(Info.Namespace), Info.MangledName));
 }
 
 void Serializer::InsertChild(ScopeChildren &Scope, EnumInfo &Info) {
-  Scope.Enums.push_back(Info);
+  Scope.Enums.push_back(*allocateListNodeTransient<EnumInfo>(&Info));
 }
 
 void Serializer::InsertChild(ScopeChildren &Scope, FunctionInfo &Info) {
-  Scope.Functions.push_back(Info);
+  Scope.Functions.push_back(*allocateListNodeTransient<FunctionInfo>(&Info));
 }
 
 void Serializer::InsertChild(ScopeChildren &Scope, TypedefInfo &Info) {
-  Scope.Typedefs.push_back(Info);
+  Scope.Typedefs.push_back(*allocateListNodeTransient<TypedefInfo>(&Info));
 }
 
 void Serializer::InsertChild(ScopeChildren &Scope, ConceptInfo &Info) {
-  Scope.Concepts.push_back(Info);
+  Scope.Concepts.push_back(*allocateListNodeTransient<ConceptInfo>(&Info));
 }
 
 void Serializer::InsertChild(ScopeChildren &Scope, VarInfo &Info) {
-  Scope.Variables.push_back(Info);
+  Scope.Variables.push_back(*allocateListNodeTransient<VarInfo>(&Info));
 }
 
 // Creates a parent of the correct type for the given child and inserts it into
@@ -612,10 +610,9 @@ void Serializer::parseEnumerators(EnumInfo &I, const EnumDecl *D) {
             E->getASTContext().getRawCommentForDeclNoCache(E)) {
       Comment->setAttached();
       if (comments::FullComment *Fc = Comment->parse(Context, nullptr, E)) {
-        CommentInfo *NewCI = allocatePtr<CommentInfo>();
-        auto *Node = allocatePtr<CommentInfoNode>(NewCI);
-        Member.Description.push_back(*Node);
-        parseFullComment(Fc, *NewCI);
+        auto *NewCI = allocateListNodeTransient<CommentInfo>();
+        Member.Description.push_back(*NewCI);
+        parseFullComment(Fc, *NewCI->Ptr);
       }
     }
   }
@@ -796,10 +793,9 @@ void Serializer::populateInfo(Info &I, const T *D, const FullComment *C,
     I.Namespace = allocateArray<Reference>(LocalNamespaces, TransientArena);
   if (C) {
 
-    CommentInfo *NewCI = allocatePtr<CommentInfo>();
-    auto *Node = allocatePtr<CommentInfoNode>(NewCI);
-    I.Description.push_back(*Node);
-    parseFullComment(C, *NewCI);
+    auto *NewCI = allocateListNodeTransient<CommentInfo>();
+    I.Description.push_back(*NewCI);
+    parseFullComment(C, *NewCI->Ptr);
   }
 }
 
@@ -811,8 +807,7 @@ void Serializer::populateSymbolInfo(SymbolInfo &I, const T *D,
   if (D->isThisDeclarationADefinition())
     I.DefLoc = Loc;
   else {
-    Location *NewL = allocatePtr<Location>(Loc);
-    I.Loc.push_back(*NewL);
+    I.Loc.push_back(*allocateListNodeTransient<Location>(Loc));
   }
 
   auto *Mangler = ItaniumMangleContext::create(
@@ -934,10 +929,9 @@ void Serializer::populateMemberTypeInfo(T &I, const Decl *D) {
 
   Comment->setAttached();
   if (comments::FullComment *Fc = Comment->parse(Context, nullptr, D)) {
-    CommentInfo *NewCI = allocatePtr<CommentInfo>();
-    auto *Node = allocatePtr<CommentInfoNode>(NewCI);
-    I.Description.push_back(*Node);
-    parseFullComment(Fc, *NewCI);
+    auto *NewCI = allocateListNodeTransient<CommentInfo>();
+    I.Description.push_back(*NewCI);
+    parseFullComment(Fc, *NewCI->Ptr);
   }
 }
 
@@ -996,7 +990,7 @@ void Serializer::parseBases(llvm::SmallVectorImpl<BaseRecordInfo> &Bases,
             FI.Access =
                 getFinalAccessSpecifier(BI.Access, MD->getAccessUnsafe());
             FunctionInfo *FIPtr = allocatePtr<FunctionInfo>(std::move(FI));
-            BI.Children.Functions.push_back(*FIPtr);
+            BI.Children.Functions.push_back(*allocatePtr<InfoNode<FunctionInfo>>(FIPtr));
           }
         Bases.emplace_back(std::move(BI));
         // Call this function recursively to get the inherited classes of
@@ -1220,10 +1214,9 @@ void Serializer::extractCommentFromDecl(const Decl *D, TypedefInfo &Info) {
 
   Comment->setAttached();
   if (comments::FullComment *Fc = Comment->parse(Context, nullptr, D)) {
-    CommentInfo *NewCI = allocatePtr<CommentInfo>();
-    auto *Node = allocatePtr<CommentInfoNode>(NewCI);
-    Info.Description.push_back(*Node);
-    parseFullComment(Fc, *NewCI);
+    auto *NewCI = allocateListNodeTransient<CommentInfo>();
+    Info.Description.push_back(*NewCI);
+    parseFullComment(Fc, *NewCI->Ptr);
   }
 }
 

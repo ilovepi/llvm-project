@@ -111,18 +111,6 @@ template <typename T> using OwnedPtr = T *;
 // To be eventually transitioned to llvm::ArrayRef for arena storage.
 template <typename T> using OwningArray = std::vector<T>;
 
-// An abstraction for lists that are dynamically managed (inserted/removed).
-// To be eventually transitioned to llvm::simple_ilist.
-template <typename T> using OwningVec = llvm::simple_ilist<T>;
-
-// An abstraction for dynamic lists of owned pointers.
-// To be eventually transitioned to llvm::simple_ilist<T*> or similar.
-template <typename T> using OwningPtrVec = std::vector<OwnedPtr<T>>;
-
-// An abstraction for arrays of owned pointers.
-// To be eventually transitioned to arena-allocated arrays of bare pointers.
-template <typename T> using OwningPtrArray = std::vector<OwnedPtr<T>>;
-
 // A helper function to create an owned pointer, abstracting away the memory
 // allocation mechanism.
 template <typename T, typename... Args>
@@ -136,9 +124,76 @@ T *allocatePtr(llvm::BumpPtrAllocator &Alloc, Args &&...args) {
   return new (Alloc.Allocate<T>()) T(std::forward<Args>(args)...);
 }
 
+
+
 // A helper function to access the underlying pointer from an owned pointer,
 // abstracting away the pointer dereferencing mechanism.
 template <typename T> T *getPtr(const OwnedPtr<T> &O) { return O; }
+
+template <typename T>
+struct InfoNode : public llvm::ilist_node<InfoNode<T>> {
+  InfoNode(T *P) : Ptr(P) {}
+  T *Ptr = nullptr;
+
+  operator T&() { return *Ptr; }
+  operator const T&() const { return *Ptr; }
+
+  T& operator*() { return *Ptr; }
+  const T& operator*() const { return *Ptr; }
+  T* operator->() { return Ptr; }
+  const T* operator->() const { return Ptr; }
+
+  bool operator==(const InfoNode<T> &Other) const {
+    if (!Ptr || !Other.Ptr)
+      return Ptr == Other.Ptr;
+    return *Ptr == *Other.Ptr;
+  }
+
+  bool operator!=(const InfoNode<T> &Other) const {
+    return !(*this == Other);
+  }
+
+  bool operator<(const InfoNode<T> &Other) const {
+    if (!Ptr || !Other.Ptr)
+      return Ptr < Other.Ptr;
+    return *Ptr < *Other.Ptr;
+  }
+};
+
+template <typename T, typename... Args>
+InfoNode<T> *allocateListNode(llvm::BumpPtrAllocator &Alloc, Args &&...args) {
+  T *Item = allocatePtr<T>(Alloc, std::forward<Args>(args)...);
+  return allocatePtr<InfoNode<T>>(Alloc, Item);
+}
+
+template <typename T, typename... Args>
+InfoNode<T> *allocateListNodeTransient(Args &&...args) {
+  return allocateListNode<T>(TransientArena, std::forward<Args>(args)...);
+}
+
+template <typename T>
+InfoNode<T> *allocateListNode(llvm::BumpPtrAllocator &Alloc, T *Item) {
+  return allocatePtr<InfoNode<T>>(Alloc, Item);
+}
+
+template <typename T>
+InfoNode<T> *allocateListNodeTransient(T *Item) {
+  return allocateListNode<T>(TransientArena, Item);
+}
+
+// An abstraction for lists that are dynamically managed (inserted/removed).
+// To be eventually transitioned to llvm::simple_ilist.
+template <typename T> using OwningVec = llvm::simple_ilist<InfoNode<T>>;
+
+// An abstraction for dynamic lists of owned pointers.
+// To be eventually transitioned to llvm::simple_ilist<T*> or similar.
+template <typename T> using OwningPtrVec = std::vector<OwnedPtr<T>>;
+
+// An abstraction for arrays of owned pointers.
+// To be eventually transitioned to arena-allocated arrays of bare pointers.
+template <typename T> using OwningPtrArray = std::vector<OwnedPtr<T>>;
+
+
 
 // SHA1'd hash of a USR.
 using SymbolID = std::array<uint8_t, 20>;
@@ -188,13 +243,6 @@ CommentKind stringToCommentKind(llvm::StringRef KindStr);
 llvm::StringRef commentKindToString(CommentKind Kind);
 
 struct CommentInfo;
-
-struct CommentInfoNode : public llvm::ilist_node<CommentInfoNode> {
-  CommentInfoNode(CommentInfo *P) : Ptr(P) {}
-  CommentInfo *Ptr;
-
-  bool operator==(const CommentInfoNode &Other) const;
-};
 
 // A representation of a parsed comment.
 struct CommentInfo {
@@ -249,13 +297,9 @@ struct CommentInfo {
                             // (for (T)ParamCommand).
 };
 
-inline bool CommentInfoNode::operator==(const CommentInfoNode &Other) const {
-  if (!Ptr || !Other.Ptr)
-    return Ptr == Other.Ptr;
-  return *Ptr == *Other.Ptr;
-}
 
-struct Reference : public llvm::ilist_node<Reference> {
+
+struct Reference {
   // This variant (that takes no qualified name parameter) uses the Name as the
   // QualName (very useful in unit tests to reduce verbosity). This can't use an
   // empty string to indicate the default because we need to accept the empty
@@ -439,7 +483,7 @@ struct MemberTypeInfo : public FieldTypeInfo {
                       Other.Description.begin(), Other.Description.end());
   }
 
-  OwningVec<CommentInfoNode> Description;
+  OwningVec<CommentInfo> Description;
 
   // Access level associated with this info (public, protected, private, none).
   // AS_public is set as default because the bitcode writer requires the enum
@@ -449,7 +493,7 @@ struct MemberTypeInfo : public FieldTypeInfo {
   bool IsStatic = false;
 };
 
-struct Location : public llvm::ilist_node<Location> {
+struct Location {
   Location(int StartLineNumber = 0, int EndLineNumber = 0,
            StringRef Filename = StringRef(), bool IsFileInRootDir = false)
       : Filename(internString(Filename)), StartLineNumber(StartLineNumber),
@@ -523,7 +567,7 @@ struct Info {
   InfoType IT = InfoType::IT_default;
 
   // Comment description of this decl.
-  OwningVec<CommentInfoNode> Description;
+  OwningVec<CommentInfo> Description;
 };
 
 inline Context::Context(const Info &I)
@@ -567,7 +611,7 @@ struct SymbolInfo : public Info {
   bool IsStatic = false;
 };
 
-struct FriendInfo : public SymbolInfo, public llvm::ilist_node<FriendInfo> {
+struct FriendInfo : public SymbolInfo {
   FriendInfo() : SymbolInfo(InfoType::IT_friend) {}
   FriendInfo(SymbolID USR) : SymbolInfo(InfoType::IT_friend, USR) {}
   FriendInfo(const InfoType IT, const SymbolID &USR,
@@ -583,7 +627,7 @@ struct FriendInfo : public SymbolInfo, public llvm::ilist_node<FriendInfo> {
   bool IsClass = false;
 };
 
-struct VarInfo : public SymbolInfo, public llvm::ilist_node<VarInfo> {
+struct VarInfo : public SymbolInfo {
   VarInfo() : SymbolInfo(InfoType::IT_variable) {}
   explicit VarInfo(SymbolID USR) : SymbolInfo(InfoType::IT_variable, USR) {}
 
@@ -594,7 +638,7 @@ struct VarInfo : public SymbolInfo, public llvm::ilist_node<VarInfo> {
 
 // TODO: Expand to allow for documenting templating and default args.
 // Info for functions.
-struct FunctionInfo : public SymbolInfo, public llvm::ilist_node<FunctionInfo> {
+struct FunctionInfo : public SymbolInfo {
   FunctionInfo(SymbolID USR = SymbolID())
       : SymbolInfo(InfoType::IT_function, USR) {}
 
@@ -655,13 +699,13 @@ struct RecordInfo : public SymbolInfo {
 };
 
 // Info for typedef and using statements.
-struct TypedefInfo : public SymbolInfo, public llvm::ilist_node<TypedefInfo> {
+struct TypedefInfo : public SymbolInfo {
   TypedefInfo(SymbolID USR = SymbolID())
       : SymbolInfo(InfoType::IT_typedef, USR) {}
 
   void merge(TypedefInfo &&I);
 
-  TypeInfo Underlying;
+  TypeInfo Underlying = {};
 
   // Only type aliases can be templates.
   std::optional<TemplateInfo> Template;
@@ -676,8 +720,7 @@ struct TypedefInfo : public SymbolInfo, public llvm::ilist_node<TypedefInfo> {
   bool IsUsing = false;
 };
 
-struct BaseRecordInfo : public RecordInfo,
-                        public llvm::ilist_node<BaseRecordInfo> {
+struct BaseRecordInfo : public RecordInfo {
   BaseRecordInfo();
   BaseRecordInfo(SymbolID USR, StringRef Name, StringRef Path, bool IsVirtual,
                  AccessSpecifier Access, bool IsParent);
@@ -715,12 +758,12 @@ struct EnumValueInfo {
   StringRef ValueExpr = {};
 
   /// Comment description of this field.
-  OwningVec<CommentInfoNode> Description;
+  OwningVec<CommentInfo> Description;
 };
 
 // TODO: Expand to allow for documenting templating.
 // Info for types.
-struct EnumInfo : public SymbolInfo, public llvm::ilist_node<EnumInfo> {
+struct EnumInfo : public SymbolInfo {
   EnumInfo() : SymbolInfo(InfoType::IT_enum) {}
   EnumInfo(SymbolID USR) : SymbolInfo(InfoType::IT_enum, USR) {}
 
@@ -737,7 +780,7 @@ struct EnumInfo : public SymbolInfo, public llvm::ilist_node<EnumInfo> {
   llvm::ArrayRef<EnumValueInfo> Members = {}; // List of enum members.
 };
 
-struct ConceptInfo : public SymbolInfo, public llvm::ilist_node<ConceptInfo> {
+struct ConceptInfo : public SymbolInfo {
   ConceptInfo() : SymbolInfo(InfoType::IT_concept) {}
   ConceptInfo(SymbolID USR) : SymbolInfo(InfoType::IT_concept, USR) {}
 

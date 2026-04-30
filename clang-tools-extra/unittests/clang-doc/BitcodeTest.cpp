@@ -71,13 +71,17 @@ TEST_F(BitcodeTest, emitNamespaceInfoBitcode) {
   I.Namespace = llvm::ArrayRef(Ns);
 
   Reference NewNamespace(EmptySID, "ChildNamespace", InfoType::IT_namespace);
-  I.Children.Namespaces.push_back(NewNamespace);
+  InfoNode<Reference> NewNamespaceNode(&NewNamespace);
+  I.Children.Namespaces.push_back(NewNamespaceNode);
   Reference ChildStruct(EmptySID, "ChildStruct", InfoType::IT_record);
-  I.Children.Records.push_back(ChildStruct);
+  InfoNode<Reference> ChildStructNode(&ChildStruct);
+  I.Children.Records.push_back(ChildStructNode);
   FunctionInfo FI;
-  I.Children.Functions.push_back(FI);
+  InfoNode<FunctionInfo> FINode(&FI);
+  I.Children.Functions.push_back(FINode);
   EnumInfo EI;
-  I.Children.Enums.push_back(EI);
+  InfoNode<EnumInfo> EINode(&EI);
+  I.Children.Enums.push_back(EINode);
 
   std::string WriteResult = writeInfo(&I, this->Diags);
   EXPECT_TRUE(WriteResult.size() > 0);
@@ -94,7 +98,8 @@ TEST_F(BitcodeTest, emitRecordInfoBitcode) {
 
   I.DefLoc = Location(10, 10, "test.cpp");
   Location Loc1(12, 12, "test.cpp");
-  I.Loc.push_back(Loc1);
+  InfoNode<Location> Loc1Node(&Loc1);
+  I.Loc.push_back(Loc1Node);
 
   MemberTypeInfo M(TypeInfo("int"), "X", AccessSpecifier::AS_private);
   I.TagType = TagTypeKind::Class;
@@ -102,7 +107,8 @@ TEST_F(BitcodeTest, emitRecordInfoBitcode) {
   BaseRecordInfo B(EmptySID, "F", "path/to/F", true, AccessSpecifier::AS_public,
                    true);
   FunctionInfo FI;
-  B.Children.Functions.push_back(FI);
+  InfoNode<FunctionInfo> FINode(&FI);
+  B.Children.Functions.push_back(FINode);
   MemberTypeInfo BM(TypeInfo("int"), "X", AccessSpecifier::AS_private);
 
   // Documentation for the data member.
@@ -112,7 +118,7 @@ TEST_F(BitcodeTest, emitRecordInfoBitcode) {
   CommentInfo TopCommentChildren[] = {
       CommentInfo(CommentKind::CK_ParagraphComment, BriefChildren)};
   CommentInfo TopComment(CommentKind::CK_FullComment, TopCommentChildren);
-  CommentInfoNode TopCommentNode(&TopComment);
+  InfoNode<CommentInfo> TopCommentNode(&TopComment);
   BM.Description.push_back(TopCommentNode);
   MemberTypeInfo BMem[] = {std::move(BM)};
   B.Members = llvm::ArrayRef(BMem);
@@ -127,11 +133,14 @@ TEST_F(BitcodeTest, emitRecordInfoBitcode) {
   I.VirtualParents = llvm::ArrayRef(VParents);
 
   Reference ChildStruct(EmptySID, "ChildStruct", InfoType::IT_record);
-  I.Children.Records.push_back(ChildStruct);
+  InfoNode<Reference> ChildStructNode(&ChildStruct);
+  I.Children.Records.push_back(ChildStructNode);
   FunctionInfo FI2;
-  I.Children.Functions.push_back(FI2);
+  InfoNode<FunctionInfo> FI2Node(&FI2);
+  I.Children.Functions.push_back(FI2Node);
   EnumInfo EI;
-  I.Children.Enums.push_back(EI);
+  InfoNode<EnumInfo> EINode(&EI);
+  I.Children.Enums.push_back(EINode);
 
   std::string WriteResult = writeInfo(&I, this->Diags);
   EXPECT_TRUE(WriteResult.size() > 0);
@@ -148,7 +157,8 @@ TEST_F(BitcodeTest, emitFunctionInfoBitcode) {
 
   I.DefLoc = Location(10, 10, "test.cpp");
   Location Loc1(12, 12, "test.cpp");
-  I.Loc.push_back(Loc1);
+  InfoNode<Location> Loc1Node(&Loc1);
+  I.Loc.push_back(Loc1Node);
 
   I.ReturnType = TypeInfo("void");
   FieldTypeInfo P(TypeInfo("int"), "P");
@@ -172,7 +182,8 @@ TEST_F(BitcodeTest, emitMethodInfoBitcode) {
 
   I.DefLoc = Location(10, 10, "test.cpp");
   Location Loc1(12, 12, "test.cpp");
-  I.Loc.push_back(Loc1);
+  InfoNode<Location> Loc1Node(&Loc1);
+  I.Loc.push_back(Loc1Node);
 
   I.ReturnType = TypeInfo("void");
   FieldTypeInfo P(TypeInfo("int"), "P");
@@ -198,7 +209,8 @@ TEST_F(BitcodeTest, emitEnumInfoBitcode) {
 
   I.DefLoc = Location(10, 10, "test.cpp");
   Location Loc1(12, 12, "test.cpp");
-  I.Loc.push_back(Loc1);
+  InfoNode<Location> Loc1Node(&Loc1);
+  I.Loc.push_back(Loc1Node);
 
   EnumValueInfo EV("X");
   EnumValueInfo Mems[] = {std::move(EV)};
@@ -227,7 +239,7 @@ TEST_F(BitcodeTest, emitTypedefInfoBitcode) {
       CommentInfo(CommentKind::CK_ParagraphComment, BlankChildren)};
   CommentInfo Top(CommentKind::CK_FullComment, TopChildren);
 
-  CommentInfoNode TopNode(&Top);
+  InfoNode<CommentInfo> TopNode(&Top);
   I.Description.push_back(TopNode);
 
   std::string WriteResult = writeInfo(&I, this->Diags);
@@ -326,7 +338,7 @@ TEST_F(BitcodeTest, emitInfoWithCommentBitcode) {
                                Verbatim,  ParamOut, ParamIn,  Return};
   CommentInfo Top(CommentKind::CK_FullComment, TopChildren);
 
-  CommentInfoNode TopNode(&Top);
+  InfoNode<CommentInfo> TopNode(&Top);
   F.Description.push_back(TopNode);
 
   std::string WriteResult = writeInfo(&F, this->Diags);

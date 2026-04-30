@@ -33,8 +33,8 @@ TypedefInfo *InfoAsTypedef(Info *I);
 
 void CheckCommentInfo(ArrayRef<CommentInfo> Expected,
                       ArrayRef<CommentInfo> Actual);
-void CheckCommentInfo(const OwningVec<CommentInfoNode> &Expected,
-                      const OwningVec<CommentInfoNode> &Actual);
+void CheckCommentInfo(const OwningVec<CommentInfo> &Expected,
+                      const OwningVec<CommentInfo> &Actual);
 void CheckReference(const Reference &Expected, const Reference &Actual);
 void CheckTypeInfo(const TypeInfo *Expected, const TypeInfo *Actual);
 void CheckFieldTypeInfo(const FieldTypeInfo *Expected,

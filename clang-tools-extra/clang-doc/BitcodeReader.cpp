@@ -136,9 +136,9 @@ static llvm::Error decodeRecord(const Record &R, OwningVec<Location> &Field,
     return llvm::createStringError(llvm::inconvertibleErrorCode(),
                                    "integer too large to parse");
 
-  Field.push_back(*allocatePtr<Location>(static_cast<int>(R[0]),
-                                         static_cast<int>(R[1]), Blob,
-                                         static_cast<bool>(R[2])));
+  Field.push_back(*allocateListNodeTransient<Location>(static_cast<int>(R[0]),
+                                              static_cast<int>(R[1]), Blob,
+                                              static_cast<bool>(R[2])));
   return llvm::Error::success();
 }
 
@@ -885,10 +885,9 @@ template <typename T> static llvm::Expected<CommentInfo *> getCommentInfo(T I) {
   if constexpr (std::is_pointer_v<T>) {
     using Pointee = std::remove_pointer_t<T>;
     if constexpr (has_description<Pointee>::value) {
-      auto *NewComment = allocatePtr<CommentInfo>();
-      auto *Node = allocatePtr<CommentInfoNode>(NewComment);
-      I->Description.push_back(*Node);
-      return NewComment;
+      auto *NewComment = allocateListNodeTransient<CommentInfo>();
+      I->Description.push_back(*NewComment);
+      return NewComment->Ptr;
     }
   }
   return llvm::createStringError(llvm::inconvertibleErrorCode(),
@@ -998,12 +997,10 @@ template <>
 llvm::Error addReference(NamespaceInfo *I, Reference &&R, FieldId F) {
   switch (F) {
   case FieldId::F_child_namespace:
-    I->Children.Namespaces.push_back(
-        *allocatePtr<Reference>(TransientArena, std::move(R)));
+    I->Children.Namespaces.push_back(*allocateListNodeTransient<Reference>(std::move(R)));
     return llvm::Error::success();
   case FieldId::F_child_record:
-    I->Children.Records.push_back(
-        *allocatePtr<Reference>(TransientArena, std::move(R)));
+    I->Children.Records.push_back(*allocateListNodeTransient<Reference>(std::move(R)));
     return llvm::Error::success();
   default:
     return llvm::createStringError(llvm::inconvertibleErrorCode(),
@@ -1026,8 +1023,7 @@ llvm::Error addReference(FunctionInfo *I, Reference &&R, FieldId F) {
 template <> llvm::Error addReference(RecordInfo *I, Reference &&R, FieldId F) {
   switch (F) {
   case FieldId::F_child_record:
-    I->Children.Records.push_back(
-        *allocatePtr<Reference>(TransientArena, std::move(R)));
+    I->Children.Records.push_back(*allocateListNodeTransient<Reference>(std::move(R)));
     return llvm::Error::success();
   default:
     return llvm::createStringError(llvm::inconvertibleErrorCode(),
@@ -1083,7 +1079,7 @@ static void addChild(Target I, Child &&R) {
       using BareChild = std::remove_cv_t<std::remove_reference_t<Child>>;
       if constexpr (is_valid_child<BareChild>::value) {
         auto *Node = allocatePtr<BareChild>(std::forward<Child>(R));
-        getList(I->Children, Node).push_back(*Node);
+        getList(I->Children, Node).push_back(*allocateListNodeTransient(Node));
         return;
       }
     }

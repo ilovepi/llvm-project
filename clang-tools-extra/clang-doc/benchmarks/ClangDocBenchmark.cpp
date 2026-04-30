@@ -187,7 +187,7 @@ static void BM_JSONGenerator_Scale(benchmark::State &State) {
     Reference *R = new (TransientArena.Allocate<Reference>())
         Reference(SymbolID{(uint8_t)(i & 0xFF)}, "Record" + std::to_string(i),
                   InfoType::IT_record);
-    NI->Children.Records.push_back(*R);
+    NI->Children.Records.push_back(*allocatePtr<InfoNode<Reference>>(R));
   }
 
   IntrusiveRefCntPtr<DiagnosticIDs> DiagID(new DiagnosticIDs());
