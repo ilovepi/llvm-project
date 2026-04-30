@@ -37,9 +37,15 @@ static llvm::Error decodeRecord(const Record &R, llvm::StringRef &Field,
 
 static llvm::Error decodeRecord(const Record &R, SymbolID &Field,
                                 llvm::StringRef Blob) {
+  if (R.empty())
+    return llvm::createStringError(llvm::inconvertibleErrorCode(),
+                                   "empty record for SymbolID");
   if (R[0] != BitCodeConstants::USRHashSize)
     return llvm::createStringError(llvm::inconvertibleErrorCode(),
                                    "incorrect USR size");
+  if (R.size() < R[0] + 1)
+    return llvm::createStringError(llvm::inconvertibleErrorCode(),
+                                   "record too short for SymbolID");
 
   // First position in the record is the length of the following array, so we
   // copy the following elements to the field.
@@ -50,12 +56,18 @@ static llvm::Error decodeRecord(const Record &R, SymbolID &Field,
 
 static llvm::Error decodeRecord(const Record &R, bool &Field,
                                 llvm::StringRef Blob) {
+  if (R.empty())
+    return llvm::createStringError(llvm::inconvertibleErrorCode(),
+                                   "empty record for bool");
   Field = R[0] != 0;
   return llvm::Error::success();
 }
 
 static llvm::Error decodeRecord(const Record &R, AccessSpecifier &Field,
                                 llvm::StringRef Blob) {
+  if (R.empty())
+    return llvm::createStringError(llvm::inconvertibleErrorCode(),
+                                   "empty record for AccessSpecifier");
   switch (R[0]) {
   case AS_public:
   case AS_private:
@@ -69,6 +81,9 @@ static llvm::Error decodeRecord(const Record &R, AccessSpecifier &Field,
 
 static llvm::Error decodeRecord(const Record &R, TagTypeKind &Field,
                                 llvm::StringRef Blob) {
+  if (R.empty())
+    return llvm::createStringError(llvm::inconvertibleErrorCode(),
+                                   "empty record for TagTypeKind");
   switch (static_cast<TagTypeKind>(R[0])) {
   case TagTypeKind::Struct:
   case TagTypeKind::Interface:
@@ -84,6 +99,9 @@ static llvm::Error decodeRecord(const Record &R, TagTypeKind &Field,
 
 static llvm::Error decodeRecord(const Record &R, std::optional<Location> &Field,
                                 llvm::StringRef Blob) {
+  if (R.size() < 3)
+    return llvm::createStringError(llvm::inconvertibleErrorCode(),
+                                   "record too short for Location");
   if (R[0] > INT_MAX)
     return llvm::createStringError(llvm::inconvertibleErrorCode(),
                                    "integer too large to parse");
@@ -94,6 +112,9 @@ static llvm::Error decodeRecord(const Record &R, std::optional<Location> &Field,
 
 static llvm::Error decodeRecord(const Record &R, InfoType &Field,
                                 llvm::StringRef Blob) {
+  if (R.empty())
+    return llvm::createStringError(llvm::inconvertibleErrorCode(),
+                                   "empty record for InfoType");
   switch (auto IT = static_cast<InfoType>(R[0])) {
   case InfoType::IT_namespace:
   case InfoType::IT_record:
@@ -113,6 +134,9 @@ static llvm::Error decodeRecord(const Record &R, InfoType &Field,
 
 static llvm::Error decodeRecord(const Record &R, FieldId &Field,
                                 llvm::StringRef Blob) {
+  if (R.empty())
+    return llvm::createStringError(llvm::inconvertibleErrorCode(),
+                                   "empty record for FieldId");
   switch (auto F = static_cast<FieldId>(R[0])) {
   case FieldId::F_namespace:
   case FieldId::F_parent:
@@ -132,6 +156,9 @@ static llvm::Error decodeRecord(const Record &R, FieldId &Field,
 
 static llvm::Error decodeRecord(const Record &R, OwningVec<Location> &Field,
                                 llvm::StringRef Blob) {
+  if (R.size() < 3)
+    return llvm::createStringError(llvm::inconvertibleErrorCode(),
+                                   "record too short for Location");
   if (R[0] > INT_MAX)
     return llvm::createStringError(llvm::inconvertibleErrorCode(),
                                    "integer too large to parse");
