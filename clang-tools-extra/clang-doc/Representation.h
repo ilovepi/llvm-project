@@ -375,13 +375,13 @@ struct ScopeChildren {
   //
   // Namespaces are not syntactically valid as children of records, but making
   // this general for all possible container types reduces code complexity.
-  OwningVec<Reference> Namespaces;
-  OwningVec<Reference> Records;
-  OwningVec<FunctionInfo> Functions;
-  OwningVec<EnumInfo> Enums;
-  OwningVec<TypedefInfo> Typedefs;
-  OwningVec<ConceptInfo> Concepts;
-  OwningVec<VarInfo> Variables;
+  OwningVec<Reference> Namespaces = {};
+  OwningVec<Reference> Records = {};
+  OwningVec<FunctionInfo> Functions = {};
+  OwningVec<EnumInfo> Enums = {};
+  OwningVec<TypedefInfo> Typedefs = {};
+  OwningVec<ConceptInfo> Concepts = {};
+  OwningVec<VarInfo> Variables = {};
 
   void sort();
 };
@@ -567,7 +567,7 @@ struct Info {
   InfoType IT = InfoType::IT_default;
 
   // Comment description of this decl.
-  OwningVec<CommentInfo> Description;
+  OwningVec<CommentInfo> Description = {};
 };
 
 inline Context::Context(const Info &I)
