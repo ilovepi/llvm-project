@@ -458,15 +458,15 @@ bool Serializer::shouldSerializeInfo(bool PublicOnly,
 //
 // See MakeAndInsertIntoParent().
 void Serializer::InsertChild(ScopeChildren &Scope, const NamespaceInfo &Info) {
-  Scope.Namespaces.push_back(
-      *allocateListNodeTransient<Reference>(Info.USR, Info.Name, InfoType::IT_namespace,
-                                  Info.Name, getInfoRelativePath(Info.Namespace)));
+  Scope.Namespaces.push_back(*allocateListNodeTransient<Reference>(
+      Info.USR, Info.Name, InfoType::IT_namespace, Info.Name,
+      getInfoRelativePath(Info.Namespace)));
 }
 
 void Serializer::InsertChild(ScopeChildren &Scope, const RecordInfo &Info) {
-  Scope.Records.push_back(
-      *allocateListNodeTransient<Reference>(Info.USR, Info.Name, InfoType::IT_record,
-                                  Info.Name, getInfoRelativePath(Info.Namespace), Info.MangledName));
+  Scope.Records.push_back(*allocateListNodeTransient<Reference>(
+      Info.USR, Info.Name, InfoType::IT_record, Info.Name,
+      getInfoRelativePath(Info.Namespace), Info.MangledName));
 }
 
 void Serializer::InsertChild(ScopeChildren &Scope, EnumInfo &Info) {
@@ -990,7 +990,8 @@ void Serializer::parseBases(llvm::SmallVectorImpl<BaseRecordInfo> &Bases,
             FI.Access =
                 getFinalAccessSpecifier(BI.Access, MD->getAccessUnsafe());
             FunctionInfo *FIPtr = allocatePtr<FunctionInfo>(std::move(FI));
-            BI.Children.Functions.push_back(*allocatePtr<InfoNode<FunctionInfo>>(FIPtr));
+            BI.Children.Functions.push_back(
+                *allocatePtr<InfoNode<FunctionInfo>>(FIPtr));
           }
         Bases.emplace_back(std::move(BI));
         // Call this function recursively to get the inherited classes of

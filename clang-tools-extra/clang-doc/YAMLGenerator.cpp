@@ -70,7 +70,9 @@ template <typename T> struct SequenceTraits<llvm::simple_ilist<T>> {
 };
 
 template <typename T> struct SequenceTraits<clang::doc::OwningVec<T>> {
-  static size_t size(IO &io, clang::doc::OwningVec<T> &seq) { return seq.size(); }
+  static size_t size(IO &io, clang::doc::OwningVec<T> &seq) {
+    return seq.size();
+  }
   static T &element(IO &io, clang::doc::OwningVec<T> &seq, size_t index) {
     return *(std::next(seq.begin(), index));
   }
@@ -504,7 +506,6 @@ template <> struct MappingTraits<TemplateInfo> {
                    std::optional<TemplateSpecializationInfo>());
   }
 };
-
 
 template <> struct MappingTraits<CommentInfo> {
   static void mapping(IO &IO, CommentInfo &I) { commentInfoMapping(IO, I); }

@@ -124,24 +124,21 @@ T *allocatePtr(llvm::BumpPtrAllocator &Alloc, Args &&...args) {
   return new (Alloc.Allocate<T>()) T(std::forward<Args>(args)...);
 }
 
-
-
 // A helper function to access the underlying pointer from an owned pointer,
 // abstracting away the pointer dereferencing mechanism.
 template <typename T> T *getPtr(const OwnedPtr<T> &O) { return O; }
 
-template <typename T>
-struct InfoNode : public llvm::ilist_node<InfoNode<T>> {
+template <typename T> struct InfoNode : public llvm::ilist_node<InfoNode<T>> {
   InfoNode(T *P) : Ptr(P) {}
   T *Ptr = nullptr;
 
-  operator T&() { return *Ptr; }
-  operator const T&() const { return *Ptr; }
+  operator T &() { return *Ptr; }
+  operator const T &() const { return *Ptr; }
 
-  T& operator*() { return *Ptr; }
-  const T& operator*() const { return *Ptr; }
-  T* operator->() { return Ptr; }
-  const T* operator->() const { return Ptr; }
+  T &operator*() { return *Ptr; }
+  const T &operator*() const { return *Ptr; }
+  T *operator->() { return Ptr; }
+  const T *operator->() const { return Ptr; }
 
   bool operator==(const InfoNode<T> &Other) const {
     if (!Ptr || !Other.Ptr)
@@ -149,9 +146,7 @@ struct InfoNode : public llvm::ilist_node<InfoNode<T>> {
     return *Ptr == *Other.Ptr;
   }
 
-  bool operator!=(const InfoNode<T> &Other) const {
-    return !(*this == Other);
-  }
+  bool operator!=(const InfoNode<T> &Other) const { return !(*this == Other); }
 
   bool operator<(const InfoNode<T> &Other) const {
     if (!Ptr || !Other.Ptr)
@@ -176,8 +171,7 @@ InfoNode<T> *allocateListNode(llvm::BumpPtrAllocator &Alloc, T *Item) {
   return allocatePtr<InfoNode<T>>(Alloc, Item);
 }
 
-template <typename T>
-InfoNode<T> *allocateListNodeTransient(T *Item) {
+template <typename T> InfoNode<T> *allocateListNodeTransient(T *Item) {
   return allocateListNode<T>(TransientArena, Item);
 }
 
@@ -192,8 +186,6 @@ template <typename T> using OwningPtrVec = std::vector<OwnedPtr<T>>;
 // An abstraction for arrays of owned pointers.
 // To be eventually transitioned to arena-allocated arrays of bare pointers.
 template <typename T> using OwningPtrArray = std::vector<OwnedPtr<T>>;
-
-
 
 // SHA1'd hash of a USR.
 using SymbolID = std::array<uint8_t, 20>;
@@ -296,8 +288,6 @@ struct CommentInfo {
   bool Explicit = false;    // Indicates if the direction of a param is explicit
                             // (for (T)ParamCommand).
 };
-
-
 
 struct Reference {
   // This variant (that takes no qualified name parameter) uses the Name as the

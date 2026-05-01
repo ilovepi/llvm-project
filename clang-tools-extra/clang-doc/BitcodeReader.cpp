@@ -163,9 +163,9 @@ static llvm::Error decodeRecord(const Record &R, OwningVec<Location> &Field,
     return llvm::createStringError(llvm::inconvertibleErrorCode(),
                                    "integer too large to parse");
 
-  Field.push_back(*allocateListNodeTransient<Location>(static_cast<int>(R[0]),
-                                              static_cast<int>(R[1]), Blob,
-                                              static_cast<bool>(R[2])));
+  Field.push_back(*allocateListNodeTransient<Location>(
+      static_cast<int>(R[0]), static_cast<int>(R[1]), Blob,
+      static_cast<bool>(R[2])));
   return llvm::Error::success();
 }
 
@@ -1024,10 +1024,12 @@ template <>
 llvm::Error addReference(NamespaceInfo *I, Reference &&R, FieldId F) {
   switch (F) {
   case FieldId::F_child_namespace:
-    I->Children.Namespaces.push_back(*allocateListNodeTransient<Reference>(std::move(R)));
+    I->Children.Namespaces.push_back(
+        *allocateListNodeTransient<Reference>(std::move(R)));
     return llvm::Error::success();
   case FieldId::F_child_record:
-    I->Children.Records.push_back(*allocateListNodeTransient<Reference>(std::move(R)));
+    I->Children.Records.push_back(
+        *allocateListNodeTransient<Reference>(std::move(R)));
     return llvm::Error::success();
   default:
     return llvm::createStringError(llvm::inconvertibleErrorCode(),
@@ -1050,7 +1052,8 @@ llvm::Error addReference(FunctionInfo *I, Reference &&R, FieldId F) {
 template <> llvm::Error addReference(RecordInfo *I, Reference &&R, FieldId F) {
   switch (F) {
   case FieldId::F_child_record:
-    I->Children.Records.push_back(*allocateListNodeTransient<Reference>(std::move(R)));
+    I->Children.Records.push_back(
+        *allocateListNodeTransient<Reference>(std::move(R)));
     return llvm::Error::success();
   default:
     return llvm::createStringError(llvm::inconvertibleErrorCode(),

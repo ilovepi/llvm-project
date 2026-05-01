@@ -248,7 +248,8 @@ typedef struct {} G;)raw",
   TemplateMethod.Access = AccessSpecifier::AS_public;
   TemplateMethod.IsMethod = true;
   InfoNode<FunctionInfo> TemplateMethodNode(&TemplateMethod);
-  ExpectedRecordWithTemplateMethod.Children.Functions.push_back(TemplateMethodNode);
+  ExpectedRecordWithTemplateMethod.Children.Functions.push_back(
+      TemplateMethodNode);
   CheckRecordInfo(&ExpectedRecordWithTemplateMethod, RecordWithTemplateMethod);
 
   RecordInfo *TemplatedRecord = InfoAsRecord(Infos[7]);
@@ -267,7 +268,8 @@ typedef struct {} G;)raw",
   SpecializedTemplateMethod.Namespace = llvm::ArrayRef(NsT2);
   SpecializedTemplateMethod.Access = AccessSpecifier::AS_public;
   SpecializedTemplateMethod.IsMethod = true;
-  InfoNode<FunctionInfo> SpecializedTemplateMethodNode(&SpecializedTemplateMethod);
+  InfoNode<FunctionInfo> SpecializedTemplateMethodNode(
+      &SpecializedTemplateMethod);
   ExpectedTemplatedRecord.Children.Functions.push_back(
       SpecializedTemplateMethodNode);
   CheckRecordInfo(&ExpectedTemplatedRecord, TemplatedRecord);
