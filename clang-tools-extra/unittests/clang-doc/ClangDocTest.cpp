@@ -10,6 +10,8 @@
 #include "Representation.h"
 #include "clang/AST/RecursiveASTVisitor.h"
 #include "clang/Basic/DiagnosticOptions.h"
+#include "llvm/Support/Parallel.h"
+#include "llvm/Support/Threading.h"
 #include "gtest/gtest.h"
 
 namespace clang {
@@ -17,7 +19,10 @@ namespace doc {
 
 ClangDocContextTest::ClangDocContextTest()
     : DiagID(new DiagnosticIDs()),
-      Diags(DiagID, DiagOpts, new IgnoringDiagConsumer()) {}
+      Diags(DiagID, DiagOpts, new IgnoringDiagConsumer()) {
+  // Required to intern into the concurrent string pool from the test thread.
+  llvm::parallel::strategy = llvm::hardware_concurrency(1);
+}
 
 ClangDocContextTest::~ClangDocContextTest() = default;
 

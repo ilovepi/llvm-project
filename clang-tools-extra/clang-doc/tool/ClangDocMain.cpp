@@ -360,8 +360,6 @@ Example usage for a project using a compile commands database:
         DiagnosticsEngine::Error, "error merging bitcode: %0");
     // Note: we use per-thread arenas, so Pool must outlive the last use of this
     // memory in the generators.
-    // ExecutorConcurrency is a flag exposed by AllTUsExecution.h
-    llvm::parallel::strategy = llvm::hardware_concurrency(ExecutorConcurrency);
     {
       llvm::TimeTraceScope TS("Reduce");
       llvm::parallel::TaskGroup Pool;
@@ -429,7 +427,9 @@ Example usage for a project using a compile commands database:
 
     {
       llvm::TimeTraceScope Sort("Sort USRToInfo");
-      sortUsrToInfo(USRToInfo);
+      llvm::parallel::strategy = llvm::hardware_concurrency(1);
+      llvm::parallel::TaskGroup SortPool;
+      SortPool.spawn([&]() { sortUsrToInfo(USRToInfo); });
     }
 
     llvm::timeTraceProfilerBegin("Writing output", "total runtime");
@@ -439,10 +439,18 @@ Example usage for a project using a compile commands database:
     // Run the generator.
     llvm::outs() << "Generating docs...\n";
 
-    ExitOnErr(
-        G->generateDocumentation(OutDirectory, std::move(USRToInfo), CDCtx));
-    llvm::outs() << "Generating assets for docs...\n";
-    ExitOnErr(G->createResources(CDCtx));
+    // Generation interns strings, so it must run on a thread with a valid
+    // llvm::parallel::getThreadIndex(), but its only single threaded.
+    {
+      llvm::parallel::strategy = llvm::hardware_concurrency(1);
+      llvm::parallel::TaskGroup GenPool;
+      GenPool.spawn([&]() {
+        ExitOnErr(G->generateDocumentation(OutDirectory, std::move(USRToInfo),
+                                           CDCtx));
+        llvm::outs() << "Generating assets for docs...\n";
+        ExitOnErr(G->createResources(CDCtx));
+      });
+    }
     llvm::timeTraceProfilerEnd();
   } // time trace main
 

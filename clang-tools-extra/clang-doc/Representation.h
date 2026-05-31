@@ -20,6 +20,7 @@
 #include "clang/Tooling/Execution.h"
 #include "llvm/ADT/SmallString.h"
 #include "llvm/ADT/SmallVector.h"
+#include "llvm/ADT/StringPool.h"
 #include "llvm/ADT/ilist_node.h"
 #include "llvm/ADT/simple_ilist.h"
 #include "llvm/Support/Allocator.h"
@@ -34,23 +35,7 @@
 namespace clang {
 namespace doc {
 
-class ConcurrentStringPool {
-public:
-  StringRef intern(StringRef Name) {
-    if (Name.empty())
-      return StringRef();
-
-    llvm::sys::SmartScopedLock<true> Lock(PoolMutex);
-    return Saver.save(Name);
-  }
-
-private:
-  llvm::sys::SmartMutex<true> PoolMutex;
-  llvm::BumpPtrAllocator Alloc;
-  llvm::UniqueStringSaver Saver{Alloc};
-};
-
-ConcurrentStringPool &getGlobalStringPool();
+llvm::StringPool &getGlobalStringPool();
 
 llvm::BumpPtrAllocator &getTransientArena();
 llvm::BumpPtrAllocator &getPersistentArena();
@@ -63,14 +48,14 @@ inline StringRef internString(const Twine &T) {
     StringRef S = T.getSingleStringRef();
     if (S.empty())
       return StringRef();
-    return getGlobalStringPool().intern(S);
+    return getGlobalStringPool().save(S);
   }
 
   SmallString<128> Buffer;
   StringRef S = T.toStringRef(Buffer);
   if (S.empty())
     return StringRef();
-  return getGlobalStringPool().intern(S);
+  return getGlobalStringPool().save(S);
 }
 
 template <typename T>

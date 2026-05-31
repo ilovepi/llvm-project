@@ -39,8 +39,8 @@ llvm::BumpPtrAllocator &getPersistentArena() {
   return PersistentArena;
 }
 
-ConcurrentStringPool &getGlobalStringPool() {
-  static ConcurrentStringPool GlobalPool;
+llvm::StringPool &getGlobalStringPool() {
+  static llvm::StringPool GlobalPool;
   return GlobalPool;
 }
 
