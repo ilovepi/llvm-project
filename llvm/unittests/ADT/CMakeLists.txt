@@ -89,6 +89,7 @@ add_llvm_unittest(ADTTests
   StatisticTest.cpp
   StringExtrasTest.cpp
   StringMapTest.cpp
+  StringPoolTest.cpp
   StringRefTest.cpp
   StringSetTest.cpp
   StringSwitchTest.cpp
