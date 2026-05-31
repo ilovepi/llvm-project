@@ -24,6 +24,8 @@
 #include "clang/Tooling/Execution.h"
 #include "clang/Tooling/Tooling.h"
 #include "llvm/Bitstream/BitstreamWriter.h"
+#include "llvm/Support/Parallel.h"
+#include "llvm/Support/Threading.h"
 #include <string>
 #include <vector>
 
@@ -227,6 +229,48 @@ static void BM_Index_Insertion(benchmark::State &State) {
   }
 }
 BENCHMARK(BM_Index_Insertion)->Range(10, 10000);
+
+// --- String Interning Benchmarks ---
+
+// Build a large, deterministic distribution of distinct strings whose lengths
+// vary widely (short identifiers through long qualified names), to exercise the
+// global string pool the way mapping does.
+static std::vector<std::string> makeInternStrings(size_t N) {
+  static const char Charset[] =
+      "abcdefghijklmnopqrstuvwxyzABCDEFGHIJKLMNOPQRSTUVWXYZ0123456789_:";
+  std::vector<std::string> Strings;
+  Strings.reserve(N);
+  for (size_t I = 0; I < N; ++I) {
+    size_t Len = 4 + (I * 37) % 509;
+    std::string S;
+    S.reserve(Len);
+    for (size_t J = 0; J < Len; ++J)
+      S.push_back(Charset[(I * 131 + J * 31) % (sizeof(Charset) - 1)]);
+    Strings.push_back(std::move(S));
+  }
+  return Strings;
+}
+
+// Stress interning throughput across threads. State.range(0) is the intern ops
+// per iteration. Runs on llvm::parallel so workers have a valid
+// getThreadIndex() for the pool's per-thread allocator.
+static void BM_InternStringConcurrent(benchmark::State &State) {
+  const size_t NumOps = State.range(0);
+  static const std::vector<std::string> Strings = makeInternStrings(1 << 16);
+
+  llvm::parallel::strategy = llvm::hardware_concurrency();
+
+  for (auto _ : State) {
+    llvm::parallelFor(0, NumOps, [&](size_t I) {
+      benchmark::DoNotOptimize(internString(Strings[I % Strings.size()]));
+    });
+  }
+  State.SetItemsProcessed(int64_t(State.iterations()) * NumOps);
+}
+BENCHMARK(BM_InternStringConcurrent)
+    ->RangeMultiplier(8)
+    ->Range(1 << 14, 1 << 20)
+    ->UseRealTime();
 
 } // namespace doc
 } // namespace clang
