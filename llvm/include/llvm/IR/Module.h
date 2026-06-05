@@ -910,27 +910,20 @@ public:
   /// Returns zero if not present in module.
   unsigned getCodeViewFlag() const;
 
-/// @}
-/// @name Utility functions for querying and setting PIC level
-/// @{
+  /// @}
+  /// Returns the position independence level
+  PILevel::Level getPILevel() const;
 
-  /// Returns the PIC level (small or large model)
-  PICLevel::Level getPICLevel() const;
+  /// Set the position independence level
+  void setPILevel(PILevel::Level PL);
 
-  /// Set the PIC level (small or large model)
-  void setPICLevel(PICLevel::Level PL);
-/// @}
+  /// Returns true if this module is compiled with position independence (PIC or
+  /// PIE)
+  bool isPIC() const;
 
-/// @}
-/// @name Utility functions for querying and setting PIE level
-/// @{
-
-  /// Returns the PIE level (small or large model)
-  PIELevel::Level getPIELevel() const;
-
-  /// Set the PIE level (small or large model)
-  void setPIELevel(PIELevel::Level PL);
-/// @}
+  /// Returns true if this module is compiled as a Position Independent
+  /// Executable (PIE)
+  bool isPIE() const;
 
   /// @}
   /// @name Utility function for querying and setting code model

@@ -258,7 +258,7 @@ bool TargetMachine::useEmulatedTLS() const { return Options.EmulatedTLS; }
 bool TargetMachine::useTLSDESC() const { return Options.EnableTLSDESC; }
 
 TLSModel::Model TargetMachine::getTLSModel(const GlobalValue *GV) const {
-  bool IsPIE = GV->getParent()->getPIELevel() != PIELevel::Default;
+  bool IsPIE = GV->getParent()->isPIE();
   Reloc::Model RM = getRelocationModel();
   bool IsSharedLibrary = RM == Reloc::PIC_ && !IsPIE;
   bool IsLocal = shouldAssumeDSOLocal(GV);

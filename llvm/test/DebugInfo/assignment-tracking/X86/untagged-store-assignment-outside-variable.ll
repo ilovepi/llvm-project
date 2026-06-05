@@ -18,8 +18,8 @@
 ;; no assertion triggered, see llvm.org/PR65004).
 
 ; CHECK: bb.1.tailrecurse:
-; CHECK: DBG_VALUE $noreg, $noreg, !18, !DIExpression()
-; CHECK: DBG_VALUE %stack.0.c, $noreg, !18, !DIExpression(DW_OP_deref)
+; CHECK: DBG_VALUE $noreg, $noreg, !17, !DIExpression()
+; CHECK: DBG_VALUE %stack.0.c, $noreg, !17, !DIExpression(DW_OP_deref)
 ; CHECK: bb.2.if.then:
 
 target triple = "x86_64-unknown-linux-gnu"

@@ -611,7 +611,7 @@ entry:
 ; TUNIT: [[META1:![0-9]+]] = !{i32 1, !"wchar_size", i32 4}
 ; TUNIT: [[META2:![0-9]+]] = !{i32 7, !"openmp", i32 50}
 ; TUNIT: [[META3:![0-9]+]] = !{i32 7, !"openmp-device", i32 50}
-; TUNIT: [[META4:![0-9]+]] = !{i32 8, !"PIC Level", i32 2}
+; TUNIT: [[META4:![0-9]+]] = !{i32 8, !"PI Level", i32 4}
 ; TUNIT: [[META5:![0-9]+]] = !{i32 7, !"frame-pointer", i32 2}
 ; TUNIT: [[META6:![0-9]+]] = !{i32 7, !"Dwarf Version", i32 2}
 ; TUNIT: [[META7:![0-9]+]] = !{i32 2, !"Debug Info Version", i32 3}
@@ -620,7 +620,7 @@ entry:
 ; CGSCC: [[META1:![0-9]+]] = !{i32 1, !"wchar_size", i32 4}
 ; CGSCC: [[META2:![0-9]+]] = !{i32 7, !"openmp", i32 50}
 ; CGSCC: [[META3:![0-9]+]] = !{i32 7, !"openmp-device", i32 50}
-; CGSCC: [[META4:![0-9]+]] = !{i32 8, !"PIC Level", i32 2}
+; CGSCC: [[META4:![0-9]+]] = !{i32 8, !"PI Level", i32 4}
 ; CGSCC: [[META5:![0-9]+]] = !{i32 7, !"frame-pointer", i32 2}
 ; CGSCC: [[META6:![0-9]+]] = !{i32 7, !"Dwarf Version", i32 2}
 ; CGSCC: [[META7:![0-9]+]] = !{i32 2, !"Debug Info Version", i32 3}

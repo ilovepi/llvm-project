@@ -1078,7 +1078,7 @@ void SystemZAsmPrinter::lowerLOAD_GLOBAL_STACKGUARD_ADDR(
     OutStreamer->emitLabel(Sym);
   }
   // Emit the address load.
-  if (M->getPICLevel() == PICLevel::NotPIC) {
+  if (!M->isPIC()) {
     EmitToStreamer(*OutStreamer, MCInstBuilder(SystemZ::LARL)
                                      .addReg(AddrReg)
                                      .addExpr(MCSymbolRefExpr::create(

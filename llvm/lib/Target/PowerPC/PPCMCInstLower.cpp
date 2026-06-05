@@ -139,7 +139,7 @@ static MCOperand GetSymbolRef(const MachineOperand &MO, const MCSymbol *Symbol,
   const MCExpr *Expr = MCSymbolRefExpr::create(Symbol, RefKind, Ctx);
   // If -msecure-plt -fPIC, add 32768 to symbol.
   if (Subtarget->isSecurePlt() && TM.isPositionIndependent() &&
-      M->getPICLevel() == PICLevel::BigPIC &&
+      PILevel::isLarge(M->getPILevel()) &&
       MO.getTargetFlags() == PPCII::MO_PLT)
     Expr =
         MCBinaryExpr::createAdd(Expr, MCConstantExpr::create(32768, Ctx), Ctx);

@@ -9,14 +9,14 @@
 ; RUN: opt %s -passes=simplifycfg -hoist-common-insts -pick-merged-source-locations -S | FileCheck %s --check-prefix=ENABLED
 ; ENABLED: call i32 @bar{{.*!dbg !}}[[TAG:[0-9]+]]
 ; ENABLED-NOT: call i32 @bar
-; ENABLED: ![[TAG]] = !DILocation(line: 9, column: 16, scope: !9)
+; ENABLED: ![[TAG]] = !DILocation(line: 9, column: 16, scope: !8)
 
 ;; Run simplifycfg without the pass to ensure that we don't spuriously start
 ;; passing the test if simplifycfg behaviour changes.
 ; RUN: opt %s -passes=simplifycfg -hoist-common-insts -pick-merged-source-locations=false -S | FileCheck %s --check-prefix=DISABLED
 ; DISABLED: call i32 @bar{{.*!dbg !}}[[TAG:[0-9]+]]
 ; DISABLED-NOT: call i32 @bar
-; DISABLED: ![[TAG]] = !DILocation(line: 0, scope: !9)
+; DISABLED: ![[TAG]] = !DILocation(line: 0, scope: !8)
 
 ; ModuleID = '../llvm/test/DebugInfo/Inputs/debug-info-merge-call.c'
 source_filename = "../llvm/test/DebugInfo/Inputs/debug-info-merge-call.c"

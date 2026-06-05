@@ -155,7 +155,7 @@ attributes #6 = { convergent nounwind "llvm.assume"="ompx_spmd_amenable" }
 ; CHECK: [[META1:![0-9]+]] = !{i32 1, !"wchar_size", i32 4}
 ; CHECK: [[META2:![0-9]+]] = !{i32 7, !"openmp", i32 50}
 ; CHECK: [[META3:![0-9]+]] = !{i32 7, !"openmp-device", i32 50}
-; CHECK: [[META4:![0-9]+]] = !{i32 8, !"PIC Level", i32 2}
+; CHECK: [[META4:![0-9]+]] = !{i32 8, !"PI Level", i32 4}
 ; CHECK: [[META5:![0-9]+]] = !{i32 7, !"frame-pointer", i32 2}
 ; CHECK: [[META6:![0-9]+]] = !{!"{{.*}}clang version {{.*}}"}
 ; CHECK: [[DOUBLE_TBAA7]] = !{[[META8:![0-9]+]], [[META8]], i64 0}

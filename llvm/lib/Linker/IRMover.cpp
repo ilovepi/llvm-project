@@ -1166,14 +1166,14 @@ void IRLinker::linkNamedMDNodes() {
 
 /// Merge the linker flags in Src into the Dest module.
 Error IRLinker::linkModuleFlagsMetadata() {
+  // Check for module flag for updates before do anything.
+  UpgradeModuleFlags(*SrcM);
+  UpgradeNVVMAnnotations(*SrcM);
+
   // If the source module has no module flags, we are done.
   const NamedMDNode *SrcModFlags = SrcM->getModuleFlagsMetadata();
   if (!SrcModFlags)
     return Error::success();
-
-  // Check for module flag for updates before do anything.
-  UpgradeModuleFlags(*SrcM);
-  UpgradeNVVMAnnotations(*SrcM);
 
   // If the destination module doesn't have module flags yet, then just copy
   // over the source module's flags.
@@ -1183,6 +1183,17 @@ Error IRLinker::linkModuleFlagsMetadata() {
       DstModFlags->addOperand(SrcModFlags->getOperand(I));
 
     return Error::success();
+  }
+
+  // Inject default PI Level if one of them is missing it.
+  bool SrcHasPI = SrcM->getModuleFlag("PI Level") != nullptr;
+  bool DstHasPI = DstM.getModuleFlag("PI Level") != nullptr;
+
+  if (SrcHasPI || DstHasPI) {
+    if (!SrcHasPI)
+      SrcM->addModuleFlag(Module::Min, "PI Level", static_cast<uint32_t>(0));
+    if (!DstHasPI)
+      DstM.addModuleFlag(Module::Min, "PI Level", static_cast<uint32_t>(0));
   }
 
   // First build a map of the existing module flags and requirements.
@@ -1243,6 +1254,77 @@ Error IRLinker::linkModuleFlagsMetadata() {
     ConstantInt *DstBehavior =
         mdconst::extract<ConstantInt>(DstOp->getOperand(0));
     unsigned DstBehaviorValue = DstBehavior->getZExtValue();
+
+    if (ID->getString() == "PI Level") {
+      ConstantInt *DstValue =
+          mdconst::extract<ConstantInt>(DstOp->getOperand(2));
+      ConstantInt *SrcValue =
+          mdconst::extract<ConstantInt>(SrcOp->getOperand(2));
+      unsigned DstVal = DstValue->getZExtValue();
+      unsigned SrcVal = SrcValue->getZExtValue();
+      unsigned MergedVal = DstVal;
+
+      if (DstVal != SrcVal) {
+        const unsigned NotPI = 0;
+        const unsigned SmallPIE = 1;
+        const unsigned LargePIE = 2;
+        const unsigned SmallPIC = 3;
+        const unsigned LargePIC = 4;
+        const unsigned StaticPIE = 5;
+
+        auto mergeTwo = [](unsigned v1, unsigned v2) {
+          auto getPIC = [](unsigned v) {
+            if (v == NotPI || v == StaticPIE)
+              return 0;
+            if (v == SmallPIE || v == SmallPIC)
+              return 1;
+            if (v == LargePIE || v == LargePIC)
+              return 2;
+            return 0;
+          };
+          auto getPIE = [](unsigned v) {
+            if (v == NotPI || v == SmallPIC || v == LargePIC)
+              return 0;
+            if (v == SmallPIE)
+              return 1;
+            if (v == LargePIE || v == StaticPIE)
+              return 2;
+            return 0;
+          };
+          unsigned pic1 = getPIC(v1), pic2 = getPIC(v2);
+          unsigned pie1 = getPIE(v1), pie2 = getPIE(v2);
+          unsigned resPIC = std::min(pic1, pic2);
+          unsigned resPIE = std::max(pie1, pie2);
+
+          if (resPIC == 0) {
+            if (resPIE == 0)
+              return NotPI;
+            return StaticPIE;
+          }
+          if (resPIC == 1) {
+            if (resPIE > 0)
+              return SmallPIE;
+            return SmallPIC;
+          }
+          if (resPIC == 2) {
+            if (resPIE > 0)
+              return LargePIE;
+            return LargePIC;
+          }
+          return NotPI;
+        };
+        MergedVal = mergeTwo(DstVal, SrcVal);
+      }
+
+      Metadata *FlagOps[] = {
+          DstOp->getOperand(0), ID,
+          ConstantAsMetadata::get(ConstantInt::get(
+              Type::getInt32Ty(DstM.getContext()), MergedVal))};
+      MDNode *Flag = MDNode::get(DstM.getContext(), FlagOps);
+      DstModFlags->setOperand(DstIndex, Flag);
+      Flags[ID].first = Flag;
+      continue;
+    }
 
     auto overrideDstValue = [&]() {
       DstModFlags->setOperand(DstIndex, SrcOp);

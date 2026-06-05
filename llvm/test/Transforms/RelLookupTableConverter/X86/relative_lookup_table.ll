@@ -429,6 +429,6 @@ define ptr @table_with_skipped_elements_wrong(i64 %index) {
 ;.
 ; CHECK: attributes #[[ATTR0:[0-9]+]] = { nocallback nofree nosync nounwind willreturn memory(argmem: read) }
 ;.
-; CHECK: [[META0:![0-9]+]] = !{i32 8, !"PIC Level", i32 2}
+; CHECK: [[META0:![0-9]+]] = !{i32 8, !"PI Level", i32 4}
 ; CHECK: [[META1:![0-9]+]] = !{i32 1, !"Code Model", i32 1}
 ;.

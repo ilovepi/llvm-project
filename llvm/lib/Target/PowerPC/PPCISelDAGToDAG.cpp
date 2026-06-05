@@ -476,7 +476,7 @@ SDNode *PPCDAGToDAGISel::getGlobalBaseReg() {
       if (Subtarget->isTargetELF()) {
         GlobalBaseReg = PPC::R30;
         if (!Subtarget->isSecurePlt() &&
-            M->getPICLevel() == PICLevel::SmallPIC) {
+            PILevel::isSmall(M->getPILevel())) {
           BuildMI(FirstMBB, MBBI, dl, TII.get(PPC::MoveGOTtoLR));
           BuildMI(FirstMBB, MBBI, dl, TII.get(PPC::MFLR), GlobalBaseReg);
           MF->getInfo<PPCFunctionInfo>()->setUsesPICBase(true);
@@ -5502,7 +5502,7 @@ void PPCDAGToDAGISel::Select(SDNode *N) {
     const Module *Mod = MF->getFunction().getParent();
     if (PPCLowering->getPointerTy(CurDAG->getDataLayout()) != MVT::i32 ||
         !Subtarget->isSecurePlt() || !Subtarget->isTargetELF() ||
-        Mod->getPICLevel() == PICLevel::SmallPIC)
+        PILevel::isSmall(Mod->getPILevel()))
       break;
     // Attach global base pointer on GETtlsADDR32 node in order to
     // generate secure plt code for TLS symbols.

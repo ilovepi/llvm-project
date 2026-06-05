@@ -135,8 +135,8 @@ body:             |
     ; Check the source location of the ADDWri was reused (usually the
     ; copy to $w0 carries the same debug location as the return)
 
-    ; CHECK: $w0 = ADDWri {{.*}}, 3, 0, debug-location !26
-    ; CHECK-NEXT: RET_ReallyLR implicit $w0, debug-location !27
+    ; CHECK: $w0 = ADDWri {{.*}}, 3, 0, debug-location !25
+    ; CHECK-NEXT: RET_ReallyLR implicit $w0, debug-location !26
     %1:gpr32 = COPY $w1
     %0:gpr32 = COPY $w0
     %2:gpr32common = ADDWrr %0, %1, debug-location !25
@@ -207,9 +207,9 @@ body:             |
     ; Check the source location of the ADDWri was reused (usually the
     ; copy to $w1 carries the same debug location as the BL)
 
-    ; CHECK:     $x0 = COPY  {{.*}}, debug-location !36
-    ; CHECK-NEXT: $w1 = ADDWri {{.*}}, 23, 0, debug-location !34
-    ; CHECK-NEXT: BL @bar, csr_aarch64_aapcs, implicit-def dead $lr, implicit $sp, implicit $x0, implicit $w1, implicit-def $sp, debug-location !36
+    ; CHECK:     $x0 = COPY  {{.*}}, debug-location !35
+    ; CHECK-NEXT: $w1 = ADDWri {{.*}}, 23, 0, debug-location !33
+    ; CHECK-NEXT: BL @bar, csr_aarch64_aapcs, implicit-def dead $lr, implicit $sp, implicit $x0, implicit $w1, implicit-def $sp, debug-location !35
 
     %0:gpr32common = COPY $w0
     ADJCALLSTACKDOWN 0, 0, implicit-def dead $sp, implicit $sp, debug-location !36

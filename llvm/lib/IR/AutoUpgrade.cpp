@@ -6221,7 +6221,80 @@ bool llvm::UpgradeModuleFlags(Module &M) {
   if (!ModFlags)
     return false;
 
-  bool HasObjCFlag = false, HasClassProperties = false, Changed = false;
+  bool Changed = false;
+  std::optional<uint64_t> PicLevelVal;
+  std::optional<uint64_t> PieLevelVal;
+  int PicLevelIdx = -1;
+  int PieLevelIdx = -1;
+  for (unsigned I = 0, E = ModFlags->getNumOperands(); I != E; ++I) {
+    MDNode *Op = ModFlags->getOperand(I);
+    if (Op->getNumOperands() != 3)
+      continue;
+    MDString *ID = dyn_cast_or_null<MDString>(Op->getOperand(1));
+    if (!ID)
+      continue;
+    if (ID->getString() == "PIC Level") {
+      if (auto *Val =
+              mdconst::dyn_extract_or_null<ConstantInt>(Op->getOperand(2))) {
+        PicLevelVal = Val->getLimitedValue();
+        PicLevelIdx = I;
+      }
+    } else if (ID->getString() == "PIE Level") {
+      if (auto *Val =
+              mdconst::dyn_extract_or_null<ConstantInt>(Op->getOperand(2))) {
+        PieLevelVal = Val->getLimitedValue();
+        PieLevelIdx = I;
+      }
+    }
+  }
+
+  if (PicLevelVal || PieLevelVal) {
+    uint64_t PieVal = PieLevelVal.value_or(0);
+    uint64_t PicVal = PicLevelVal.value_or(0);
+    PILevel::Level UnifiedLevel = PILevel::Level::NotPI;
+    if (PieVal > 0) {
+      UnifiedLevel =
+          (PieVal == 1) ? PILevel::Level::SmallPIE : PILevel::Level::LargePIE;
+    } else if (PicVal > 0) {
+      UnifiedLevel =
+          (PicVal == 1) ? PILevel::Level::SmallPIC : PILevel::Level::LargePIC;
+    }
+
+    // Create the new unified PI Level metadata node.
+    Metadata *Ops[3] = {ConstantAsMetadata::get(ConstantInt::get(
+                            Type::getInt32Ty(M.getContext()), Module::Min)),
+                        MDString::get(M.getContext(), "PI Level"),
+                        ConstantAsMetadata::get(ConstantInt::get(
+                            Type::getInt32Ty(M.getContext()),
+                            static_cast<unsigned>(UnifiedLevel)))};
+    MDNode *NewNode = MDNode::get(M.getContext(), Ops);
+
+    // If both exist, we replace the first one with the new node, and we will
+    // delete the second one.
+    if (PicLevelIdx != -1 && PieLevelIdx != -1) {
+      int FirstIdx = std::min(PicLevelIdx, PieLevelIdx);
+      int SecondIdx = std::max(PicLevelIdx, PieLevelIdx);
+      ModFlags->setOperand(FirstIdx, NewNode);
+
+      // Rebuild the operands list without the second index to delete it.
+      SmallVector<MDNode *, 4> RemainingOps;
+      for (unsigned I = 0, E = ModFlags->getNumOperands(); I != E; ++I) {
+        if (I == (unsigned)SecondIdx)
+          continue;
+        RemainingOps.push_back(ModFlags->getOperand(I));
+      }
+      ModFlags->clearOperands();
+      for (MDNode *Op : RemainingOps)
+        ModFlags->addOperand(Op);
+    } else {
+      // Only one exists, replace it in-place. No index shift!
+      int TargetIdx = (PicLevelIdx != -1) ? PicLevelIdx : PieLevelIdx;
+      ModFlags->setOperand(TargetIdx, NewNode);
+    }
+    Changed = true;
+  }
+
+  bool HasObjCFlag = false, HasClassProperties = false;
   bool HasSwiftVersionFlag = false;
   uint8_t SwiftMajorVersion, SwiftMinorVersion;
   uint32_t SwiftABIVersion;

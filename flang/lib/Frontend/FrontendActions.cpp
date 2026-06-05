@@ -812,10 +812,15 @@ void CodeGenAction::generateLLVMIR() {
 
   // Set PIC/PIE level LLVM module flags.
   if (opts.PICLevel > 0) {
-    llvmModule->setPICLevel(static_cast<llvm::PICLevel::Level>(opts.PICLevel));
-    if (opts.IsPIE)
-      llvmModule->setPIELevel(
-          static_cast<llvm::PIELevel::Level>(opts.PICLevel));
+    llvm::PILevel::Level PL = llvm::PILevel::Level::NotPI;
+    if (opts.IsPIE) {
+      PL = (opts.PICLevel == 1) ? llvm::PILevel::Level::SmallPIE
+                                : llvm::PILevel::Level::LargePIE;
+    } else {
+      PL = (opts.PICLevel == 1) ? llvm::PILevel::Level::SmallPIC
+                                : llvm::PILevel::Level::LargePIC;
+    }
+    llvmModule->setPILevel(PL);
   }
 
   const TargetOptions &targetOpts = ci.getInvocation().getTargetOpts();

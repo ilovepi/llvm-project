@@ -17,5 +17,5 @@ export int func() {
     return x;
 }
 
-// CHECK: ![[METADATA_NUM:[0-9]+]] = !{{{.*}}, !"PIC Level", i32 2}
-// NOPIC-NOT: ![[METADATA_NUM:[0-9]+]] = !{{{.*}}, !"PIC Level", i32 2}
+// CHECK: ![[METADATA_NUM:[0-9]+]] = !{{{.*}}, !"PI Level", i32 4}
+// NOPIC-NOT: ![[METADATA_NUM:[0-9]+]] = !{{{.*}}, !"PI Level", i32 4}

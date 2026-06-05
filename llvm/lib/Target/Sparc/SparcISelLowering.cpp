@@ -2142,10 +2142,10 @@ SDValue SparcTargetLowering::makeAddress(SDValue Op, SelectionDAG &DAG) const {
   // Handle PIC mode first. SPARC needs a got load for every variable!
   if (isPositionIndependent()) {
     const Module *M = DAG.getMachineFunction().getFunction().getParent();
-    PICLevel::Level picLevel = M->getPICLevel();
+    PILevel::Level picLevel = M->getPILevel();
     SDValue Idx;
 
-    if (picLevel == PICLevel::SmallPIC) {
+    if (PILevel::isSmall(picLevel)) {
       // This is the pic13 code model, the GOT is known to be smaller than 8KiB.
       Idx = DAG.getNode(SPISD::Lo, DL, Op.getValueType(),
                         withTargetFlags(Op, ELF::R_SPARC_GOT13, DAG));

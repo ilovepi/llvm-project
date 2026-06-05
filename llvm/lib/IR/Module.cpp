@@ -624,34 +624,30 @@ Comdat *Module::getOrInsertComdat(StringRef Name) {
   return &Entry.second;
 }
 
-PICLevel::Level Module::getPICLevel() const {
-  auto *Val = cast_or_null<ConstantAsMetadata>(getModuleFlag("PIC Level"));
+PILevel::Level Module::getPILevel() const {
+  auto *Val = cast_or_null<ConstantAsMetadata>(getModuleFlag("PI Level"));
 
   if (!Val)
-    return PICLevel::NotPIC;
+    return PILevel::Level::NotPI;
 
-  return static_cast<PICLevel::Level>(
+  return static_cast<PILevel::Level>(
       cast<ConstantInt>(Val->getValue())->getZExtValue());
 }
 
-void Module::setPICLevel(PICLevel::Level PL) {
-  // The merge result of a non-PIC object and a PIC object can only be reliably
-  // used as a non-PIC object, so use the Min merge behavior.
-  addModuleFlag(ModFlagBehavior::Min, "PIC Level", PL);
+void Module::setPILevel(PILevel::Level PL) {
+  addModuleFlag(ModFlagBehavior::Min, "PI Level", static_cast<unsigned>(PL));
 }
 
-PIELevel::Level Module::getPIELevel() const {
-  auto *Val = cast_or_null<ConstantAsMetadata>(getModuleFlag("PIE Level"));
-
-  if (!Val)
-    return PIELevel::Default;
-
-  return static_cast<PIELevel::Level>(
-      cast<ConstantInt>(Val->getValue())->getZExtValue());
+bool Module::isPIC() const {
+  PILevel::Level Level = getPILevel();
+  return Level != PILevel::Level::NotPI && Level != PILevel::Level::StaticPIE;
 }
 
-void Module::setPIELevel(PIELevel::Level PL) {
-  addModuleFlag(ModFlagBehavior::Max, "PIE Level", PL);
+bool Module::isPIE() const {
+  PILevel::Level Level = getPILevel();
+  return Level == PILevel::Level::SmallPIE ||
+         Level == PILevel::Level::LargePIE ||
+         Level == PILevel::Level::StaticPIE;
 }
 
 std::optional<CodeModel::Model> Module::getCodeModel() const {
@@ -733,7 +729,7 @@ bool Module::getDirectAccessExternalData() const {
       getModuleFlag("direct-access-external-data"));
   if (Val)
     return cast<ConstantInt>(Val->getValue())->getZExtValue() > 0;
-  return getPICLevel() == PICLevel::NotPIC;
+  return !isPIC();
 }
 
 void Module::setDirectAccessExternalData(bool Value) {

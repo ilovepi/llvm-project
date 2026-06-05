@@ -760,7 +760,7 @@ void PPCAsmPrinter::emitTlsCall(const MachineInstr *MI,
 
   // Add 32768 offset to the symbol so we follow up the latest GOT/PLT ABI.
   if (Kind == PPC::S_PLT && Subtarget->isSecurePlt() &&
-      M->getPICLevel() == PICLevel::BigPIC)
+      PILevel::isLarge(M->getPILevel()))
     TlsRef = MCBinaryExpr::createAdd(
         TlsRef, MCConstantExpr::create(32768, OutContext), OutContext);
   const MachineOperand &MO = MI->getOperand(2);
@@ -843,7 +843,7 @@ void PPCAsmPrinter::emitInstruction(const MachineInstr *MI) {
   const bool HasAIXSmallLocalTLS = Subtarget->hasAIXSmallLocalExecTLS() ||
                                    Subtarget->hasAIXSmallLocalDynamicTLS();
   const Module *M = MF->getFunction().getParent();
-  PICLevel::Level PL = M->getPICLevel();
+  PILevel::Level PL = M->getPILevel();
 
 #ifndef NDEBUG
   // Validate that SPE and FPU are mutually exclusive in codegen
@@ -1010,8 +1010,9 @@ void PPCAsmPrinter::emitInstruction(const MachineInstr *MI) {
     if (Subtarget->isSecurePlt() && isPositionIndependent() ) {
       MCRegister PICR = TmpInst.getOperand(0).getReg();
       MCSymbol *BaseSymbol = OutContext.getOrCreateSymbol(
-          M->getPICLevel() == PICLevel::SmallPIC ? "_GLOBAL_OFFSET_TABLE_"
-                                                 : ".LTOC");
+          PILevel::isSmall(M->getPILevel())
+              ? "_GLOBAL_OFFSET_TABLE_"
+              : ".LTOC");
       const MCExpr *PB =
           MCSymbolRefExpr::create(MF->getPICBaseSymbol(), OutContext);
 
@@ -1072,7 +1073,8 @@ void PPCAsmPrinter::emitInstruction(const MachineInstr *MI) {
 
     // Create a reference to the GOT entry for the symbol. The GOT entry will be
     // synthesized later.
-    if (PL == PICLevel::SmallPIC && !IsAIX) {
+    if (PILevel::isSmall(PL) &&
+        !IsAIX) {
       const MCExpr *Exp = symbolWithSpecifier(MOSymbol, PPC::S_GOT);
       TmpInst.getOperand(1) = MCOperand::createExpr(Exp);
       EmitToStreamer(*OutStreamer, TmpInst);
@@ -1945,7 +1947,7 @@ void PPCLinuxAsmPrinter::emitStartOfAsmFile(Module &M) {
       !isPositionIndependent())
     return AsmPrinter::emitStartOfAsmFile(M);
 
-  if (M.getPICLevel() == PICLevel::SmallPIC)
+  if (PILevel::isSmall(M.getPILevel()))
     return AsmPrinter::emitStartOfAsmFile(M);
 
   OutStreamer->switchSection(OutContext.getELFSection(
@@ -1970,9 +1972,8 @@ void PPCLinuxAsmPrinter::emitStartOfAsmFile(Module &M) {
 
 void PPCLinuxAsmPrinter::emitFunctionEntryLabel() {
   // linux/ppc32 - Normal entry label.
-  if (!Subtarget->isPPC64() &&
-      (!isPositionIndependent() ||
-       MF->getFunction().getParent()->getPICLevel() == PICLevel::SmallPIC))
+  if (!Subtarget->isPPC64() && (!isPositionIndependent() ||
+                                 PILevel::isSmall(MF->getFunction().getParent()->getPILevel())))
     return AsmPrinter::emitFunctionEntryLabel();
 
   if (!Subtarget->isPPC64()) {

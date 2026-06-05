@@ -463,7 +463,7 @@ attributes #5 = { convergent nounwind "llvm.assume"="omp_no_openmp,ompx_spmd_ame
 ; CHECK: [[META1:![0-9]+]] = !{i32 1, !"wchar_size", i32 4}
 ; CHECK: [[META2:![0-9]+]] = !{i32 7, !"openmp", i32 50}
 ; CHECK: [[META3:![0-9]+]] = !{i32 7, !"openmp-device", i32 50}
-; CHECK: [[META4:![0-9]+]] = !{i32 8, !"PIC Level", i32 2}
+; CHECK: [[META4:![0-9]+]] = !{i32 8, !"PI Level", i32 4}
 ; CHECK: [[META5:![0-9]+]] = !{i32 7, !"frame-pointer", i32 2}
 ; CHECK: [[META6:![0-9]+]] = !{!"{{.*}}clang version {{.*}}"}
 ; CHECK: [[META7]] = !{[[META8:![0-9]+]]}
@@ -476,7 +476,7 @@ attributes #5 = { convergent nounwind "llvm.assume"="omp_no_openmp,ompx_spmd_ame
 ; CHECK-DISABLED: [[META1:![0-9]+]] = !{i32 1, !"wchar_size", i32 4}
 ; CHECK-DISABLED: [[META2:![0-9]+]] = !{i32 7, !"openmp", i32 50}
 ; CHECK-DISABLED: [[META3:![0-9]+]] = !{i32 7, !"openmp-device", i32 50}
-; CHECK-DISABLED: [[META4:![0-9]+]] = !{i32 8, !"PIC Level", i32 2}
+; CHECK-DISABLED: [[META4:![0-9]+]] = !{i32 8, !"PI Level", i32 4}
 ; CHECK-DISABLED: [[META5:![0-9]+]] = !{i32 7, !"frame-pointer", i32 2}
 ; CHECK-DISABLED: [[META6:![0-9]+]] = !{!"{{.*}}clang version {{.*}}"}
 ; CHECK-DISABLED: [[META7]] = !{[[META8:![0-9]+]]}

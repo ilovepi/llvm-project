@@ -98,9 +98,8 @@ createTargetMachine(Module &M, std::string CPU, unsigned OptLevel) {
   Features.getDefaultSubtargetFeatures(TT);
 
   std::optional<Reloc::Model> RelocModel;
-  if (M.getModuleFlag("PIC Level"))
-    RelocModel =
-        M.getPICLevel() == PICLevel::NotPIC ? Reloc::Static : Reloc::PIC_;
+  if (M.getModuleFlag("PI Level"))
+    RelocModel = !M.isPIC() ? Reloc::Static : Reloc::PIC_;
 
   std::optional<CodeModel::Model> CodeModel = M.getCodeModel();
 

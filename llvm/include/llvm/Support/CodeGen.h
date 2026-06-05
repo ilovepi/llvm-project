@@ -31,13 +31,23 @@ namespace llvm {
     enum Model { Tiny, Small, Kernel, Medium, Large };
   }
 
-  namespace PICLevel {
-    // This is used to map -fpic/-fPIC.
-    enum Level { NotPIC=0, SmallPIC=1, BigPIC=2 };
+  namespace PILevel {
+  enum class Level {
+    NotPI = 0,
+    SmallPIE = 1,
+    LargePIE = 2,
+    SmallPIC = 3,
+    LargePIC = 4,
+    StaticPIE = 5
+  };
+
+  inline bool isSmall(Level L) {
+    return L == Level::SmallPIC || L == Level::SmallPIE;
   }
 
-  namespace PIELevel {
-    enum Level { Default=0, Small=1, Large=2 };
+  inline bool isLarge(Level L) {
+    return L == Level::LargePIC || L == Level::LargePIE;
+  }
   }
 
   // TLS models.

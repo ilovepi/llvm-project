@@ -115,18 +115,18 @@ body:             |
     ; CHECK-LABEL: name: g
     ; CHECK: liveins: $w0
     ; CHECK-NEXT: {{  $}}
-    ; CHECK-NEXT: DBG_VALUE $w0, $noreg, !16, !DIExpression(), debug-location !20
+    ; CHECK-NEXT: DBG_VALUE $w0, $noreg, !15, !DIExpression(), debug-location !19
     ; CHECK-NEXT: [[COPY:%[0-9]+]]:gpr32common = COPY $w0
-    ; CHECK-NEXT: DBG_VALUE [[COPY]], $noreg, !16, !DIExpression(), debug-location !20
-    ; CHECK-NEXT: DBG_VALUE $noreg, $noreg, !17, !DIExpression(), debug-location !20
-    ; CHECK-NEXT: DBG_VALUE $noreg, $noreg, !18, !DIExpression(), debug-location !20
-    ; CHECK-NEXT: ADJCALLSTACKDOWN 0, 0, implicit-def dead $sp, implicit $sp, debug-location !22
-    ; CHECK-NEXT: $w0 = nsw ADDWri [[COPY]], 1, 0, debug-location !21
-    ; CHECK-NEXT: BL @f, csr_aarch64_aapcs, implicit-def dead $lr, implicit $sp, implicit $w0, implicit-def $sp, implicit-def $w0, debug-location !22
-    ; CHECK-NEXT: ADJCALLSTACKUP 0, 0, implicit-def dead $sp, implicit $sp, debug-location !22
-    ; CHECK-NEXT: DBG_VALUE $noreg, $noreg, !19, !DIExpression(), debug-location !20
-    ; CHECK-NEXT: $w0 = nsw ADDWri [[COPY]], 1, 0, debug-location !21
-    ; CHECK-NEXT: TCRETURNdi @f, 0, csr_aarch64_aapcs, implicit $sp, implicit $w0, debug-location !23
+    ; CHECK-NEXT: DBG_VALUE [[COPY]], $noreg, !15, !DIExpression(), debug-location !19
+    ; CHECK-NEXT: DBG_VALUE $noreg, $noreg, !16, !DIExpression(), debug-location !19
+    ; CHECK-NEXT: DBG_VALUE $noreg, $noreg, !17, !DIExpression(), debug-location !19
+    ; CHECK-NEXT: ADJCALLSTACKDOWN 0, 0, implicit-def dead $sp, implicit $sp, debug-location !21
+    ; CHECK-NEXT: $w0 = nsw ADDWri [[COPY]], 1, 0, debug-location !20
+    ; CHECK-NEXT: BL @f, csr_aarch64_aapcs, implicit-def dead $lr, implicit $sp, implicit $w0, implicit-def $sp, implicit-def $w0, debug-location !21
+    ; CHECK-NEXT: ADJCALLSTACKUP 0, 0, implicit-def dead $sp, implicit $sp, debug-location !21
+    ; CHECK-NEXT: DBG_VALUE $noreg, $noreg, !18, !DIExpression(), debug-location !19
+    ; CHECK-NEXT: $w0 = nsw ADDWri [[COPY]], 1, 0, debug-location !20
+    ; CHECK-NEXT: TCRETURNdi @f, 0, csr_aarch64_aapcs, implicit $sp, implicit $w0, debug-location !22
     DBG_VALUE $w0, $noreg, !16, !DIExpression(), debug-location !20
     %0:gpr32common = COPY $w0
     DBG_VALUE %0, $noreg, !16, !DIExpression(), debug-location !20

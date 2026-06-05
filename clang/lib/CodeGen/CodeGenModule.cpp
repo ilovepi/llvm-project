@@ -1633,9 +1633,15 @@ void CodeGenModule::Release() {
 
   if (uint32_t PLevel = Context.getLangOpts().PICLevel) {
     assert(PLevel < 3 && "Invalid PIC Level");
-    getModule().setPICLevel(static_cast<llvm::PICLevel::Level>(PLevel));
-    if (Context.getLangOpts().PIE)
-      getModule().setPIELevel(static_cast<llvm::PIELevel::Level>(PLevel));
+    llvm::PILevel::Level PL = llvm::PILevel::Level::NotPI;
+    if (Context.getLangOpts().PIE) {
+      PL = (PLevel == 1) ? llvm::PILevel::Level::SmallPIE
+                         : llvm::PILevel::Level::LargePIE;
+    } else {
+      PL = (PLevel == 1) ? llvm::PILevel::Level::SmallPIC
+                         : llvm::PILevel::Level::LargePIC;
+    }
+    getModule().setPILevel(PL);
   }
 
   if (getCodeGenOpts().CodeModel.size() > 0) {

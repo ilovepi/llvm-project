@@ -774,8 +774,8 @@ MCSymbol *AsmPrinter::getSymbolPreferLocal(const GlobalValue &GV) const {
   // assumed it.
   if (TM.getTargetTriple().isOSBinFormatELF() && GV.canBenefitFromLocalAlias()) {
     const Module &M = *GV.getParent();
-    if (TM.getRelocationModel() != Reloc::Static &&
-        M.getPIELevel() == PIELevel::Default && GV.isDSOLocal())
+    if (TM.getRelocationModel() != Reloc::Static && !M.isPIE() &&
+        GV.isDSOLocal())
       return getSymbolWithGlobalValueBase(&GV, "$local");
   }
   return TM.getSymbol(&GV);

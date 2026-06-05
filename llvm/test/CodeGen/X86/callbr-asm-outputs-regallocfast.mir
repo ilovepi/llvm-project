@@ -118,7 +118,7 @@ body:             |
   ; CHECK-NEXT:   MOV32mi %stack.0.retval, 1, $noreg, 0, $noreg, 0 :: (store (s32) into %ir.retval)
   ; CHECK-NEXT:   MOV32mi %stack.1.x, 1, $noreg, 0, $noreg, 123 :: (store (s32) into %ir.x)
   ; CHECK-NEXT:   renamable $eax = MOV32ri 45
-  ; CHECK-NEXT:   INLINEASM_BR &"mov $1, $0\0A\09jmp ${2:l}", attdialect, regdef:GR32, def renamable $eax, reguse:GR32, killed renamable $eax, imm, %bb.3, clobber, implicit-def dead early-clobber $df, clobber, implicit-def early-clobber $fpsw, clobber, implicit-def dead early-clobber $eflags, !5
+  ; CHECK-NEXT:   INLINEASM_BR &"mov $1, $0\0A\09jmp ${2:l}", attdialect, regdef:GR32, def renamable $eax, reguse:GR32, killed renamable $eax, imm, %bb.3, clobber, implicit-def dead early-clobber $df, clobber, implicit-def early-clobber $fpsw, clobber, implicit-def dead early-clobber $eflags, !4
   ; CHECK-NEXT:   MOV32mr %stack.3, 1, $noreg, 0, $noreg, $eax :: (store (s32) into %stack.3)
   ; CHECK-NEXT:   MOV32mr %stack.2, 1, $noreg, 0, $noreg, killed $eax :: (store (s32) into %stack.2)
   ; CHECK-NEXT:   JMP_1 %bb.1

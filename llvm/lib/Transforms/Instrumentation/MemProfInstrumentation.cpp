@@ -588,7 +588,7 @@ bool MemProfiler::insertDynamicShadowAtFunctionEntry(Function &F) {
   IRBuilder<> IRB(&F.front().front());
   Value *GlobalDynamicAddress = F.getParent()->getOrInsertGlobal(
       MemProfShadowMemoryDynamicAddress, IntptrTy);
-  if (F.getParent()->getPICLevel() == PICLevel::NotPIC)
+  if (!F.getParent()->isPIC())
     cast<GlobalVariable>(GlobalDynamicAddress)->setDSOLocal(true);
   DynamicShadowOffset = IRB.CreateLoad(IntptrTy, GlobalDynamicAddress);
   return true;

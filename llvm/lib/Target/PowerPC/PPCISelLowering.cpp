@@ -3442,7 +3442,7 @@ SDValue PPCTargetLowering::LowerGlobalTLSAddressLinux(SDValue Op,
   EVT PtrVT = getPointerTy(DAG.getDataLayout());
   bool is64bit = Subtarget.isPPC64();
   const Module *M = DAG.getMachineFunction().getFunction().getParent();
-  PICLevel::Level picLevel = M->getPICLevel();
+  PILevel::Level picLevel = M->getPILevel();
 
   const TargetMachine &TM = getTargetMachine();
   TLSModel::Model Model = TM.getTLSModel(GV);
@@ -3489,7 +3489,7 @@ SDValue PPCTargetLowering::LowerGlobalTLSAddressLinux(SDValue Op,
       } else {
         if (!TM.isPositionIndependent())
           GOTPtr = DAG.getNode(PPCISD::PPC32_GOT, dl, PtrVT);
-        else if (picLevel == PICLevel::SmallPIC)
+        else if (PILevel::isSmall(picLevel))
           GOTPtr = DAG.getNode(PPCISD::GlobalBaseReg, dl, PtrVT);
         else
           GOTPtr = DAG.getNode(PPCISD::PPC32_PICGOT, dl, PtrVT);
@@ -3514,7 +3514,7 @@ SDValue PPCTargetLowering::LowerGlobalTLSAddressLinux(SDValue Op,
       GOTPtr = DAG.getNode(PPCISD::ADDIS_TLSGD_HA, dl, PtrVT,
                                    GOTReg, TGA);
     } else {
-      if (picLevel == PICLevel::SmallPIC)
+      if (PILevel::isSmall(picLevel))
         GOTPtr = DAG.getNode(PPCISD::GlobalBaseReg, dl, PtrVT);
       else
         GOTPtr = DAG.getNode(PPCISD::PPC32_PICGOT, dl, PtrVT);
@@ -3540,7 +3540,7 @@ SDValue PPCTargetLowering::LowerGlobalTLSAddressLinux(SDValue Op,
       GOTPtr = DAG.getNode(PPCISD::ADDIS_TLSLD_HA, dl, PtrVT,
                            GOTReg, TGA);
     } else {
-      if (picLevel == PICLevel::SmallPIC)
+      if (PILevel::isSmall(picLevel))
         GOTPtr = DAG.getNode(PPCISD::GlobalBaseReg, dl, PtrVT);
       else
         GOTPtr = DAG.getNode(PPCISD::PPC32_PICGOT, dl, PtrVT);

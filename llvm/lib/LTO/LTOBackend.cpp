@@ -229,9 +229,8 @@ createTargetMachine(const Config &Conf, const Target *TheTarget, Module &M) {
   std::optional<Reloc::Model> RelocModel;
   if (Conf.RelocModel)
     RelocModel = *Conf.RelocModel;
-  else if (M.getModuleFlag("PIC Level"))
-    RelocModel =
-        M.getPICLevel() == PICLevel::NotPIC ? Reloc::Static : Reloc::PIC_;
+  else if (M.getModuleFlag("PI Level"))
+    RelocModel = !M.isPIC() ? Reloc::Static : Reloc::PIC_;
 
   std::optional<CodeModel::Model> CodeModel;
   if (Conf.CodeModel)
@@ -709,8 +708,7 @@ Error lto::thinBackend(const Config &Conf, unsigned Task, AddStreamFn AddStream,
   // conservatively do this for -fpic.
   bool ClearDSOLocalOnDeclarations =
       TM->getTargetTriple().isOSBinFormatELF() &&
-      TM->getRelocationModel() != Reloc::Static &&
-      Mod.getPIELevel() == PIELevel::Default;
+      TM->getRelocationModel() != Reloc::Static && !Mod.isPIE();
   renameModuleForThinLTO(Mod, CombinedIndex, ClearDSOLocalOnDeclarations);
 
   dropDeadSymbols(Mod, DefinedGlobals, CombinedIndex);
