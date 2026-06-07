@@ -256,6 +256,10 @@ private:
   void emitRecord(const TemplateInfo &Templ);
   bool prepRecordData(RecordId ID, bool ShouldEmit = true);
 
+  // Per-block scalar-record emitters, generated from ClangDocRecords.def.
+#define CLANG_DOC_RECORD_WRITER_DECL
+#include "ClangDocRecords.def"
+
   // Emission of appropriate abbreviation type.
   void emitAbbrev(RecordId ID, BlockId Block);
 

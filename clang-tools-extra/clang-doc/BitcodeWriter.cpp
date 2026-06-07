@@ -9,6 +9,7 @@
 #include "BitcodeWriter.h"
 #include "llvm/ADT/IndexedMap.h"
 #include <initializer_list>
+#include <iterator>
 
 using namespace clang;
 using namespace clang::doc;
@@ -113,31 +114,13 @@ static const IndexedMap<StringRef, BlockIdToIndexFunctor> BlockIdNameMap =
       IndexedMap<StringRef, BlockIdToIndexFunctor> BlockIdNameMap;
       BlockIdNameMap.resize(BlockIdCount);
 
-      // There is no init-list constructor for the IndexedMap, so have to
-      // improvise
       static constexpr std::pair<BlockId, StringRef> IdToName[] = {
-          {BI_VERSION_BLOCK_ID, "VersionBlock"},
-          {BI_NAMESPACE_BLOCK_ID, "NamespaceBlock"},
-          {BI_ENUM_BLOCK_ID, "EnumBlock"},
-          {BI_ENUM_VALUE_BLOCK_ID, "EnumValueBlock"},
-          {BI_TYPEDEF_BLOCK_ID, "TypedefBlock"},
-          {BI_TYPE_BLOCK_ID, "TypeBlock"},
-          {BI_FIELD_TYPE_BLOCK_ID, "FieldTypeBlock"},
-          {BI_MEMBER_TYPE_BLOCK_ID, "MemberTypeBlock"},
-          {BI_RECORD_BLOCK_ID, "RecordBlock"},
-          {BI_BASE_RECORD_BLOCK_ID, "BaseRecordBlock"},
-          {BI_FUNCTION_BLOCK_ID, "FunctionBlock"},
-          {BI_COMMENT_BLOCK_ID, "CommentBlock"},
-          {BI_REFERENCE_BLOCK_ID, "ReferenceBlock"},
-          {BI_TEMPLATE_BLOCK_ID, "TemplateBlock"},
-          {BI_TEMPLATE_SPECIALIZATION_BLOCK_ID, "TemplateSpecializationBlock"},
-          {BI_TEMPLATE_PARAM_BLOCK_ID, "TemplateParamBlock"},
-          {BI_CONSTRAINT_BLOCK_ID, "ConstraintBlock"},
-          {BI_CONCEPT_BLOCK_ID, "ConceptBlock"},
-          {BI_VAR_BLOCK_ID, "VarBlock"},
-          {BI_FRIEND_BLOCK_ID, "FriendBlock"}};
+#define CLANG_DOC_BLOCK_NAMES
+#include "ClangDocRecords.def"
+      };
+      static_assert(std::size(IdToName) == BlockIdCount,
+                    "ClangDocRecords.def out of sync with the BlockId enum");
       ArrayRef<std::pair<BlockId, StringRef>> Inits(IdToName);
-      assert(Inits.size() == BlockIdCount);
       for (const auto &Init : Inits)
         BlockIdNameMap[Init.first] = Init.second;
       assert(BlockIdNameMap.size() == BlockIdCount);
@@ -149,96 +132,13 @@ static const IndexedMap<RecordIdDsc, RecordIdToIndexFunctor> RecordIdNameMap =
       IndexedMap<RecordIdDsc, RecordIdToIndexFunctor> RecordIdNameMap;
       RecordIdNameMap.resize(RecordIdCount);
 
-      // There is no init-list constructor for the IndexedMap, so have to
-      // improvise
       static constexpr std::pair<RecordId, RecordIdDsc> IdToFunc[] = {
-          {VERSION, {"Version", &genIntAbbrev}},
-          {COMMENT_KIND, {"Kind", &genStringAbbrev}},
-          {COMMENT_TEXT, {"Text", &genStringAbbrev}},
-          {COMMENT_NAME, {"Name", &genStringAbbrev}},
-          {COMMENT_DIRECTION, {"Direction", &genStringAbbrev}},
-          {COMMENT_PARAMNAME, {"ParamName", &genStringAbbrev}},
-          {COMMENT_CLOSENAME, {"CloseName", &genStringAbbrev}},
-          {COMMENT_SELFCLOSING, {"SelfClosing", &genBoolAbbrev}},
-          {COMMENT_EXPLICIT, {"Explicit", &genBoolAbbrev}},
-          {COMMENT_ATTRKEY, {"AttrKey", &genStringAbbrev}},
-          {COMMENT_ATTRVAL, {"AttrVal", &genStringAbbrev}},
-          {COMMENT_ARG, {"Arg", &genStringAbbrev}},
-          {FIELD_TYPE_NAME, {"Name", &genStringAbbrev}},
-          {FIELD_DEFAULT_VALUE, {"DefaultValue", &genStringAbbrev}},
-          {FIELD_TYPE_IS_BUILTIN, {"IsBuiltin", &genBoolAbbrev}},
-          {FIELD_TYPE_IS_TEMPLATE, {"IsTemplate", &genBoolAbbrev}},
-          {MEMBER_TYPE_NAME, {"Name", &genStringAbbrev}},
-          {MEMBER_TYPE_ACCESS, {"Access", &genIntAbbrev}},
-          {MEMBER_TYPE_IS_STATIC, {"IsStatic", &genBoolAbbrev}},
-          {MEMBER_TYPE_IS_BUILTIN, {"IsBuiltin", &genBoolAbbrev}},
-          {MEMBER_TYPE_IS_TEMPLATE, {"IsTemplate", &genBoolAbbrev}},
-          {TYPE_IS_BUILTIN, {"IsBuiltin", &genBoolAbbrev}},
-          {TYPE_IS_TEMPLATE, {"IsTemplate", &genBoolAbbrev}},
-          {NAMESPACE_USR, {"USR", &genSymbolIdAbbrev}},
-          {NAMESPACE_NAME, {"Name", &genStringAbbrev}},
-          {NAMESPACE_PATH, {"Path", &genStringAbbrev}},
-          {NAMESPACE_PARENT_USR, {"ParentUSR", &genSymbolIdAbbrev}},
-          {ENUM_USR, {"USR", &genSymbolIdAbbrev}},
-          {ENUM_NAME, {"Name", &genStringAbbrev}},
-          {ENUM_DEFLOCATION, {"DefLocation", &genLocationAbbrev}},
-          {ENUM_LOCATION, {"Location", &genLocationAbbrev}},
-          {ENUM_SCOPED, {"Scoped", &genBoolAbbrev}},
-          {ENUM_VALUE_NAME, {"Name", &genStringAbbrev}},
-          {ENUM_VALUE_VALUE, {"Value", &genStringAbbrev}},
-          {ENUM_VALUE_EXPR, {"Expr", &genStringAbbrev}},
-          {RECORD_USR, {"USR", &genSymbolIdAbbrev}},
-          {RECORD_NAME, {"Name", &genStringAbbrev}},
-          {RECORD_PATH, {"Path", &genStringAbbrev}},
-          {RECORD_DEFLOCATION, {"DefLocation", &genLocationAbbrev}},
-          {RECORD_LOCATION, {"Location", &genLocationAbbrev}},
-          {RECORD_TAG_TYPE, {"TagType", &genIntAbbrev}},
-          {RECORD_IS_TYPE_DEF, {"IsTypeDef", &genBoolAbbrev}},
-          {RECORD_MANGLED_NAME, {"MangledName", &genStringAbbrev}},
-          {RECORD_PARENT_USR, {"ParentUSR", &genSymbolIdAbbrev}},
-          {BASE_RECORD_USR, {"USR", &genSymbolIdAbbrev}},
-          {BASE_RECORD_NAME, {"Name", &genStringAbbrev}},
-          {BASE_RECORD_PATH, {"Path", &genStringAbbrev}},
-          {BASE_RECORD_TAG_TYPE, {"TagType", &genIntAbbrev}},
-          {BASE_RECORD_IS_VIRTUAL, {"IsVirtual", &genBoolAbbrev}},
-          {BASE_RECORD_ACCESS, {"Access", &genIntAbbrev}},
-          {BASE_RECORD_IS_PARENT, {"IsParent", &genBoolAbbrev}},
-          {FUNCTION_USR, {"USR", &genSymbolIdAbbrev}},
-          {FUNCTION_NAME, {"Name", &genStringAbbrev}},
-          {FUNCTION_DEFLOCATION, {"DefLocation", &genLocationAbbrev}},
-          {FUNCTION_LOCATION, {"Location", &genLocationAbbrev}},
-          {FUNCTION_ACCESS, {"Access", &genIntAbbrev}},
-          {FUNCTION_IS_METHOD, {"IsMethod", &genBoolAbbrev}},
-          {FUNCTION_IS_STATIC, {"IsStatic", &genBoolAbbrev}},
-          {REFERENCE_USR, {"USR", &genSymbolIdAbbrev}},
-          {REFERENCE_NAME, {"Name", &genStringAbbrev}},
-          {REFERENCE_QUAL_NAME, {"QualName", &genStringAbbrev}},
-          {REFERENCE_TYPE, {"RefType", &genIntAbbrev}},
-          {REFERENCE_PATH, {"Path", &genStringAbbrev}},
-          {REFERENCE_FIELD, {"Field", &genIntAbbrev}},
-          {REFERENCE_FILE, {"File", &genStringAbbrev}},
-          {TEMPLATE_PARAM_CONTENTS, {"Contents", &genStringAbbrev}},
-          {TEMPLATE_SPECIALIZATION_OF,
-           {"SpecializationOf", &genSymbolIdAbbrev}},
-          {TYPEDEF_USR, {"USR", &genSymbolIdAbbrev}},
-          {TYPEDEF_NAME, {"Name", &genStringAbbrev}},
-          {TYPEDEF_DEFLOCATION, {"DefLocation", &genLocationAbbrev}},
-          {TYPEDEF_IS_USING, {"IsUsing", &genBoolAbbrev}},
-          {CONCEPT_USR, {"USR", &genSymbolIdAbbrev}},
-          {CONCEPT_NAME, {"Name", &genStringAbbrev}},
-          {CONCEPT_IS_TYPE, {"IsType", &genBoolAbbrev}},
-          {CONCEPT_CONSTRAINT_EXPRESSION,
-           {"ConstraintExpression", &genStringAbbrev}},
-          {CONCEPT_DEFLOCATION, {"DefLocation", &genLocationAbbrev}},
-          {CONSTRAINT_EXPRESSION, {"Expression", &genStringAbbrev}},
-          {VAR_USR, {"USR", &genSymbolIdAbbrev}},
-          {VAR_NAME, {"Name", &genStringAbbrev}},
-          {VAR_DEFLOCATION, {"DefLocation", &genLocationAbbrev}},
-          {VAR_IS_STATIC, {"IsStatic", &genBoolAbbrev}},
-          {FRIEND_IS_CLASS, {"IsClass", &genBoolAbbrev}}};
-
+#define CLANG_DOC_RECORD_DESCS
+#include "ClangDocRecords.def"
+      };
+      static_assert(std::size(IdToFunc) == RecordIdCount,
+                    "ClangDocRecords.def out of sync with the RecordId enum");
       ArrayRef<std::pair<RecordId, RecordIdDsc>> Inits(IdToFunc);
-      assert(Inits.size() == RecordIdCount);
       for (const auto &Init : Inits) {
         RecordIdNameMap[Init.first] = Init.second;
         assert((Init.second.Name.size() + 1) <= BitCodeConstants::RecordSize);
@@ -253,64 +153,11 @@ struct BlockToIdList {
 };
 
 static const BlockToIdList RecordsByBlock[] = {
-    // Version Block
-    {BI_VERSION_BLOCK_ID, {VERSION}},
-    // Comment Block
-    {BI_COMMENT_BLOCK_ID,
-     {COMMENT_KIND, COMMENT_TEXT, COMMENT_NAME, COMMENT_DIRECTION,
-      COMMENT_PARAMNAME, COMMENT_CLOSENAME, COMMENT_SELFCLOSING,
-      COMMENT_EXPLICIT, COMMENT_ATTRKEY, COMMENT_ATTRVAL, COMMENT_ARG}},
-    // Type Block
-    {BI_TYPE_BLOCK_ID, {TYPE_IS_BUILTIN, TYPE_IS_TEMPLATE}},
-    // FieldType Block
-    {BI_FIELD_TYPE_BLOCK_ID,
-     {FIELD_TYPE_NAME, FIELD_DEFAULT_VALUE, FIELD_TYPE_IS_BUILTIN,
-      FIELD_TYPE_IS_TEMPLATE}},
-    // MemberType Block
-    {BI_MEMBER_TYPE_BLOCK_ID,
-     {MEMBER_TYPE_NAME, MEMBER_TYPE_ACCESS, MEMBER_TYPE_IS_STATIC,
-      MEMBER_TYPE_IS_BUILTIN, MEMBER_TYPE_IS_TEMPLATE}},
-    // Enum Block
-    {BI_ENUM_BLOCK_ID,
-     {ENUM_USR, ENUM_NAME, ENUM_DEFLOCATION, ENUM_LOCATION, ENUM_SCOPED}},
-    // Enum Value Block
-    {BI_ENUM_VALUE_BLOCK_ID,
-     {ENUM_VALUE_NAME, ENUM_VALUE_VALUE, ENUM_VALUE_EXPR}},
-    // Typedef Block
-    {BI_TYPEDEF_BLOCK_ID,
-     {TYPEDEF_USR, TYPEDEF_NAME, TYPEDEF_DEFLOCATION, TYPEDEF_IS_USING}},
-    // Namespace Block
-    {BI_NAMESPACE_BLOCK_ID,
-     {NAMESPACE_USR, NAMESPACE_NAME, NAMESPACE_PATH, NAMESPACE_PARENT_USR}},
-    // Record Block
-    {BI_RECORD_BLOCK_ID,
-     {RECORD_USR, RECORD_NAME, RECORD_PATH, RECORD_DEFLOCATION, RECORD_LOCATION,
-      RECORD_TAG_TYPE, RECORD_IS_TYPE_DEF, RECORD_MANGLED_NAME,
-      RECORD_PARENT_USR}},
-    // BaseRecord Block
-    {BI_BASE_RECORD_BLOCK_ID,
-     {BASE_RECORD_USR, BASE_RECORD_NAME, BASE_RECORD_PATH, BASE_RECORD_TAG_TYPE,
-      BASE_RECORD_IS_VIRTUAL, BASE_RECORD_ACCESS, BASE_RECORD_IS_PARENT}},
-    // Function Block
-    {BI_FUNCTION_BLOCK_ID,
-     {FUNCTION_USR, FUNCTION_NAME, FUNCTION_DEFLOCATION, FUNCTION_LOCATION,
-      FUNCTION_ACCESS, FUNCTION_IS_METHOD, FUNCTION_IS_STATIC}},
-    // Reference Block
-    {BI_REFERENCE_BLOCK_ID,
-     {REFERENCE_USR, REFERENCE_NAME, REFERENCE_QUAL_NAME, REFERENCE_TYPE,
-      REFERENCE_PATH, REFERENCE_FIELD, REFERENCE_FILE}},
-    // Template Blocks.
-    {BI_TEMPLATE_BLOCK_ID, {}},
-    {BI_TEMPLATE_PARAM_BLOCK_ID, {TEMPLATE_PARAM_CONTENTS}},
-    {BI_TEMPLATE_SPECIALIZATION_BLOCK_ID, {TEMPLATE_SPECIALIZATION_OF}},
-    // Concept Block
-    {BI_CONCEPT_BLOCK_ID,
-     {CONCEPT_USR, CONCEPT_NAME, CONCEPT_IS_TYPE, CONCEPT_CONSTRAINT_EXPRESSION,
-      CONCEPT_DEFLOCATION}},
-    // Constraint Block
-    {BI_CONSTRAINT_BLOCK_ID, {CONSTRAINT_EXPRESSION}},
-    {BI_VAR_BLOCK_ID, {VAR_NAME, VAR_USR, VAR_DEFLOCATION, VAR_IS_STATIC}},
-    {BI_FRIEND_BLOCK_ID, {FRIEND_IS_CLASS}}};
+#define CLANG_DOC_RECORDS_BY_BLOCK
+#include "ClangDocRecords.def"
+};
+static_assert(std::size(RecordsByBlock) == BlockIdCount,
+              "ClangDocRecords.def out of sync with the BlockId enum");
 
 } // namespace
 
@@ -484,6 +331,11 @@ void ClangDocBitcodeWriter::emitBlockInfo(BlockId BID,
 
 // Block emission
 
+// Generate ClangDocBitcodeWriter::emitScalars() for each block; every emitBlock
+// writes its scalar records through the matching overload.
+#define CLANG_DOC_RECORD_WRITER
+#include "ClangDocRecords.def"
+
 void ClangDocBitcodeWriter::emitBlock(const Reference &R, FieldId Field) {
   if (R.USR == EmptySID && R.Name.empty())
     return;
@@ -500,7 +352,7 @@ void ClangDocBitcodeWriter::emitBlock(const Reference &R, FieldId Field) {
 void ClangDocBitcodeWriter::emitBlock(const FriendInfo &R) {
   StreamSubBlockGuard Block(Stream, BI_FRIEND_BLOCK_ID);
   emitBlock(R.Ref, FieldId::F_friend);
-  emitRecord(R.IsClass, FRIEND_IS_CLASS);
+  emitScalars(R);
   if (R.Template)
     emitBlock(*R.Template);
   for (const auto &P : R.Params)
@@ -514,43 +366,31 @@ void ClangDocBitcodeWriter::emitBlock(const FriendInfo &R) {
 void ClangDocBitcodeWriter::emitBlock(const TypeInfo &T) {
   StreamSubBlockGuard Block(Stream, BI_TYPE_BLOCK_ID);
   emitBlock(T.Type, FieldId::F_type);
-  emitRecord(T.IsBuiltIn, TYPE_IS_BUILTIN);
-  emitRecord(T.IsTemplate, TYPE_IS_TEMPLATE);
+  emitScalars(T);
 }
 
 void ClangDocBitcodeWriter::emitBlock(const TypedefInfo &T) {
   StreamSubBlockGuard Block(Stream, BI_TYPEDEF_BLOCK_ID);
-  emitRecord(T.USR, TYPEDEF_USR);
-  emitRecord(T.Name, TYPEDEF_NAME);
+  emitScalars(T);
   for (const auto &N : T.Namespace)
     emitBlock(N, FieldId::F_namespace);
   for (const auto &CI : T.Description)
     emitBlock(*CI.Ptr);
-  if (T.DefLoc)
-    emitRecord(*T.DefLoc, TYPEDEF_DEFLOCATION);
   if (T.Template)
     emitBlock(*T.Template);
-  emitRecord(T.IsUsing, TYPEDEF_IS_USING);
   emitBlock(T.Underlying);
 }
 
 void ClangDocBitcodeWriter::emitBlock(const FieldTypeInfo &T) {
   StreamSubBlockGuard Block(Stream, BI_FIELD_TYPE_BLOCK_ID);
   emitBlock(T.Type, FieldId::F_type);
-  emitRecord(T.Name, FIELD_TYPE_NAME);
-  emitRecord(T.DefaultValue, FIELD_DEFAULT_VALUE);
-  emitRecord(T.IsBuiltIn, FIELD_TYPE_IS_BUILTIN);
-  emitRecord(T.IsTemplate, FIELD_TYPE_IS_TEMPLATE);
+  emitScalars(T);
 }
 
 void ClangDocBitcodeWriter::emitBlock(const MemberTypeInfo &T) {
   StreamSubBlockGuard Block(Stream, BI_MEMBER_TYPE_BLOCK_ID);
   emitBlock(T.Type, FieldId::F_type);
-  emitRecord(T.Name, MEMBER_TYPE_NAME);
-  emitRecord(T.Access, MEMBER_TYPE_ACCESS);
-  emitRecord(T.IsStatic, MEMBER_TYPE_IS_STATIC);
-  emitRecord(T.IsBuiltIn, MEMBER_TYPE_IS_BUILTIN);
-  emitRecord(T.IsTemplate, MEMBER_TYPE_IS_TEMPLATE);
+  emitScalars(T);
   for (const auto &CI : T.Description)
     emitBlock(*CI.Ptr);
 }
@@ -580,10 +420,7 @@ void ClangDocBitcodeWriter::emitBlock(const CommentInfo &I) {
 
 void ClangDocBitcodeWriter::emitBlock(const NamespaceInfo &I) {
   StreamSubBlockGuard Block(Stream, BI_NAMESPACE_BLOCK_ID);
-  emitRecord(I.USR, NAMESPACE_USR);
-  emitRecord(I.Name, NAMESPACE_NAME);
-  emitRecord(I.Path, NAMESPACE_PATH);
-  emitRecord(I.ParentUSR, NAMESPACE_PARENT_USR);
+  emitScalars(I);
   for (const auto &N : I.Namespace)
     emitBlock(N, FieldId::F_namespace);
   for (const auto &CI : I.Description)
@@ -606,17 +443,11 @@ void ClangDocBitcodeWriter::emitBlock(const NamespaceInfo &I) {
 
 void ClangDocBitcodeWriter::emitBlock(const EnumInfo &I) {
   StreamSubBlockGuard Block(Stream, BI_ENUM_BLOCK_ID);
-  emitRecord(I.USR, ENUM_USR);
-  emitRecord(I.Name, ENUM_NAME);
+  emitScalars(I);
   for (const auto &N : I.Namespace)
     emitBlock(N, FieldId::F_namespace);
   for (const auto &CI : I.Description)
     emitBlock(*CI.Ptr);
-  if (I.DefLoc)
-    emitRecord(*I.DefLoc, ENUM_DEFLOCATION);
-  for (const auto &L : I.Loc)
-    emitRecord(L, ENUM_LOCATION);
-  emitRecord(I.Scoped, ENUM_SCOPED);
   if (I.BaseType)
     emitBlock(*I.BaseType);
   for (const auto &N : I.Members)
@@ -625,30 +456,18 @@ void ClangDocBitcodeWriter::emitBlock(const EnumInfo &I) {
 
 void ClangDocBitcodeWriter::emitBlock(const EnumValueInfo &I) {
   StreamSubBlockGuard Block(Stream, BI_ENUM_VALUE_BLOCK_ID);
-  emitRecord(I.Name, ENUM_VALUE_NAME);
-  emitRecord(I.Value, ENUM_VALUE_VALUE);
-  emitRecord(I.ValueExpr, ENUM_VALUE_EXPR);
+  emitScalars(I);
   for (const auto &CI : I.Description)
     emitBlock(*CI.Ptr);
 }
 
 void ClangDocBitcodeWriter::emitBlock(const RecordInfo &I) {
   StreamSubBlockGuard Block(Stream, BI_RECORD_BLOCK_ID);
-  emitRecord(I.USR, RECORD_USR);
-  emitRecord(I.Name, RECORD_NAME);
-  emitRecord(I.Path, RECORD_PATH);
-  emitRecord(I.MangledName, RECORD_MANGLED_NAME);
-  emitRecord(I.ParentUSR, RECORD_PARENT_USR);
+  emitScalars(I);
   for (const auto &N : I.Namespace)
     emitBlock(N, FieldId::F_namespace);
   for (const auto &CI : I.Description)
     emitBlock(*CI.Ptr);
-  if (I.DefLoc)
-    emitRecord(*I.DefLoc, RECORD_DEFLOCATION);
-  for (const auto &L : I.Loc)
-    emitRecord(L, RECORD_LOCATION);
-  emitRecord(llvm::to_underlying(I.TagType), RECORD_TAG_TYPE);
-  emitRecord(I.IsTypeDef, RECORD_IS_TYPE_DEF);
   for (const auto &N : I.Members)
     emitBlock(N);
   for (const auto &P : I.Parents)
@@ -673,13 +492,7 @@ void ClangDocBitcodeWriter::emitBlock(const RecordInfo &I) {
 
 void ClangDocBitcodeWriter::emitBlock(const BaseRecordInfo &I) {
   StreamSubBlockGuard Block(Stream, BI_BASE_RECORD_BLOCK_ID);
-  emitRecord(I.USR, BASE_RECORD_USR);
-  emitRecord(I.Name, BASE_RECORD_NAME);
-  emitRecord(I.Path, BASE_RECORD_PATH);
-  emitRecord(llvm::to_underlying(I.TagType), BASE_RECORD_TAG_TYPE);
-  emitRecord(I.IsVirtual, BASE_RECORD_IS_VIRTUAL);
-  emitRecord(I.Access, BASE_RECORD_ACCESS);
-  emitRecord(I.IsParent, BASE_RECORD_IS_PARENT);
+  emitScalars(I);
   for (const auto &M : I.Members)
     emitBlock(M);
   for (const auto &C : I.Children.Functions)
@@ -688,19 +501,11 @@ void ClangDocBitcodeWriter::emitBlock(const BaseRecordInfo &I) {
 
 void ClangDocBitcodeWriter::emitBlock(const FunctionInfo &I) {
   StreamSubBlockGuard Block(Stream, BI_FUNCTION_BLOCK_ID);
-  emitRecord(I.USR, FUNCTION_USR);
-  emitRecord(I.Name, FUNCTION_NAME);
+  emitScalars(I);
   for (const auto &N : I.Namespace)
     emitBlock(N, FieldId::F_namespace);
   for (const auto &CI : I.Description)
     emitBlock(*CI.Ptr);
-  emitRecord(I.Access, FUNCTION_ACCESS);
-  emitRecord(I.IsMethod, FUNCTION_IS_METHOD);
-  emitRecord(I.IsStatic, FUNCTION_IS_STATIC);
-  if (I.DefLoc)
-    emitRecord(*I.DefLoc, FUNCTION_DEFLOCATION);
-  for (const auto &L : I.Loc)
-    emitRecord(L, FUNCTION_LOCATION);
   emitBlock(I.Parent, FieldId::F_parent);
   emitBlock(I.ReturnType);
   for (const auto &N : I.Params)
@@ -711,15 +516,10 @@ void ClangDocBitcodeWriter::emitBlock(const FunctionInfo &I) {
 
 void ClangDocBitcodeWriter::emitBlock(const ConceptInfo &I) {
   StreamSubBlockGuard Block(Stream, BI_CONCEPT_BLOCK_ID);
-  emitRecord(I.USR, CONCEPT_USR);
-  emitRecord(I.Name, CONCEPT_NAME);
+  emitScalars(I);
   for (const auto &CI : I.Description)
     emitBlock(*CI.Ptr);
-  emitRecord(I.IsType, CONCEPT_IS_TYPE);
-  emitRecord(I.ConstraintExpression, CONCEPT_CONSTRAINT_EXPRESSION);
   emitBlock(I.Template);
-  if (I.DefLoc)
-    emitRecord(*I.DefLoc, CONCEPT_DEFLOCATION);
 }
 
 void ClangDocBitcodeWriter::emitBlock(const TemplateInfo &T) {
@@ -734,33 +534,29 @@ void ClangDocBitcodeWriter::emitBlock(const TemplateInfo &T) {
 
 void ClangDocBitcodeWriter::emitBlock(const TemplateSpecializationInfo &T) {
   StreamSubBlockGuard Block(Stream, BI_TEMPLATE_SPECIALIZATION_BLOCK_ID);
-  emitRecord(T.SpecializationOf, TEMPLATE_SPECIALIZATION_OF);
+  emitScalars(T);
   for (const auto &P : T.Params)
     emitBlock(P);
 }
 
 void ClangDocBitcodeWriter::emitBlock(const TemplateParamInfo &T) {
   StreamSubBlockGuard Block(Stream, BI_TEMPLATE_PARAM_BLOCK_ID);
-  emitRecord(T.Contents, TEMPLATE_PARAM_CONTENTS);
+  emitScalars(T);
 }
 
 void ClangDocBitcodeWriter::emitBlock(const ConstraintInfo &C) {
   StreamSubBlockGuard Block(Stream, BI_CONSTRAINT_BLOCK_ID);
-  emitRecord(C.ConstraintExpr, CONSTRAINT_EXPRESSION);
+  emitScalars(C);
   emitBlock(C.ConceptRef, FieldId::F_concept);
 }
 
 void ClangDocBitcodeWriter::emitBlock(const VarInfo &I) {
   StreamSubBlockGuard Block(Stream, BI_VAR_BLOCK_ID);
-  emitRecord(I.USR, VAR_USR);
-  emitRecord(I.Name, VAR_NAME);
+  emitScalars(I);
   for (const auto &N : I.Namespace)
     emitBlock(N, FieldId::F_namespace);
   for (const auto &CI : I.Description)
     emitBlock(*CI.Ptr);
-  if (I.DefLoc)
-    emitRecord(*I.DefLoc, VAR_DEFLOCATION);
-  emitRecord(I.IsStatic, VAR_IS_STATIC);
   emitBlock(I.Type);
 }
 

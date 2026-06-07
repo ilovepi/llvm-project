@@ -1,0 +1,276 @@
+//===----------------------------------------------------------------------===//
+//
+// Part of the LLVM Project, under the Apache License v2.0 with LLVM Exceptions.
+// See https://llvm.org/LICENSE.txt for license information.
+// SPDX-License-Identifier: Apache-2.0 WITH LLVM-exception
+//
+//===----------------------------------------------------------------------===//
+//
+// The blocks and scalar records of the clang-doc bitcode format. This is the
+// single source for the reader, the writer, and the block/record tables, so
+// they cannot drift out of sync. Define exactly one of the following before
+// including; the file expands the list into the matching code:
+//
+//   CLANG_DOC_RECORD_READER      - a static parseRecord() for each block
+//   CLANG_DOC_RECORD_WRITER      - the ClangDocBitcodeWriter::emitScalars() defs
+//   CLANG_DOC_RECORD_WRITER_DECL - the emitScalars() member declarations
+//   CLANG_DOC_BLOCK_NAMES        - {BlockId, name} pairs for BlockIdNameMap
+//   CLANG_DOC_RECORD_DESCS       - {RecordId, {name, abbrev}} for RecordIdNameMap
+//   CLANG_DOC_RECORDS_BY_BLOCK   - {BlockId, {records...}} for RecordsByBlock
+//
+// INFO_BLOCK(Type, BlockId, Name) names the Info struct, its BlockId, and the
+// block's printable name. RECORD(Member, Id, Name, Kind) names a member of the
+// struct, its RecordId, its printable name, and its kind. The kind selects both
+// the abbreviation and how the writer encodes the member; the reader decodes
+// every kind the same way:
+//   String / Bool / Int / SymbolID - a single value, written directly
+//   Enum                           - a scoped enum, written via to_underlying
+//   OptLoc                         - an optional Location, written when present
+//   LocList                        - a list of Locations, one record each
+//
+// The blocks with irregular read/write paths (Version, Comment, Reference,
+// Template) only contribute to the tables; their reader and writer code is
+// hand-written, so their records' Member column is unused.
+//
+//===----------------------------------------------------------------------===//
+
+#if defined(CLANG_DOC_BLOCK_NAMES) || defined(CLANG_DOC_RECORD_DESCS) ||        \
+    defined(CLANG_DOC_RECORDS_BY_BLOCK)
+#define CLANG_DOC_RECORD_TABLES
+#endif
+
+#if defined(CLANG_DOC_RECORD_READER)
+#define INFO_BLOCK(Type, BlockId, Name)                                        \
+  static llvm::Error parseRecord(const Record &R, unsigned ID,                 \
+                                 llvm::StringRef Blob, Type *I) {              \
+    switch (ID) {
+#define RECORD(Member, Id, Name, Kind)                                         \
+  case Id:                                                                     \
+    return decodeRecord(R, I->Member, Blob);
+#define INFO_BLOCK_END(Type)                                                   \
+  default:                                                                     \
+    return llvm::createStringError(llvm::inconvertibleErrorCode(),             \
+                                   "invalid field for " #Type);                \
+    }                                                                          \
+    }
+
+#elif defined(CLANG_DOC_RECORD_WRITER)
+#define EMIT_String(Member, Id) emitRecord(I.Member, Id);
+#define EMIT_Bool(Member, Id) emitRecord(I.Member, Id);
+#define EMIT_Int(Member, Id) emitRecord(I.Member, Id);
+#define EMIT_SymbolID(Member, Id) emitRecord(I.Member, Id);
+#define EMIT_Enum(Member, Id) emitRecord(llvm::to_underlying(I.Member), Id);
+#define EMIT_OptLoc(Member, Id)                                                \
+  if (I.Member)                                                                \
+    emitRecord(*I.Member, Id);
+#define EMIT_LocList(Member, Id)                                               \
+  for (const auto &L : I.Member)                                               \
+    emitRecord(L, Id);
+#define INFO_BLOCK(Type, BlockId, Name)                                        \
+  void ClangDocBitcodeWriter::emitScalars(const Type &I) {
+#define RECORD(Member, Id, Name, Kind) EMIT_##Kind(Member, Id)
+#define INFO_BLOCK_END(Type) }
+
+#elif defined(CLANG_DOC_RECORD_WRITER_DECL)
+#define INFO_BLOCK(Type, BlockId, Name) void emitScalars(const Type &I);
+#define RECORD(Member, Id, Name, Kind)
+#define INFO_BLOCK_END(Type)
+
+#elif defined(CLANG_DOC_BLOCK_NAMES)
+#define INFO_BLOCK(Type, BlockId, Name) {BlockId, Name},
+#define RECORD(Member, Id, Name, Kind)
+#define INFO_BLOCK_END(Type)
+
+#elif defined(CLANG_DOC_RECORD_DESCS)
+#define ABBREV_String &genStringAbbrev
+#define ABBREV_Bool &genBoolAbbrev
+#define ABBREV_Int &genIntAbbrev
+#define ABBREV_SymbolID &genSymbolIdAbbrev
+#define ABBREV_Enum &genIntAbbrev
+#define ABBREV_OptLoc &genLocationAbbrev
+#define ABBREV_LocList &genLocationAbbrev
+#define INFO_BLOCK(Type, BlockId, Name)
+#define RECORD(Member, Id, Name, Kind) {Id, {Name, ABBREV_##Kind}},
+#define INFO_BLOCK_END(Type)
+
+#elif defined(CLANG_DOC_RECORDS_BY_BLOCK)
+#define INFO_BLOCK(Type, BlockId, Name) {BlockId, {
+#define RECORD(Member, Id, Name, Kind) Id,
+#define INFO_BLOCK_END(Type) }},
+
+#else
+#error "define one of the CLANG_DOC_RECORD_* modes before including"
+#endif
+
+INFO_BLOCK(NamespaceInfo, BI_NAMESPACE_BLOCK_ID, "NamespaceBlock")
+RECORD(USR, NAMESPACE_USR, "USR", SymbolID)
+RECORD(Name, NAMESPACE_NAME, "Name", String)
+RECORD(Path, NAMESPACE_PATH, "Path", String)
+RECORD(ParentUSR, NAMESPACE_PARENT_USR, "ParentUSR", SymbolID)
+INFO_BLOCK_END(NamespaceInfo)
+
+INFO_BLOCK(RecordInfo, BI_RECORD_BLOCK_ID, "RecordBlock")
+RECORD(USR, RECORD_USR, "USR", SymbolID)
+RECORD(Name, RECORD_NAME, "Name", String)
+RECORD(Path, RECORD_PATH, "Path", String)
+RECORD(MangledName, RECORD_MANGLED_NAME, "MangledName", String)
+RECORD(ParentUSR, RECORD_PARENT_USR, "ParentUSR", SymbolID)
+RECORD(DefLoc, RECORD_DEFLOCATION, "DefLocation", OptLoc)
+RECORD(Loc, RECORD_LOCATION, "Location", LocList)
+RECORD(TagType, RECORD_TAG_TYPE, "TagType", Enum)
+RECORD(IsTypeDef, RECORD_IS_TYPE_DEF, "IsTypeDef", Bool)
+INFO_BLOCK_END(RecordInfo)
+
+INFO_BLOCK(BaseRecordInfo, BI_BASE_RECORD_BLOCK_ID, "BaseRecordBlock")
+RECORD(USR, BASE_RECORD_USR, "USR", SymbolID)
+RECORD(Name, BASE_RECORD_NAME, "Name", String)
+RECORD(Path, BASE_RECORD_PATH, "Path", String)
+RECORD(TagType, BASE_RECORD_TAG_TYPE, "TagType", Enum)
+RECORD(IsVirtual, BASE_RECORD_IS_VIRTUAL, "IsVirtual", Bool)
+RECORD(Access, BASE_RECORD_ACCESS, "Access", Int)
+RECORD(IsParent, BASE_RECORD_IS_PARENT, "IsParent", Bool)
+INFO_BLOCK_END(BaseRecordInfo)
+
+INFO_BLOCK(EnumInfo, BI_ENUM_BLOCK_ID, "EnumBlock")
+RECORD(USR, ENUM_USR, "USR", SymbolID)
+RECORD(Name, ENUM_NAME, "Name", String)
+RECORD(DefLoc, ENUM_DEFLOCATION, "DefLocation", OptLoc)
+RECORD(Loc, ENUM_LOCATION, "Location", LocList)
+RECORD(Scoped, ENUM_SCOPED, "Scoped", Bool)
+INFO_BLOCK_END(EnumInfo)
+
+INFO_BLOCK(EnumValueInfo, BI_ENUM_VALUE_BLOCK_ID, "EnumValueBlock")
+RECORD(Name, ENUM_VALUE_NAME, "Name", String)
+RECORD(Value, ENUM_VALUE_VALUE, "Value", String)
+RECORD(ValueExpr, ENUM_VALUE_EXPR, "Expr", String)
+INFO_BLOCK_END(EnumValueInfo)
+
+INFO_BLOCK(TypedefInfo, BI_TYPEDEF_BLOCK_ID, "TypedefBlock")
+RECORD(USR, TYPEDEF_USR, "USR", SymbolID)
+RECORD(Name, TYPEDEF_NAME, "Name", String)
+RECORD(DefLoc, TYPEDEF_DEFLOCATION, "DefLocation", OptLoc)
+RECORD(IsUsing, TYPEDEF_IS_USING, "IsUsing", Bool)
+INFO_BLOCK_END(TypedefInfo)
+
+INFO_BLOCK(FunctionInfo, BI_FUNCTION_BLOCK_ID, "FunctionBlock")
+RECORD(USR, FUNCTION_USR, "USR", SymbolID)
+RECORD(Name, FUNCTION_NAME, "Name", String)
+RECORD(Access, FUNCTION_ACCESS, "Access", Int)
+RECORD(IsMethod, FUNCTION_IS_METHOD, "IsMethod", Bool)
+RECORD(IsStatic, FUNCTION_IS_STATIC, "IsStatic", Bool)
+RECORD(DefLoc, FUNCTION_DEFLOCATION, "DefLocation", OptLoc)
+RECORD(Loc, FUNCTION_LOCATION, "Location", LocList)
+INFO_BLOCK_END(FunctionInfo)
+
+INFO_BLOCK(ConceptInfo, BI_CONCEPT_BLOCK_ID, "ConceptBlock")
+RECORD(USR, CONCEPT_USR, "USR", SymbolID)
+RECORD(Name, CONCEPT_NAME, "Name", String)
+RECORD(IsType, CONCEPT_IS_TYPE, "IsType", Bool)
+RECORD(ConstraintExpression, CONCEPT_CONSTRAINT_EXPRESSION,
+       "ConstraintExpression", String)
+RECORD(DefLoc, CONCEPT_DEFLOCATION, "DefLocation", OptLoc)
+INFO_BLOCK_END(ConceptInfo)
+
+INFO_BLOCK(VarInfo, BI_VAR_BLOCK_ID, "VarBlock")
+RECORD(USR, VAR_USR, "USR", SymbolID)
+RECORD(Name, VAR_NAME, "Name", String)
+RECORD(DefLoc, VAR_DEFLOCATION, "DefLocation", OptLoc)
+RECORD(IsStatic, VAR_IS_STATIC, "IsStatic", Bool)
+INFO_BLOCK_END(VarInfo)
+
+INFO_BLOCK(TypeInfo, BI_TYPE_BLOCK_ID, "TypeBlock")
+RECORD(IsBuiltIn, TYPE_IS_BUILTIN, "IsBuiltin", Bool)
+RECORD(IsTemplate, TYPE_IS_TEMPLATE, "IsTemplate", Bool)
+INFO_BLOCK_END(TypeInfo)
+
+INFO_BLOCK(FieldTypeInfo, BI_FIELD_TYPE_BLOCK_ID, "FieldTypeBlock")
+RECORD(Name, FIELD_TYPE_NAME, "Name", String)
+RECORD(DefaultValue, FIELD_DEFAULT_VALUE, "DefaultValue", String)
+RECORD(IsBuiltIn, FIELD_TYPE_IS_BUILTIN, "IsBuiltin", Bool)
+RECORD(IsTemplate, FIELD_TYPE_IS_TEMPLATE, "IsTemplate", Bool)
+INFO_BLOCK_END(FieldTypeInfo)
+
+INFO_BLOCK(MemberTypeInfo, BI_MEMBER_TYPE_BLOCK_ID, "MemberTypeBlock")
+RECORD(Name, MEMBER_TYPE_NAME, "Name", String)
+RECORD(Access, MEMBER_TYPE_ACCESS, "Access", Int)
+RECORD(IsStatic, MEMBER_TYPE_IS_STATIC, "IsStatic", Bool)
+RECORD(IsBuiltIn, MEMBER_TYPE_IS_BUILTIN, "IsBuiltin", Bool)
+RECORD(IsTemplate, MEMBER_TYPE_IS_TEMPLATE, "IsTemplate", Bool)
+INFO_BLOCK_END(MemberTypeInfo)
+
+INFO_BLOCK(TemplateSpecializationInfo, BI_TEMPLATE_SPECIALIZATION_BLOCK_ID,
+           "TemplateSpecializationBlock")
+RECORD(SpecializationOf, TEMPLATE_SPECIALIZATION_OF, "SpecializationOf",
+       SymbolID)
+INFO_BLOCK_END(TemplateSpecializationInfo)
+
+INFO_BLOCK(TemplateParamInfo, BI_TEMPLATE_PARAM_BLOCK_ID, "TemplateParamBlock")
+RECORD(Contents, TEMPLATE_PARAM_CONTENTS, "Contents", String)
+INFO_BLOCK_END(TemplateParamInfo)
+
+INFO_BLOCK(ConstraintInfo, BI_CONSTRAINT_BLOCK_ID, "ConstraintBlock")
+RECORD(ConstraintExpr, CONSTRAINT_EXPRESSION, "Expression", String)
+INFO_BLOCK_END(ConstraintInfo)
+
+INFO_BLOCK(FriendInfo, BI_FRIEND_BLOCK_ID, "FriendBlock")
+RECORD(IsClass, FRIEND_IS_CLASS, "IsClass", Bool)
+INFO_BLOCK_END(FriendInfo)
+
+#ifdef CLANG_DOC_RECORD_TABLES
+// Blocks whose reader and writer code is hand-written.
+INFO_BLOCK(VersionBlock, BI_VERSION_BLOCK_ID, "VersionBlock")
+RECORD(Version, VERSION, "Version", Int)
+INFO_BLOCK_END(VersionBlock)
+
+INFO_BLOCK(CommentInfo, BI_COMMENT_BLOCK_ID, "CommentBlock")
+RECORD(Kind, COMMENT_KIND, "Kind", String)
+RECORD(Text, COMMENT_TEXT, "Text", String)
+RECORD(Name, COMMENT_NAME, "Name", String)
+RECORD(Direction, COMMENT_DIRECTION, "Direction", String)
+RECORD(ParamName, COMMENT_PARAMNAME, "ParamName", String)
+RECORD(CloseName, COMMENT_CLOSENAME, "CloseName", String)
+RECORD(SelfClosing, COMMENT_SELFCLOSING, "SelfClosing", Bool)
+RECORD(Explicit, COMMENT_EXPLICIT, "Explicit", Bool)
+RECORD(AttrKeys, COMMENT_ATTRKEY, "AttrKey", String)
+RECORD(AttrValues, COMMENT_ATTRVAL, "AttrVal", String)
+RECORD(Args, COMMENT_ARG, "Arg", String)
+INFO_BLOCK_END(CommentInfo)
+
+INFO_BLOCK(Reference, BI_REFERENCE_BLOCK_ID, "ReferenceBlock")
+RECORD(USR, REFERENCE_USR, "USR", SymbolID)
+RECORD(Name, REFERENCE_NAME, "Name", String)
+RECORD(QualName, REFERENCE_QUAL_NAME, "QualName", String)
+RECORD(RefType, REFERENCE_TYPE, "RefType", Int)
+RECORD(Path, REFERENCE_PATH, "Path", String)
+RECORD(Field, REFERENCE_FIELD, "Field", Int)
+RECORD(DocumentationFileName, REFERENCE_FILE, "File", String)
+INFO_BLOCK_END(Reference)
+
+INFO_BLOCK(TemplateInfo, BI_TEMPLATE_BLOCK_ID, "TemplateBlock")
+INFO_BLOCK_END(TemplateInfo)
+#endif
+
+#undef INFO_BLOCK
+#undef INFO_BLOCK_END
+#undef RECORD
+#undef EMIT_String
+#undef EMIT_Bool
+#undef EMIT_Int
+#undef EMIT_SymbolID
+#undef EMIT_Enum
+#undef EMIT_OptLoc
+#undef EMIT_LocList
+#undef ABBREV_String
+#undef ABBREV_Bool
+#undef ABBREV_Int
+#undef ABBREV_SymbolID
+#undef ABBREV_Enum
+#undef ABBREV_OptLoc
+#undef ABBREV_LocList
+#undef CLANG_DOC_RECORD_READER
+#undef CLANG_DOC_RECORD_WRITER
+#undef CLANG_DOC_RECORD_WRITER_DECL
+#undef CLANG_DOC_BLOCK_NAMES
+#undef CLANG_DOC_RECORD_DESCS
+#undef CLANG_DOC_RECORDS_BY_BLOCK
+#undef CLANG_DOC_RECORD_TABLES
