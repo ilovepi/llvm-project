@@ -17,7 +17,13 @@
 #include "Generators.h"
 #include "clang/Basic/Specifiers.h"
 #include "llvm/ADT/ArrayRef.h"
+#include "llvm/ADT/ScopeExit.h"
 #include "llvm/Support/JSON.h"
+#include "llvm/Support/Mutex.h"
+#include "llvm/Support/Parallel.h"
+
+#include <atomic>
+#include <mutex>
 
 using namespace llvm;
 using namespace llvm::json;
@@ -1035,19 +1041,55 @@ Error JSONGenerator::generateDocumentation(StringRef RootDir,
       return Err;
   }
 
-  for (const auto &Group : FileToInfos) {
-    std::error_code FileErr;
-    raw_fd_ostream InfoOS(Group.getKey(), FileErr, sys::fs::OF_Text);
-    if (FileErr)
-      return createFileError("cannot open file " + Group.getKey(), FileErr);
-
-    for (const auto &Info : Group.getValue()) {
+  // serializeContexts populates the shared ContextsMap, while
+  // generateDocForInfo only reads it. Compute all contexts up front so the file
+  // I/O below can run concurrently without racing on the map.
+  for (const auto &Group : FileToInfos)
+    for (auto *Info : Group.getValue())
       if (Info->IT == InfoType::IT_record || Info->IT == InfoType::IT_namespace)
         serializeContexts(Info, Infos);
-      if (Error Err = generateDocForInfo(Info, InfoOS, CDCtx))
-        return Err;
+
+  // Each output file is independent, so write them in parallel. Only this loop
+  // is parallelized; the rest of generation stays single-threaded. The tasks
+  // run on llvm::parallel worker threads, which is required for string
+  // interning.
+  std::atomic<bool> HasError = false;
+  llvm::sys::Mutex ErrMutex;
+  std::string ErrMsg;
+  auto RecordError = [&](Error Err) {
+    std::lock_guard<llvm::sys::Mutex> Guard(ErrMutex);
+    if (HasError.exchange(true))
+      consumeError(std::move(Err));
+    else
+      ErrMsg = toString(std::move(Err));
+  };
+  {
+    // Enable a parallel strategy for the duration of the file I/O, then restore
+    // the caller's single-threaded strategy.
+    ThreadPoolStrategy SavedStrategy = llvm::parallel::strategy;
+    llvm::parallel::strategy = llvm::hardware_concurrency();
+    llvm::scope_exit RestoreStrategy(
+        [&] { llvm::parallel::strategy = SavedStrategy; });
+
+    llvm::parallel::TaskGroup Pool;
+    for (const auto &Group : FileToInfos) {
+      Pool.spawn([&, Key = Group.getKey(), GroupInfos = Group.getValue()]() {
+        std::error_code FileErr;
+        raw_fd_ostream InfoOS(Key, FileErr, sys::fs::OF_Text);
+        if (FileErr) {
+          RecordError(createFileError("cannot open file " + Key, FileErr));
+          return;
+        }
+        for (auto *Info : GroupInfos)
+          if (Error Err = generateDocForInfo(Info, InfoOS, CDCtx)) {
+            RecordError(std::move(Err));
+            return;
+          }
+      });
     }
   }
+  if (HasError)
+    return createStringError(llvm::inconvertibleErrorCode(), ErrMsg);
 
   return serializeIndex(RootDir);
 }
