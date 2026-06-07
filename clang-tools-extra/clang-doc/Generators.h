@@ -86,7 +86,7 @@ public:
     return llvm::Error::success();
   }
 
-  void render(llvm::json::Value &V, raw_ostream &OS) { T.render(V, OS); }
+  void render(llvm::json::Value &V, raw_ostream &OS) const { T.render(V, OS); }
 
   void setEscapeCharacters(const llvm::DenseMap<char, std::string> Characters) {
     T.overrideEscapeCharacters(Characters);

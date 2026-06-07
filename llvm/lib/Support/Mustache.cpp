@@ -885,7 +885,8 @@ void ASTNode::renderSectionLambdas(const llvm::json::Value &Contexts,
   LambdaNode->render(Contexts, OS);
 }
 
-void Template::render(const llvm::json::Value &Data, llvm::raw_ostream &OS) {
+void Template::render(const llvm::json::Value &Data,
+                      llvm::raw_ostream &OS) const {
   RawMustacheOutputStream MOS(OS);
   Tree->render(Data, MOS);
 }

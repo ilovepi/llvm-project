@@ -118,7 +118,8 @@ public:
 
   Template &operator=(Template &&) = delete;
 
-  LLVM_ABI void render(const llvm::json::Value &Data, llvm::raw_ostream &OS);
+  LLVM_ABI void render(const llvm::json::Value &Data,
+                       llvm::raw_ostream &OS) const;
 
   LLVM_ABI void registerPartial(std::string Name, std::string Partial);
 

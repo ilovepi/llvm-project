@@ -8,6 +8,7 @@
 
 #include "Generators.h"
 #include "support/File.h"
+#include "llvm/Support/Parallel.h"
 #include "llvm/Support/TimeProfiler.h"
 
 LLVM_INSTANTIATE_REGISTRY(clang::doc::GeneratorRegistry)
@@ -100,63 +101,62 @@ Error MustacheGenerator::generateDocumentation(
     llvm::TimeTraceScope TS("Iterate JSON files");
     std::error_code EC;
     sys::fs::recursive_directory_iterator JSONIter(JSONDirPath, EC);
-    std::vector<json::Value> JSONFiles;
-    JSONFiles.reserve(Infos.size());
     if (EC)
       return createStringError("Failed to create directory iterator.");
 
+    // Create the docs directory structure and collect JSON files to process.
+    std::vector<std::string> JSONPaths;
+    JSONPaths.reserve(Infos.size());
     while (JSONIter != sys::fs::recursive_directory_iterator()) {
+      if (EC)
+        return createFileError("Failed to iterate: " + JSONIter->path(), EC);
+
       // create the same directory structure in the docs format dir
       if (JSONIter->type() == sys::fs::file_type::directory_file) {
         SmallString<128> DocsClonedPath(JSONIter->path());
         sys::path::replace_path_prefix(DocsClonedPath, JSONDirPath,
                                        DocsDirPath);
-        if (auto EC = sys::fs::create_directories(DocsClonedPath)) {
+        if (auto EC = sys::fs::create_directories(DocsClonedPath))
           return createFileError(DocsClonedPath, EC);
-        }
+      } else if (StringRef(JSONIter->path()).ends_with(".json")) {
+        JSONPaths.push_back(JSONIter->path());
       }
+      JSONIter.increment(EC);
+    }
 
-      if (EC)
-        return createFileError("Failed to iterate: " + JSONIter->path(), EC);
-
-      auto Path = StringRef(JSONIter->path());
-      if (!Path.ends_with(".json")) {
-        JSONIter.increment(EC);
-        continue;
-      }
-
+    // Render each JSON file independently.
+    llvm::ExitOnError ExitOnErr("clang-doc error: ");
+    llvm::parallelForEach(JSONPaths, [&](const std::string &PathStr) {
+      StringRef Path(PathStr);
       auto File = MemoryBuffer::getFile(Path);
-      if (EC = File.getError(); EC) {
-        unsigned ID = CDCtx.Diags.getCustomDiagID(DiagnosticsEngine::Warning,
-                                                  "Failed to open file: %0 %1");
-        CDCtx.Diags.Report(ID) << Path << EC.message();
-        JSONIter.increment(EC);
-        continue;
+      if (std::error_code FileEC = File.getError()) {
+        errs() << "Failed to open file: " << Path << ": " << FileEC.message()
+               << '\n';
+        return;
       }
 
       auto Parsed = json::parse((*File)->getBuffer());
       if (!Parsed)
-        return Parsed.takeError();
-      auto ValidJSON = Parsed.get();
+        ExitOnErr(Parsed.takeError());
 
       std::error_code FileErr;
-      SmallString<128> DocsFilePath(JSONIter->path());
+      SmallString<128> DocsFilePath(Path);
       sys::path::replace_path_prefix(DocsFilePath, JSONDirPath, DocsDirPath);
       sys::path::replace_extension(DocsFilePath, DirName);
       raw_fd_ostream InfoOS(DocsFilePath, FileErr, sys::fs::OF_None);
       if (FileErr)
-        return createFileOpenError(Path, FileErr);
+        ExitOnErr(createFileOpenError(Path, FileErr));
 
       auto RelativeRootPath = getRelativePathToRoot(DocsFilePath, DocsDirPath);
       auto InfoTypeStr =
           getInfoTypeStr(Parsed->getAsObject(), sys::path::stem(DocsFilePath));
       if (!InfoTypeStr)
-        return InfoTypeStr.takeError();
+        ExitOnErr(InfoTypeStr.takeError());
+
       if (Error Err = generateDocForJSON(*Parsed, InfoOS, CDCtx,
                                          InfoTypeStr.get(), RelativeRootPath))
-        return Err;
-      JSONIter.increment(EC);
-    }
+        ExitOnErr(std::move(Err));
+    });
   }
 
   return Error::success();
