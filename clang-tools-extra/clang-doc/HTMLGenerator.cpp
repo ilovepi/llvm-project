@@ -69,6 +69,10 @@ Error HTMLGenerator::setupTemplateFiles(const ClangDocContext &CDCtx) {
       ConvertToNative(CDCtx.MustacheTemplates.lookup("comment-template"));
   std::string FunctionFilePath =
       ConvertToNative(CDCtx.MustacheTemplates.lookup("function-template"));
+  std::string TypeLinkFilePath =
+      ConvertToNative(CDCtx.MustacheTemplates.lookup("type-link"));
+  std::string LocationFilePath =
+      ConvertToNative(CDCtx.MustacheTemplates.lookup("source-location"));
   std::string EnumFilePath =
       ConvertToNative(CDCtx.MustacheTemplates.lookup("enum-template"));
   std::string HeadFilePath =
@@ -80,7 +84,8 @@ Error HTMLGenerator::setupTemplateFiles(const ClangDocContext &CDCtx) {
   std::vector<std::pair<StringRef, StringRef>> Partials = {
       {"Comments", CommentFilePath},     {"FunctionPartial", FunctionFilePath},
       {"EnumPartial", EnumFilePath},     {"HeadPartial", HeadFilePath},
-      {"NavbarPartial", NavbarFilePath}, {"AliasPartial", AliasFilePath}};
+      {"NavbarPartial", NavbarFilePath}, {"AliasPartial", AliasFilePath},
+      {"TypeLink", TypeLinkFilePath},    {"LocationPartial", LocationFilePath}};
 
   if (Error Err = setupTemplate(NamespaceTemplate, NamespaceFilePath, Partials))
     return Err;

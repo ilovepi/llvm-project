@@ -25,12 +25,14 @@ set(assets
   mustache-index.js
   clang-doc-default-stylesheet.css
   clang-doc-mustache.css
+  clang-doc-syntax-furo.css
   class-template.mustache
   comment-template.mustache
   enum-template.mustache
   function-template.mustache
+  type-link.mustache
+  source-location.mustache
   namespace-template.mustache
-  template.mustache
   head-template.mustache
   navbar-template.mustache
   index-template.mustache

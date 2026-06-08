@@ -30,12 +30,12 @@
 // CHECK-HTML-NEXT:                    <h2>Index</h2>
 // CHECK-HTML-NEXT:                    <div>
 // CHECK-HTML-NEXT:                        <a href="GlobalNamespace/index.html">
-// CHECK-HTML-NEXT:                            <pre><code id="{{([0-9A-F]{40})}}" class="language-cpp code-clang-doc">namespace GlobalNamespace</code></pre>
+// CHECK-HTML-NEXT:                            <pre><code id="{{([0-9A-F]{40})}}" class="language-cpp code-clang-doc cd-sig"><span class="k">namespace</span> <span class="nf">GlobalNamespace</span></code></pre>
 // CHECK-HTML-NEXT:                        </a>
 // CHECK-HTML-NEXT:                    </div>
 // CHECK-HTML-NEXT:                    <div>
 // CHECK-HTML-NEXT:                        <a href="inner/index.html">
-// CHECK-HTML-NEXT:                            <pre><code id="{{([0-9A-F]{40})}}" class="language-cpp code-clang-doc">namespace inner</code></pre>
+// CHECK-HTML-NEXT:                            <pre><code id="{{([0-9A-F]{40})}}" class="language-cpp code-clang-doc cd-sig"><span class="k">namespace</span> <span class="nf">inner</span></code></pre>
 // CHECK-HTML-NEXT:                        </a>
 // CHECK-HTML-NEXT:                    </div>
 // CHECK-HTML-NEXT:                </section>

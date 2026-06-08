@@ -26,7 +26,6 @@
     themeToggle.onclick = () => {
       const currentTheme = root.getAttribute("color-scheme");
       const next = currentTheme === "dark" ? "light" : "dark";
-      changeHighlightJS(next);
       root.setAttribute("color-scheme", next);
       localStorage.setItem("theme", next);
     };

@@ -26,8 +26,8 @@ struct Factory {
 };
 } // namespace app
 
-// Return type: a documented type renders as a cross-reference link.
-// HTML: <a class="cd-type" href="../lib/_ZTVN3lib6WidgetE.html">lib::Widget</a> <span class="cd-name">makeWidget</span> ()
+// Return type: a documented type renders as a typed cross-reference link.
+// HTML: <a class="nc cd-ref" href="../lib/_ZTVN3lib6WidgetE.html">{{[^<]*}}Widget
 
-// Reference parameter: the whole `const lib::Widget &` links to the same page.
-// HTML: <a class="cd-type" href="../lib/_ZTVN3lib6WidgetE.html">const lib::Widget &amp;</a> <span class="cd-param">W</span>
+// Reference parameter: stripped to Widget and linked to the same page.
+// HTML: <a class="nc cd-ref" href="../lib/_ZTVN3lib6WidgetE.html">{{[^<]*}}Widget

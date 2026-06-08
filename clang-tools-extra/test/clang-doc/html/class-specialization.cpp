@@ -7,12 +7,12 @@
 // HTML-NAMESPACE-NEXT:     <ul class="class-container">
 // HTML-NAMESPACE-NEXT:         <li id="{{([0-9A-F]{40})}}" style="max-height: 40px;">
 // HTML-NAMESPACE-NEXT:             <a href="_ZTV7MyClass.html">
-// HTML-NAMESPACE-NEXT:                 <pre><code class="language-cpp code-clang-doc">class MyClass</code></pre>
+// HTML-NAMESPACE-NEXT:                 <pre><code class="language-cpp code-clang-doc cd-sig"><span class="k">class</span> <span class="nc">MyClass</span></code></pre>
 // HTML-NAMESPACE-NEXT:             </a>
 // HTML-NAMESPACE-NEXT:         </li>
 // HTML-NAMESPACE-NEXT:         <li id="{{([0-9A-F]{40})}}" style="max-height: 40px;">
 // HTML-NAMESPACE-NEXT:             <a href="_ZTV7MyClassIiE.html">
-// HTML-NAMESPACE-NEXT:                 <pre><code class="language-cpp code-clang-doc">class MyClass&lt;int&gt;</code></pre>
+// HTML-NAMESPACE-NEXT:                 <pre><code class="language-cpp code-clang-doc cd-sig"><span class="k">class</span> <span class="nc">MyClass&lt;int&gt;</span></code></pre>
 // HTML-NAMESPACE-NEXT:             </a>
 // HTML-NAMESPACE-NEXT:         </li>
 // HTML-NAMESPACE-NEXT:     </ul>

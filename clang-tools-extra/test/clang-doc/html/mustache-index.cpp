@@ -24,7 +24,7 @@
 // CHECK-NEXT:      <div>
 // CHECK-NEXT:          <div id="{{[0-9A-F]*}}" class="delimiter-container">
 // CHECK-NEXT:              <div>
-// CHECK-NEXT:                  <pre><code class="language-cpp code-clang-doc">enum Color</code></pre>
+// CHECK-NEXT:                  <pre><code class="language-cpp code-clang-doc cd-sig"><span class="k">enum</span> <span class="nc">Color</span></code></pre>
 // CHECK-NEXT:              </div>
 // CHECK-NEXT:              <table class="table-wrapper">
 // CHECK-NEXT:                  <tbody>
@@ -56,7 +56,7 @@
 // CHECK-NEXT:      <ul class="class-container">
 // CHECK-NEXT:          <li id="{{[0-9A-F]*}}" style="max-height: 40px;">
 // CHECK-NEXT:              <a href="_ZTV3Foo.html">
-// CHECK-NEXT:                  <pre><code class="language-cpp code-clang-doc">class Foo</code></pre>
+// CHECK-NEXT:                  <pre><code class="language-cpp code-clang-doc cd-sig"><span class="k">class</span> <span class="nc">Foo</span></code></pre>
 // CHECK-NEXT:              </a>
 // CHECK-NEXT:          </li>
 // CHECK-NEXT:      </ul>

@@ -519,36 +519,19 @@ a, a:visited, a:hover, a:active {
     color: inherit;
 }
 
-/* Server-side semantic highlighting for signatures (".cd-sig" code blocks).
-   Each token color has a fixed fallback, then light-dark() so it adapts to the
-   page's color-scheme. Types that resolve to a documented page render as
-   <a class="cd-type"> and additionally get a link underline. */
-.cd-kw {
-    color: #9a3fa8;
-    color: light-dark(#9a3fa8, #d699e0);
-}
-
-.cd-type {
-    color: #0b7285;
-    color: light-dark(#0b7285, #56c5d6);
-}
-
-.cd-name {
-    color: var(--text1);
-    font-weight: 600;
-}
-
-.cd-param {
-    color: var(--text2);
-}
-
-a.cd-type {
+/* Signature tokens are emitted with Pygments class names (k, nc, nf, n) inside
+   ".code-clang-doc" blocks; their colors come entirely from the swappable syntax
+   theme (imported at the top of this file). The only thing styled here is the
+   cross-reference link affordance: a documented type renders as
+   <a class="nc cd-ref">, taking its color from the theme and an underline from
+   the brand here. */
+.cd-ref {
     text-decoration: underline;
     text-decoration-color: var(--brand);
     text-underline-offset: 3px;
 }
 
-a.cd-type:hover {
+.cd-ref:hover {
     color: var(--brand);
     text-decoration-thickness: 2px;
 }

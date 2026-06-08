@@ -1,12 +1,12 @@
 <div id="{{USR}}" class="delimiter-container">
     {{#Template}}
-    <pre><code class="language-cpp code-clang-doc">template &lt;{{#Parameters}}{{Param}}{{^End}}, {{/End}}{{/Parameters}}&gt;</code></pre>
+    <pre><code class="language-cpp code-clang-doc cd-sig"><span class="k">template</span> &lt;{{#Parameters}}{{Param}}{{^End}}, {{/End}}{{/Parameters}}&gt;</code></pre>
     {{/Template}}
-    <pre><code class="language-cpp code-clang-doc">{{#IsUsing}}using{{/IsUsing}}{{^IsUsing}}typedef{{/IsUsing}} {{Name}}{{#IsUsing}} ={{/IsUsing}}{{#Underlying}} {{Name}}{{/Underlying}}</code></pre>
+    <pre><code class="language-cpp code-clang-doc cd-sig"><span class="k">{{#IsUsing}}using{{/IsUsing}}{{^IsUsing}}typedef{{/IsUsing}}</span> <span class="nc">{{Name}}</span>{{#IsUsing}} ={{/IsUsing}}{{#Underlying}} <span class="nc">{{Name}}</span>{{/Underlying}}</code></pre>
     {{#Description}}
     {{>Comments}}
     {{/Description}}
     {{#Location}}
-    <p>Defined at line {{LineNumber}} of file {{^FileURL}}{{Filename}}{{/FileURL}}{{#FileURL}}<a class="source-link" href="{{FileURL}}">{{Filename}}</a>{{/FileURL}}</p>
+    {{>LocationPartial}}
     {{/Location}}
 </div>

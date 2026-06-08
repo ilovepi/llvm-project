@@ -16,14 +16,6 @@ document.addEventListener("DOMContentLoaded", function() {
 
   document.addEventListener('mouseup', () => { isResizing = false; });
 
-  // Signature blocks (class "cd-sig") are highlighted and linked server-side,
-  // so skip them: hljs.highlightElement rewrites innerHTML and would drop the
-  // baked-in cross-reference links.
-  document.querySelectorAll('pre code:not(.cd-sig)').forEach((el) => {
-    hljs.highlightElement(el);
-    el.classList.remove("hljs");
-  });
-
   document.querySelectorAll('.sidebar-item-container').forEach(item => {
     item.addEventListener('click', function() {
       const anchor = item.getElementsByTagName("a");

@@ -1,0 +1,30 @@
+/* Furo syntax color theme for clang-doc (Pygments palette).
+ *
+ * Signatures are emitted with Pygments-compatible token classes:
+ *   k  = keyword            nc = class / type name
+ *   nf = function name      n  = plain name (inherits default text color)
+ *
+ * This file is the only place syntax colors live. To switch themes, replace it
+ * (or point the @import in clang-doc-mustache.css at a different file / CDN).
+ * Any Pygments style can be generated to match:
+ *   pygmentize -S <style> -f html -a '.code-clang-doc'
+ * The values below are Furo's light and dark Pygments styles.
+ */
+
+.code-clang-doc .k  { color: #8045e5; }
+.code-clang-doc .nc { color: #00749c; }
+.code-clang-doc .nf { color: #00749c; }
+
+@media (prefers-color-scheme: dark) {
+    .code-clang-doc .k  { color: #6ebf26; }
+    .code-clang-doc .nc { color: #71adff; }
+    .code-clang-doc .nf { color: #71adff; }
+}
+
+[color-scheme=light] .code-clang-doc .k  { color: #8045e5; }
+[color-scheme=light] .code-clang-doc .nc { color: #00749c; }
+[color-scheme=light] .code-clang-doc .nf { color: #00749c; }
+
+[color-scheme=dark] .code-clang-doc .k  { color: #6ebf26; }
+[color-scheme=dark] .code-clang-doc .nc { color: #71adff; }
+[color-scheme=dark] .code-clang-doc .nf { color: #71adff; }

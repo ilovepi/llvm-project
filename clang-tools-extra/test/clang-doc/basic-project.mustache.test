@@ -74,7 +74,7 @@ HTML-SHAPE-NEXT:             </section>
 HTML-SHAPE-NEXT:             <section id="PublicMethods" class="section-container">
 HTML-SHAPE-NEXT:                 <h2>Public Methods</h2>
 HTML-SHAPE-LABEL:                       <div id="{{([0-9A-F]{40})}}" class="delimiter-container">
-HTML-SHAPE-NEXT:                             <pre><code class="language-cpp code-clang-doc cd-sig"><span class="cd-type">double</span> <span class="cd-name">area</span> ()</code></pre>
+HTML-SHAPE-NEXT:                             <pre><code class="language-cpp code-clang-doc cd-sig"><span class="nc">double</span> <span class="nf">area</span> ()</code></pre>
 HTML-SHAPE-NEXT:                             <div class="doc-card">
 HTML-SHAPE-NEXT:                                 <div class="nested-delimiter-container">
 HTML-SHAPE-NEXT:                                     <p>Calculates the area of the shape.</p>
@@ -86,7 +86,7 @@ HTML-SHAPE-NEXT:                                 </div>
 HTML-SHAPE-NEXT:                             </div>
 HTML-SHAPE-NEXT:                         </div>
 HTML-SHAPE-LABEL:                        <div id="{{([0-9A-F]{40})}}" class="delimiter-container">
-HTML-SHAPE-NEXT:                             <pre><code class="language-cpp code-clang-doc cd-sig"><span class="cd-type">double</span> <span class="cd-name">perimeter</span> ()</code></pre>
+HTML-SHAPE-NEXT:                             <pre><code class="language-cpp code-clang-doc cd-sig"><span class="nc">double</span> <span class="nf">perimeter</span> ()</code></pre>
 HTML-SHAPE-NEXT:                             <div class="doc-card">
 HTML-SHAPE-NEXT:                                 <div class="nested-delimiter-container">
 HTML-SHAPE-NEXT:                                     <p>Calculates the perimeter of the shape.</p>
@@ -98,7 +98,7 @@ HTML-SHAPE-NEXT:                                 </div>
 HTML-SHAPE-NEXT:                             </div>
 HTML-SHAPE-NEXT:                         </div>
 HTML-SHAPE-LABEL:                        <div id="{{([0-9A-F]{40})}}" class="delimiter-container">
-HTML-SHAPE-NEXT:                             <pre><code class="language-cpp code-clang-doc cd-sig"><span class="cd-type">void</span> <span class="cd-name">~Shape</span> ()</code></pre>
+HTML-SHAPE-NEXT:                             <pre><code class="language-cpp code-clang-doc cd-sig"><span class="nc">void</span> <span class="nf">~Shape</span> ()</code></pre>
 HTML-SHAPE-NEXT:                             <div class="doc-card">
 HTML-SHAPE-NEXT:                                 <div class="nested-delimiter-container">
 HTML-SHAPE-NEXT:                                     <p>Virtual destructor.</p>
@@ -194,17 +194,17 @@ HTML-CALC-NEXT:            <section id="PublicMembers" class="section-container"
 HTML-CALC-NEXT:                 <h2>Public Members</h2>
 HTML-CALC-NEXT:                 <div>
 HTML-CALC-NEXT:                     <div id="public_val" class="delimiter-container">
-HTML-CALC-NEXT:                         <pre><code class="language-cpp code-clang-doc" >int public_val</code></pre>
+HTML-CALC-NEXT:                         <pre><code class="language-cpp code-clang-doc cd-sig" ><span class="nc">int</span> <span class="n">public_val</span></code></pre>
 HTML-CALC-NEXT:                     </div>
 HTML-CALC-NEXT:                     <div id="static_val" class="delimiter-container">
-HTML-CALC-NEXT:                         <pre><code class="language-cpp code-clang-doc" >static const int static_val</code></pre>
+HTML-CALC-NEXT:                         <pre><code class="language-cpp code-clang-doc cd-sig" ><span class="k">static</span> <span class="nc">const int</span> <span class="n">static_val</span></code></pre>
 HTML-CALC-NEXT:                     </div>
 HTML-CALC-NEXT:                 </div>
 HTML-CALC-NEXT:            </section>
 HTML-CALC-NEXT:           <section id="PublicMethods" class="section-container">
 HTML-CALC-NEXT:                 <h2>Public Methods</h2>
 HTML-CALC-LABEL:                <div id="{{([0-9A-F]{40})}}" class="delimiter-container">
-HTML-CALC-NEXT:                     <pre><code class="language-cpp code-clang-doc cd-sig"><span class="cd-type">int</span> <span class="cd-name">add</span> (<span class="cd-type">int</span> <span class="cd-param">a</span>, <span class="cd-type">int</span> <span class="cd-param">b</span>)</code></pre>
+HTML-CALC-NEXT:                     <pre><code class="language-cpp code-clang-doc cd-sig"><span class="nc">int</span> <span class="nf">add</span> (<span class="nc">int</span> <span class="n">a</span>, <span class="nc">int</span> <span class="n">b</span>)</code></pre>
 HTML-CALC-NEXT:                     <div class="doc-card">
 HTML-CALC-NEXT:                         <div class="nested-delimiter-container">
 HTML-CALC-NEXT:                             <p>Adds two integers.</p>
@@ -224,7 +224,7 @@ HTML-CALC-NEXT:                             <p>int The sum of a and b.</p>
 HTML-CALC-NEXT:                         </div>
 HTML-CALC-NEXT:                     </div>
 HTML-CALC-LABEL:                <div id="{{([0-9A-F]{40})}}" class="delimiter-container">
-HTML-CALC-NEXT:                     <pre><code class="language-cpp code-clang-doc cd-sig"><span class="cd-type">int</span> <span class="cd-name">subtract</span> (<span class="cd-type">int</span> <span class="cd-param">a</span>, <span class="cd-type">int</span> <span class="cd-param">b</span>)</code></pre>
+HTML-CALC-NEXT:                     <pre><code class="language-cpp code-clang-doc cd-sig"><span class="nc">int</span> <span class="nf">subtract</span> (<span class="nc">int</span> <span class="n">a</span>, <span class="nc">int</span> <span class="n">b</span>)</code></pre>
 HTML-CALC-NEXT:                     <div class="doc-card">
 HTML-CALC-NEXT:                         <div class="nested-delimiter-container">
 HTML-CALC-NEXT:                             <p>Subtracts the second integer from the first.</p>
@@ -244,7 +244,7 @@ HTML-CALC-NEXT:                             <p>int The result of a - b.</p>
 HTML-CALC-NEXT:                         </div>
 HTML-CALC-NEXT:                     </div>
 HTML-CALC-LABEL:                <div id="{{([0-9A-F]{40})}}" class="delimiter-container">
-HTML-CALC-NEXT:                     <pre><code class="language-cpp code-clang-doc cd-sig"><span class="cd-type">int</span> <span class="cd-name">multiply</span> (<span class="cd-type">int</span> <span class="cd-param">a</span>, <span class="cd-type">int</span> <span class="cd-param">b</span>)</code></pre>
+HTML-CALC-NEXT:                     <pre><code class="language-cpp code-clang-doc cd-sig"><span class="nc">int</span> <span class="nf">multiply</span> (<span class="nc">int</span> <span class="n">a</span>, <span class="nc">int</span> <span class="n">b</span>)</code></pre>
 HTML-CALC-NEXT:                     <div class="doc-card">
 HTML-CALC-NEXT:                         <div class="nested-delimiter-container">
 HTML-CALC-NEXT:                             <p>Multiplies two integers.</p>
@@ -264,7 +264,7 @@ HTML-CALC-NEXT:                             <p>int The product of a and b.</p>
 HTML-CALC-NEXT:                         </div>
 HTML-CALC-NEXT:                     </div>
 HTML-CALC-LABEL:                <div id="{{([0-9A-F]{40})}}" class="delimiter-container">
-HTML-CALC-NEXT:                     <pre><code class="language-cpp code-clang-doc cd-sig"><span class="cd-type">double</span> <span class="cd-name">divide</span> (<span class="cd-type">int</span> <span class="cd-param">a</span>, <span class="cd-type">int</span> <span class="cd-param">b</span>)</code></pre>
+HTML-CALC-NEXT:                     <pre><code class="language-cpp code-clang-doc cd-sig"><span class="nc">double</span> <span class="nf">divide</span> (<span class="nc">int</span> <span class="n">a</span>, <span class="nc">int</span> <span class="n">b</span>)</code></pre>
 HTML-CALC-NEXT:                     <div class="doc-card">
 HTML-CALC-NEXT:                         <div class="nested-delimiter-container">
 HTML-CALC-NEXT:                             <p>Divides the first integer by the second.</p>
@@ -290,7 +290,7 @@ HTML-CALC-NEXT:                             </div>
 HTML-CALC-NEXT:                         </div>
 HTML-CALC-NEXT:                     </div>
 HTML-CALC-LABEL:                <div id="{{([0-9A-F]{40})}}" class="delimiter-container">
-HTML-CALC-NEXT:                     <pre><code class="language-cpp code-clang-doc cd-sig"><span class="cd-type">int</span> <span class="cd-name">mod</span> (<span class="cd-type">int</span> <span class="cd-param">a</span>, <span class="cd-type">int</span> <span class="cd-param">b</span>)</code></pre>
+HTML-CALC-NEXT:                     <pre><code class="language-cpp code-clang-doc cd-sig"><span class="nc">int</span> <span class="nf">mod</span> (<span class="nc">int</span> <span class="n">a</span>, <span class="nc">int</span> <span class="n">b</span>)</code></pre>
 HTML-CALC-NEXT:                     <div class="doc-card">
 HTML-CALC-NEXT:                         <div class="nested-delimiter-container">
 HTML-CALC-NEXT:                             <p>Performs the mod operation on integers.</p>
@@ -377,7 +377,7 @@ HTML-RECTANGLE-NEXT:             </section>
 HTML-RECTANGLE-NEXT:             <section id="PublicMethods" class="section-container">
 HTML-RECTANGLE-NEXT:                 <h2>Public Methods</h2>
 HTML-RECTANGLE-LABEL:                <div id="{{([0-9A-F]{40})}}" class="delimiter-container">
-HTML-RECTANGLE-NEXT:                     <pre><code class="language-cpp code-clang-doc cd-sig"><span class="cd-type">void</span> <span class="cd-name">Rectangle</span> (<span class="cd-type">double</span> <span class="cd-param">width</span>, <span class="cd-type">double</span> <span class="cd-param">height</span>)</code></pre>
+HTML-RECTANGLE-NEXT:                     <pre><code class="language-cpp code-clang-doc cd-sig"><span class="nc">void</span> <span class="nf">Rectangle</span> (<span class="nc">double</span> <span class="n">width</span>, <span class="nc">double</span> <span class="n">height</span>)</code></pre>
 HTML-RECTANGLE-NEXT:                     <div class="doc-card">
 HTML-RECTANGLE-NEXT:                         <div class="nested-delimiter-container">
 HTML-RECTANGLE-NEXT:                             <p>Constructs a new Rectangle object.</p>
@@ -393,7 +393,7 @@ HTML-RECTANGLE-NEXT:                             </div>
 HTML-RECTANGLE-NEXT:                         </div>
 HTML-RECTANGLE-NEXT:                     </div>
 HTML-RECTANGLE-LABEL:                <div id="{{([0-9A-F]{40})}}" class="delimiter-container">
-HTML-RECTANGLE-NEXT:                     <pre><code class="language-cpp code-clang-doc cd-sig"><span class="cd-type">double</span> <span class="cd-name">area</span> ()</code></pre>
+HTML-RECTANGLE-NEXT:                     <pre><code class="language-cpp code-clang-doc cd-sig"><span class="nc">double</span> <span class="nf">area</span> ()</code></pre>
 HTML-RECTANGLE-NEXT:                     <div class="doc-card">
 HTML-RECTANGLE-NEXT:                         <div class="nested-delimiter-container">
 HTML-RECTANGLE-NEXT:                             <p>Calculates the area of the rectangle.</p>
@@ -404,7 +404,7 @@ HTML-RECTANGLE-NEXT:                             <p>double The area of the recta
 HTML-RECTANGLE-NEXT:                         </div>
 HTML-RECTANGLE-NEXT:                     </div>
 HTML-RECTANGLE-LABEL:                <div id="{{([0-9A-F]{40})}}" class="delimiter-container">
-HTML-RECTANGLE-NEXT:                     <pre><code class="language-cpp code-clang-doc cd-sig"><span class="cd-type">double</span> <span class="cd-name">perimeter</span> ()</code></pre>
+HTML-RECTANGLE-NEXT:                     <pre><code class="language-cpp code-clang-doc cd-sig"><span class="nc">double</span> <span class="nf">perimeter</span> ()</code></pre>
 HTML-RECTANGLE-NEXT:                     <div class="doc-card">
 HTML-RECTANGLE-NEXT:                         <div class="nested-delimiter-container">
 HTML-RECTANGLE-NEXT:                             <p>Calculates the perimeter of the rectangle.</p>
@@ -482,7 +482,7 @@ HTML-CIRCLE-NEXT:             </section>
 HTML-CIRCLE-NEXT:             <section id="PublicMethods" class="section-container">
 HTML-CIRCLE-NEXT:                 <h2>Public Methods</h2>
 HTML-CIRCLE-LABEL:                <div id="{{([0-9A-F]{40})}}" class="delimiter-container">
-HTML-CIRCLE-NEXT:                     <pre><code class="language-cpp code-clang-doc cd-sig"><span class="cd-type">void</span> <span class="cd-name">Circle</span> (<span class="cd-type">double</span> <span class="cd-param">radius</span>)</code></pre>
+HTML-CIRCLE-NEXT:                     <pre><code class="language-cpp code-clang-doc cd-sig"><span class="nc">void</span> <span class="nf">Circle</span> (<span class="nc">double</span> <span class="n">radius</span>)</code></pre>
 HTML-CIRCLE-NEXT:                     <div class="doc-card">
 HTML-CIRCLE-NEXT:                         <div class="nested-delimiter-container">
 HTML-CIRCLE-NEXT:                             <p>Constructs a new Circle object.</p>
@@ -495,7 +495,7 @@ HTML-CIRCLE-NEXT:                             </div>
 HTML-CIRCLE-NEXT:                         </div>
 HTML-CIRCLE-NEXT:                     </div>
 HTML-CIRCLE-LABEL:                <div id="{{([0-9A-F]{40})}}" class="delimiter-container">
-HTML-CIRCLE-NEXT:                     <pre><code class="language-cpp code-clang-doc cd-sig"><span class="cd-type">double</span> <span class="cd-name">area</span> ()</code></pre>
+HTML-CIRCLE-NEXT:                     <pre><code class="language-cpp code-clang-doc cd-sig"><span class="nc">double</span> <span class="nf">area</span> ()</code></pre>
 HTML-CIRCLE-NEXT:                     <div class="doc-card">
 HTML-CIRCLE-NEXT:                         <div class="nested-delimiter-container">
 HTML-CIRCLE-NEXT:                             <p>Calculates the area of the circle.</p>
@@ -506,7 +506,7 @@ HTML-CIRCLE-NEXT:                             <p>double The area of the circle.<
 HTML-CIRCLE-NEXT:                         </div>
 HTML-CIRCLE-NEXT:                     </div>
 HTML-CIRCLE-LABEL:                <div id="{{([0-9A-F]{40})}}" class="delimiter-container">
-HTML-CIRCLE-NEXT:                     <pre><code class="language-cpp code-clang-doc cd-sig"><span class="cd-type">double</span> <span class="cd-name">perimeter</span> ()</code></pre>
+HTML-CIRCLE-NEXT:                     <pre><code class="language-cpp code-clang-doc cd-sig"><span class="nc">double</span> <span class="nf">perimeter</span> ()</code></pre>
 HTML-CIRCLE-NEXT:                     <div class="doc-card">
 HTML-CIRCLE-NEXT:                         <div class="nested-delimiter-container">
 HTML-CIRCLE-NEXT:                             <p>Calculates the perimeter of the circle.</p>

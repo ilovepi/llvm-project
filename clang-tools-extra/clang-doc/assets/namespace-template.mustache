@@ -140,7 +140,7 @@
                         {{#Namespaces}}
                         <li id="{{USR}}">
                             <a href="{{^Path}}../{{Name}}/{{/Path}}{{#Path}}./{{Name}}/{{/Path}}index.html">
-                                <pre><code class="language-cpp code-clang-doc">namespace {{Name}}</code></pre>
+                                <pre><code class="language-cpp code-clang-doc cd-sig"><span class="k">namespace</span> <span class="nf">{{Name}}</span></code></pre>
                             </a>
                         </li>
                         {{/Namespaces}}
@@ -164,7 +164,7 @@
                         {{#Records}}
                         <li id="{{USR}}" style="max-height: 40px;">
                             <a href="{{DocumentationFileName}}.html">
-                                <pre><code class="language-cpp code-clang-doc">class {{Name}}{{#Specialization}}&lt;{{#Parameters}}{{Param}}{{^SpecParamEnd}}, {{/SpecParamEnd}}{{/Parameters}}&gt;{{/Specialization}}</code></pre>
+                                <pre><code class="language-cpp code-clang-doc cd-sig"><span class="k">class</span> <span class="nc">{{Name}}{{#Specialization}}&lt;{{#Parameters}}{{Param}}{{^SpecParamEnd}}, {{/SpecParamEnd}}{{/Parameters}}&gt;{{/Specialization}}</span></code></pre>
                             </a>
                         </li>
                         {{/Records}}
@@ -189,13 +189,13 @@
                     {{#Concepts}}
                     <div id="{{USR}}" class="delimiter-container">
                         <div>
-                            <pre><code class="language-cpp code-clang-doc">{{#Template}}template &lt;{{#Parameters}}{{Param}}{{^End}}, {{/End}}{{/Parameters}}&gt;{{/Template}} {{Name}} {{ConstraintExpression}}</code></pre> 
+                            <pre><code class="language-cpp code-clang-doc cd-sig">{{#Template}}<span class="k">template</span> &lt;{{#Parameters}}{{Param}}{{^End}}, {{/End}}{{/Parameters}}&gt;{{/Template}} <span class="nf">{{Name}}</span> {{ConstraintExpression}}</code></pre>
                         </div>
                         {{#Description}}
                         {{>Comments}}
                         {{/Description}}
                         {{#Location}}
-                        <p>Defined at line {{LineNumber}} of file {{^FileURL}}{{Filename}}{{/FileURL}}{{#FileURL}}<a class="source-link" href="{{FileURL}}">{{Filename}}</a>{{/FileURL}}</p>
+                        {{>LocationPartial}}
                         {{/Location}}
                     </div>
                     {{/Concepts}}
@@ -215,9 +215,9 @@
                     <div>
                         {{#Variables}}
                         <div id="{{USR}}" class="delimiter-container">
-                            <pre><code class="language-cpp code-clang-doc" >{{#IsStatic}}static {{/IsStatic}}{{Type.QualName}} {{Name}}</code></pre>
+                            <pre><code class="language-cpp code-clang-doc cd-sig" >{{#IsStatic}}<span class="k">static</span> {{/IsStatic}}{{#Type}}{{>TypeLink}}{{/Type}} <span class="n">{{Name}}</span></code></pre>
                             {{#Location}}
-                            <p>Defined at line {{LineNumber}} of file {{^FileURL}}{{Filename}}{{/FileURL}}{{#FileURL}}<a class="source-link" href="{{FileURL}}">{{Filename}}</a>{{/FileURL}}</p>
+                            {{>LocationPartial}}
                             {{/Location}}
                         </div>
                         {{/Variables}}

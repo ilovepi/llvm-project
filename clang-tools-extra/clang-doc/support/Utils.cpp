@@ -41,6 +41,12 @@ void getHtmlFiles(StringRef AssetsPath, clang::doc::ClangDocContext &CDCtx) {
   // TODO: Allow users to override default templates with their own. We would
   // similarly have to check if a template file already exists in CDCtx.
   if (CDCtx.UserStylesheets.empty()) {
+    // Loaded after the base stylesheet; replace this file (or point it
+    // elsewhere) to change the syntax color theme.
+    SmallString<128> SyntaxTheme =
+        appendPathPosix(AssetsPath, "clang-doc-syntax-furo.css");
+    CDCtx.UserStylesheets.insert(CDCtx.UserStylesheets.begin(),
+                                 SyntaxTheme.c_str());
     SmallString<128> DefaultStylesheet =
         appendPathPosix(AssetsPath, "clang-doc-mustache.css");
     CDCtx.UserStylesheets.insert(CDCtx.UserStylesheets.begin(),
@@ -60,6 +66,10 @@ void getHtmlFiles(StringRef AssetsPath, clang::doc::ClangDocContext &CDCtx) {
       appendPathPosix(AssetsPath, "enum-template.mustache");
   SmallString<128> FunctionTemplate =
       appendPathPosix(AssetsPath, "function-template.mustache");
+  SmallString<128> TypeLinkTemplate =
+      appendPathPosix(AssetsPath, "type-link.mustache");
+  SmallString<128> LocationTemplate =
+      appendPathPosix(AssetsPath, "source-location.mustache");
   SmallString<128> CommentTemplate =
       appendPathPosix(AssetsPath, "comment-template.mustache");
   SmallString<128> HeadTemplate =
@@ -77,6 +87,8 @@ void getHtmlFiles(StringRef AssetsPath, clang::doc::ClangDocContext &CDCtx) {
   CDCtx.MustacheTemplates.insert({"enum-template", EnumTemplate.c_str()});
   CDCtx.MustacheTemplates.insert(
       {"function-template", FunctionTemplate.c_str()});
+  CDCtx.MustacheTemplates.insert({"type-link", TypeLinkTemplate.c_str()});
+  CDCtx.MustacheTemplates.insert({"source-location", LocationTemplate.c_str()});
   CDCtx.MustacheTemplates.insert({"comment-template", CommentTemplate.c_str()});
   CDCtx.MustacheTemplates.insert({"head-template", HeadTemplate.c_str()});
   CDCtx.MustacheTemplates.insert({"navbar-template", NavbarTemplate.c_str()});

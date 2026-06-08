@@ -25,7 +25,7 @@
 // HTML-NEXT:     <h2>Protected Members</h2>
 // HTML-NEXT:     <div>
 // HTML-NEXT:         <div id="ProtectedField" class="delimiter-container">
-// HTML-NEXT:             <pre><code class="language-cpp code-clang-doc" >int ProtectedField</code></pre>
+// HTML-NEXT:             <pre><code class="language-cpp code-clang-doc cd-sig" ><span class="nc">int</span> <span class="n">ProtectedField</span></code></pre>
 // HTML-NEXT:         </div>
 // HTML-NEXT:     </div>
 // HTML-NEXT: </section>
@@ -33,7 +33,7 @@
 // HTML-NEXT:     <h2>Protected Methods</h2>
 // HTML-NEXT:     <div>
 // HTML-NEXT:         <div id="{{([0-9A-F]{40})}}" class="delimiter-container">
-// HTML-NEXT:                 <pre><code class="language-cpp code-clang-doc cd-sig"><span class="cd-type">int</span> <span class="cd-name">protectedMethod</span> ()</code></pre>
+// HTML-NEXT:                 <pre><code class="language-cpp code-clang-doc cd-sig"><span class="nc">int</span> <span class="nf">protectedMethod</span> ()</code></pre>
 // HTML-NEXT:         </div>
 // HTML-NEXT:     </div>
 // HTML-NEXT: </section>
@@ -42,7 +42,7 @@
 // HTML-NEXT:     <ul class="class-container">
 // HTML-NEXT:         <li id="{{([0-9A-F]{40})}}" style="max-height: 40px;">
 // HTML-NEXT:             <a href="MyClass/_ZTVN7MyClass11NestedClassE.html">
-// HTML-NEXT:                 <pre><code class="language-cpp code-clang-doc">class NestedClass</code></pre>
+// HTML-NEXT:                 <pre><code class="language-cpp code-clang-doc cd-sig"><span class="k">class</span> <span class="nc">NestedClass</span></code></pre>
 // HTML-NEXT:             </a>
 // HTML-NEXT:         </li>
 // HTML-NEXT:     </ul>
@@ -50,10 +50,10 @@
 // HTML:      <section id="Friends" class="section-container">
 // HTML-NEXT:     <h2>Friends</h2>
 // HTML-NEXT:     <div id="{{([0-9A-F]{40})}}" class="delimiter-container">
-// HTML-NEXT:         <pre><code class="language-cpp code-clang-doc">template &lt;typename T&gt;</code></pre>
-// HTML-NEXT:         <pre><code class="language-cpp code-clang-doc">void MyClass (int )</code></pre>
+// HTML-NEXT:         <pre><code class="language-cpp code-clang-doc cd-sig"><span class="k">template</span> &lt;typename T&gt;</code></pre>
+// HTML-NEXT:         <pre><code class="language-cpp code-clang-doc cd-sig"><span class="nc">void</span> <span class="nf">MyClass</span> (<span class="nc">int</span> <span class="n"></span>)</code></pre>
 // HTML-NEXT:     </div>
 // HTML-NEXT:     <div id="{{([0-9A-F]{40})}}" class="delimiter-container">
-// HTML-NEXT:         <pre><code class="language-cpp code-clang-doc">class Foo</code></pre>
+// HTML-NEXT:         <pre><code class="language-cpp code-clang-doc cd-sig"><span class="k">class</span> <span class="nc">Foo</span></code></pre>
 // HTML-NEXT:     </div>
 // HTML-NEXT: </section>
