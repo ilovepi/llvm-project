@@ -69,7 +69,7 @@
 // HTML-NESTED-INDEX:             </a>
 // HTML-NESTED-INDEX:         </li>
 // HTML-NESTED-INDEX:     </ul>
-// HTML-NESTED-INDEX:         <pre><code class="language-cpp code-clang-doc">void functionInNestedNamespace ()</code></pre>
+// HTML-NESTED-INDEX:         <pre><code class="language-cpp code-clang-doc cd-sig"><span class="cd-type">void</span> <span class="cd-name">functionInNestedNamespace</span> ()</code></pre>
 // HTML-NESTED-INDEX:         <div class="doc-card">
 // HTML-NESTED-INDEX:             <div class="nested-delimiter-container">
 // HTML-NESTED-INDEX:                 <p>Function in NestedNamespace</p>
@@ -92,7 +92,7 @@
 // HTML-PRIMARY-INDEX:                 </a>
 // HTML-PRIMARY-INDEX:              </li>
 // HTML-PRIMARY-INDEX:          </ul>
-// HTML-PRIMARY-INDEX:          <pre><code class="language-cpp code-clang-doc">void functionInPrimaryNamespace ()</code></pre>
+// HTML-PRIMARY-INDEX:          <pre><code class="language-cpp code-clang-doc cd-sig"><span class="cd-type">void</span> <span class="cd-name">functionInPrimaryNamespace</span> ()</code></pre>
 // HTML-PRIMARY-INDEX:          <div class="doc-card">
 // HTML-PRIMARY-INDEX:              <div class="nested-delimiter-container">
 // HTML-PRIMARY-INDEX:                  <p>Function in PrimaryNamespace</p>
@@ -130,7 +130,7 @@
 // HTML-ANOTHER-INDEX:             </a>
 // HTML-ANOTHER-INDEX:         </li>
 // HTML-ANOTHER-INDEX:     </ul>
-// HTML-ANOTHER-INDEX:         <pre><code class="language-cpp code-clang-doc">void functionInAnotherNamespace ()</code></pre>
+// HTML-ANOTHER-INDEX:         <pre><code class="language-cpp code-clang-doc cd-sig"><span class="cd-type">void</span> <span class="cd-name">functionInAnotherNamespace</span> ()</code></pre>
 // HTML-ANOTHER-INDEX:         <div class="doc-card">
 // HTML-ANOTHER-INDEX:             <div class="nested-delimiter-container">
 // HTML-ANOTHER-INDEX:                 <p>Function in AnotherNamespace</p>

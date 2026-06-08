@@ -131,28 +131,26 @@ Error HTMLGenerator::setupTemplateResources(const ClangDocContext &CDCtx,
   return Error::success();
 }
 
-// Build a QualName -> page href map for documented types. Anchors can't go in
-// the signature itself: highlight.js rebuilds the `pre code` block and discards
-// them. So the page exports this map and mustache-index.js applies the links
-// once highlighting is done.
-static void collectTypeLinks(const json::Value &V, StringRef RelativeRootPath,
-                             json::Object &Links) {
-  if (const auto *Obj = V.getAsObject()) {
+// Attach a ready-to-use, page-relative "Link" to every reference that resolved
+// to a documented symbol (it carries Path + DocumentationFileName). The
+// signature templates render these links directly, so the final href can only
+// be formed here, where the page's path back to the docs root is known.
+static void addCrossReferenceLinks(json::Value &V, StringRef RelativeRootPath) {
+  if (auto *Obj = V.getAsObject()) {
     std::optional<StringRef> DocFile = Obj->getString("DocumentationFileName");
     std::optional<StringRef> Path = Obj->getString("Path");
-    std::optional<StringRef> QualName = Obj->getString("QualName");
-    if (DocFile && Path && QualName && !QualName->empty()) {
+    if (DocFile && Path) {
       SmallString<256> Link(RelativeRootPath);
       sys::path::append(Link, sys::path::Style::posix, *Path);
       sys::path::append(Link, sys::path::Style::posix,
                         (*DocFile + ".html").str());
-      Links[*QualName] = std::string(Link);
+      (*Obj)["Link"] = std::string(Link);
     }
-    for (const auto &KV : *Obj)
-      collectTypeLinks(KV.second, RelativeRootPath, Links);
-  } else if (const auto *Arr = V.getAsArray()) {
-    for (const auto &Elem : *Arr)
-      collectTypeLinks(Elem, RelativeRootPath, Links);
+    for (auto &KV : *Obj)
+      addCrossReferenceLinks(KV.second, RelativeRootPath);
+  } else if (auto *Arr = V.getAsArray()) {
+    for (auto &Elem : *Arr)
+      addCrossReferenceLinks(Elem, RelativeRootPath);
   }
 }
 
@@ -160,12 +158,7 @@ Error HTMLGenerator::generateDocForJSON(json::Value &JSON, raw_fd_ostream &OS,
                                         const ClangDocContext &CDCtx,
                                         StringRef ObjTypeStr,
                                         StringRef RelativeRootPath) {
-  json::Object TypeLinks;
-  collectTypeLinks(JSON, RelativeRootPath, TypeLinks);
-  std::string TypeLinksJSON;
-  raw_string_ostream(TypeLinksJSON) << json::Value(std::move(TypeLinks));
-  if (auto *Obj = JSON.getAsObject())
-    (*Obj)["TypeLinksJSON"] = TypeLinksJSON;
+  addCrossReferenceLinks(JSON, RelativeRootPath);
   if (ObjTypeStr == "namespace") {
     if (auto Err = setupTemplateResources(CDCtx, JSON, RelativeRootPath))
       return Err;

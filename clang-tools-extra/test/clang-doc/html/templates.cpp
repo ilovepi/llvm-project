@@ -3,41 +3,41 @@
 // RUN: cat %t/docs/html/GlobalNamespace/_ZTV5tuple.html | FileCheck %s --check-prefix=HTML-STRUCT
 // RUN: cat %t/docs/html/GlobalNamespace/index.html | FileCheck %s --check-prefix=HTML
 
-// HTML:        <pre><code class="language-cpp code-clang-doc">template &lt;class... T</code><code class="language-cpp code-clang-doc">&gt;</code></pre>
-// HTML-NEXT:   <pre><code class="language-cpp code-clang-doc">void ParamPackFunction (T... args)</code></pre>
+// HTML:        <pre><code class="language-cpp code-clang-doc cd-sig"><span class="cd-kw">template</span> &lt;class... T</code><code class="language-cpp code-clang-doc cd-sig">&gt;</code></pre>
+// HTML-NEXT:   <pre><code class="language-cpp code-clang-doc cd-sig"><span class="cd-type">void</span> <span class="cd-name">ParamPackFunction</span> (<span class="cd-type">T...</span> <span class="cd-param">args</span>)</code></pre>
 
-// HTML:           <pre><code class="language-cpp code-clang-doc">template &lt;typename T, int U = 1</code><code class="language-cpp code-clang-doc">&gt;</code></pre>
-// HTML-NEXT:      <pre><code class="language-cpp code-clang-doc">void function (T x)</code></pre>
+// HTML:           <pre><code class="language-cpp code-clang-doc cd-sig"><span class="cd-kw">template</span> &lt;typename T, int U = 1</code><code class="language-cpp code-clang-doc cd-sig">&gt;</code></pre>
+// HTML-NEXT:      <pre><code class="language-cpp code-clang-doc cd-sig"><span class="cd-type">void</span> <span class="cd-name">function</span> (<span class="cd-type">T</span> <span class="cd-param">x</span>)</code></pre>
 // HTML-NEXT:      <p>Defined at line 3 of file {{.*}}templates.cpp</p>
 // HTML-NEXT:  </div>
 
 // HTML:           <pre>
-// HTML-SAME:        <code class="language-cpp code-clang-doc">template &lt;</code>
+// HTML-SAME:        <code class="language-cpp code-clang-doc cd-sig"><span class="cd-kw">template</span> &lt;</code>
 // HTML-SAME:        <span class="param-container">
-// HTML-SAME:          <span class="param"><code class="language-cpp code-clang-doc">typename A, </code></span>
-// HTML-SAME:          <span class="param"><code class="language-cpp code-clang-doc">typename B, </code></span>
-// HTML-SAME:          <span class="param"><code class="language-cpp code-clang-doc">typename C, </code></span>
-// HTML-SAME:          <span class="param"><code class="language-cpp code-clang-doc">typename D, </code></span>
-// HTML-SAME:          <span class="param"><code class="language-cpp code-clang-doc">typename E</code></span>
+// HTML-SAME:          <span class="param"><code class="language-cpp code-clang-doc cd-sig">typename A, </code></span>
+// HTML-SAME:          <span class="param"><code class="language-cpp code-clang-doc cd-sig">typename B, </code></span>
+// HTML-SAME:          <span class="param"><code class="language-cpp code-clang-doc cd-sig">typename C, </code></span>
+// HTML-SAME:          <span class="param"><code class="language-cpp code-clang-doc cd-sig">typename D, </code></span>
+// HTML-SAME:          <span class="param"><code class="language-cpp code-clang-doc cd-sig">typename E</code></span>
 // HTML-SAME:        </span>
-// HTML-SAME:        <code class="language-cpp code-clang-doc">&gt;</code>
+// HTML-SAME:        <code class="language-cpp code-clang-doc cd-sig">&gt;</code>
 // HTML-SAME:      </pre>
 // HTML-NEXT:      <pre>
-// HTML-SAME:        <code class="language-cpp code-clang-doc">void longFunction (</code>
+// HTML-SAME:        <code class="language-cpp code-clang-doc cd-sig"><span class="cd-type">void</span> <span class="cd-name">longFunction</span> (</code>
 // HTML-SAME:        <span class="param-container">
-// HTML-SAME:          <span class="param"><code class="language-cpp code-clang-doc">A</code> <code class="language-cpp code-clang-doc">a, </code></span>
-// HTML-SAME:          <span class="param"><code class="language-cpp code-clang-doc">B</code> <code class="language-cpp code-clang-doc">b, </code></span>
-// HTML-SAME:          <span class="param"><code class="language-cpp code-clang-doc">C</code> <code class="language-cpp code-clang-doc">c, </code></span>
-// HTML-SAME:          <span class="param"><code class="language-cpp code-clang-doc">D</code> <code class="language-cpp code-clang-doc">d, </code></span>
-// HTML-SAME:          <span class="param"><code class="language-cpp code-clang-doc">E</code> <code class="language-cpp code-clang-doc">e</code></span>
+// HTML-SAME:          <span class="param"><code class="language-cpp code-clang-doc cd-sig"><span class="cd-type">A</span></code> <code class="language-cpp code-clang-doc cd-sig"><span class="cd-param">a</span>, </code></span>
+// HTML-SAME:          <span class="param"><code class="language-cpp code-clang-doc cd-sig"><span class="cd-type">B</span></code> <code class="language-cpp code-clang-doc cd-sig"><span class="cd-param">b</span>, </code></span>
+// HTML-SAME:          <span class="param"><code class="language-cpp code-clang-doc cd-sig"><span class="cd-type">C</span></code> <code class="language-cpp code-clang-doc cd-sig"><span class="cd-param">c</span>, </code></span>
+// HTML-SAME:          <span class="param"><code class="language-cpp code-clang-doc cd-sig"><span class="cd-type">D</span></code> <code class="language-cpp code-clang-doc cd-sig"><span class="cd-param">d</span>, </code></span>
+// HTML-SAME:          <span class="param"><code class="language-cpp code-clang-doc cd-sig"><span class="cd-type">E</span></code> <code class="language-cpp code-clang-doc cd-sig"><span class="cd-param">e</span></code></span>
 // HTML-SAME:        </span>
-// HTML-SAME:        <code class="language-cpp code-clang-doc">)</code>
+// HTML-SAME:        <code class="language-cpp code-clang-doc cd-sig">)</code>
 // HTML-SAME:      </pre>
 // HTML-NEXT:      <p>Defined at line 6 of file {{.*}}templates.cpp</p>
 // HTML-NEXT:  </div>
 
-// HTML:           <pre><code class="language-cpp code-clang-doc">template &lt;</code><code class="language-cpp code-clang-doc">&gt;</code></pre>
-// HTML-NEXT:      <pre><code class="language-cpp code-clang-doc">void function&lt;bool, 0&gt; (bool x)</code></pre>
+// HTML:           <pre><code class="language-cpp code-clang-doc cd-sig"><span class="cd-kw">template</span> &lt;</code><code class="language-cpp code-clang-doc cd-sig">&gt;</code></pre>
+// HTML-NEXT:      <pre><code class="language-cpp code-clang-doc cd-sig"><span class="cd-type">void</span> <span class="cd-name">function</span>&lt;bool, 0&gt; (<span class="cd-type">bool</span> <span class="cd-param">x</span>)</code></pre>
 // HTML-NEXT:      <p>Defined at line 8 of file {{.*}}templates.cpp</p>
 // HTML-NEXT:  </div>
 
@@ -57,7 +57,7 @@
 // HTML-STRUCT-NEXT:       </div>
 // HTML-STRUCT-NEXT:   </section>
 
-// HTML:           <pre><code class="language-cpp code-clang-doc">tuple&lt;int, int, bool&gt; func_with_tuple_param (tuple&lt;int, int, bool&gt; t)</code></pre>
+// HTML:           <pre><code class="language-cpp code-clang-doc cd-sig"><span class="cd-type">tuple&lt;int, int, bool&gt;</span> <span class="cd-name">func_with_tuple_param</span> (<span class="cd-type">tuple&lt;int, int, bool&gt;</span> <span class="cd-param">t</span>)</code></pre>
 // HTML-NEXT:      <div class="doc-card">
 // HTML-NEXT:          <div class="nested-delimiter-container">
 // HTML-NEXT:              <p>A function with a tuple parameter</p>

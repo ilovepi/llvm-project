@@ -519,17 +519,36 @@ a, a:visited, a:hover, a:active {
     color: inherit;
 }
 
-/* Cross-reference links applied to signature types by mustache-index.js. Keep
-   the syntax-highlight color, but underline in the brand color so they read as
-   links, and emphasize on hover. */
-.type-link, .type-link:visited {
+/* Server-side semantic highlighting for signatures (".cd-sig" code blocks).
+   Each token color has a fixed fallback, then light-dark() so it adapts to the
+   page's color-scheme. Types that resolve to a documented page render as
+   <a class="cd-type"> and additionally get a link underline. */
+.cd-kw {
+    color: #9a3fa8;
+    color: light-dark(#9a3fa8, #d699e0);
+}
+
+.cd-type {
+    color: #0b7285;
+    color: light-dark(#0b7285, #56c5d6);
+}
+
+.cd-name {
+    color: var(--text1);
+    font-weight: 600;
+}
+
+.cd-param {
+    color: var(--text2);
+}
+
+a.cd-type {
     text-decoration: underline;
     text-decoration-color: var(--brand);
     text-underline-offset: 3px;
-    cursor: pointer;
 }
 
-.type-link:hover {
+a.cd-type:hover {
     color: var(--brand);
     text-decoration-thickness: 2px;
 }

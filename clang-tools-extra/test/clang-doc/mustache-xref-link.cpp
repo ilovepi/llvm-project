@@ -1,11 +1,10 @@
 // RUN: rm -rf %t && mkdir %t
 // RUN: clang-doc --format=html --executor=standalone %s --output=%t
 //
-// Cross-reference links are applied client-side. Each page exports a map from
-// type name to page in window.ClangDocXRef, and mustache-index.js links the
-// matching text in a signature. Factory's methods live under html/app/ and
-// reference a type under html/lib/, so the mapped target is a cross-directory
-// relative href like ../lib/...
+// Cross-reference links are baked into each signature server-side, so the
+// rendered HTML can be checked directly. Factory's methods live under html/app/
+// and reference a type documented under html/lib/, so a working link is a
+// cross-directory relative href like ../lib/...
 // RUN: FileCheck %s --check-prefix=HTML < %t/html/app/_ZTVN3app7FactoryE.html
 //
 // Prove the link resolves: the page it points at must exist.
@@ -27,5 +26,8 @@ struct Factory {
 };
 } // namespace app
 
-// Both the return type and the reference parameter map to Widget's page.
-// HTML: window.ClangDocXRef = {"const lib::Widget &":"../lib/_ZTVN3lib6WidgetE.html","lib::Widget":"../lib/_ZTVN3lib6WidgetE.html"}
+// Return type: a documented type renders as a cross-reference link.
+// HTML: <a class="cd-type" href="../lib/_ZTVN3lib6WidgetE.html">lib::Widget</a> <span class="cd-name">makeWidget</span> ()
+
+// Reference parameter: the whole `const lib::Widget &` links to the same page.
+// HTML: <a class="cd-type" href="../lib/_ZTVN3lib6WidgetE.html">const lib::Widget &amp;</a> <span class="cd-param">W</span>

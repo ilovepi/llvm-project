@@ -33,7 +33,7 @@
 // HTML-NEXT:     <h2>Protected Methods</h2>
 // HTML-NEXT:     <div>
 // HTML-NEXT:         <div id="{{([0-9A-F]{40})}}" class="delimiter-container">
-// HTML-NEXT:                 <pre><code class="language-cpp code-clang-doc">int protectedMethod ()</code></pre>
+// HTML-NEXT:                 <pre><code class="language-cpp code-clang-doc cd-sig"><span class="cd-type">int</span> <span class="cd-name">protectedMethod</span> ()</code></pre>
 // HTML-NEXT:         </div>
 // HTML-NEXT:     </div>
 // HTML-NEXT: </section>
