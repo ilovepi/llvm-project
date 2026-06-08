@@ -519,6 +519,33 @@ a, a:visited, a:hover, a:active {
     color: inherit;
 }
 
+/* Cross-reference links applied to signature types by mustache-index.js. Keep
+   the syntax-highlight color, but underline in the brand color so they read as
+   links, and emphasize on hover. */
+.type-link, .type-link:visited {
+    text-decoration: underline;
+    text-decoration-color: var(--brand);
+    text-underline-offset: 3px;
+    cursor: pointer;
+}
+
+.type-link:hover {
+    color: var(--brand);
+    text-decoration-thickness: 2px;
+}
+
+/* Prose links, e.g. the source-location link out to the repository. These sit
+   in body text, so give them the standard brand-colored hyperlink treatment. */
+.source-link, .source-link:visited {
+    color: var(--brand);
+    text-decoration: underline;
+    text-underline-offset: 2px;
+}
+
+.source-link:hover {
+    text-decoration: none;
+}
+
 .code-block {
   white-space: pre-line;
 }

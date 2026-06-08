@@ -156,7 +156,7 @@
                     <div class="hero__title">
                         <h1 class="hero__title-large">{{TagType}} {{Name}}</h1>
                         {{#Location}}
-                        <p>Defined at line {{LineNumber}} of file {{^FileURL}}{{Filename}}{{/FileURL}}{{#FileURL}}<a href="{{FileURL}}">{{Filename}}</a>{{/FileURL}}</p>
+                        <p>Defined at line {{LineNumber}} of file {{^FileURL}}{{Filename}}{{/FileURL}}{{#FileURL}}<a class="source-link" href="{{FileURL}}">{{Filename}}</a>{{/FileURL}}</p>
                         {{/Location}}
                         {{#Description}}
                         <div class="doc-card">

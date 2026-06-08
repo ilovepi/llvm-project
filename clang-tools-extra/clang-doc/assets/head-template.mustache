@@ -1,6 +1,9 @@
 <head>
     <meta charset="utf-8"/>
     <title>{{Name}}</title>
+    {{! Type name -> page map. mustache-index.js applies these to signatures
+        after highlight.js runs. }}
+    <script>window.ClangDocXRef = {{{TypeLinksJSON}}};</script>
     <script data-cfasync="false">
       (function() {
         const root = document.documentElement;

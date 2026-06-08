@@ -408,7 +408,14 @@ RecordDecl *Serializer::getRecordDeclForType(const QualType &T) {
 
 TypeInfo Serializer::getTypeInfoForType(const QualType &T,
                                         const PrintingPolicy &Policy) {
-  const TagDecl *TD = getTagDeclForType(T);
+  // Look through references and pointers so a parameter or return type written
+  // as `const Foo &` or `Foo *` resolves to Foo's declaration. The original
+  // spelling is kept for display. The lookup still requires a definition, so
+  // template specializations and undefined types keep their prior handling.
+  QualType Underlying = T.getNonReferenceType();
+  while (Underlying->isPointerType())
+    Underlying = Underlying->getPointeeType();
+  const TagDecl *TD = getTagDeclForType(Underlying);
   if (!TD) {
     TypeInfo TI = TypeInfo(Reference(SymbolID(), T.getAsString(Policy)));
     TI.IsBuiltIn = T->isBuiltinType();

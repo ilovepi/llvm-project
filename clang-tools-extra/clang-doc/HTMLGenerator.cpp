@@ -131,10 +131,41 @@ Error HTMLGenerator::setupTemplateResources(const ClangDocContext &CDCtx,
   return Error::success();
 }
 
+// Build a QualName -> page href map for documented types. Anchors can't go in
+// the signature itself: highlight.js rebuilds the `pre code` block and discards
+// them. So the page exports this map and mustache-index.js applies the links
+// once highlighting is done.
+static void collectTypeLinks(const json::Value &V, StringRef RelativeRootPath,
+                             json::Object &Links) {
+  if (const auto *Obj = V.getAsObject()) {
+    std::optional<StringRef> DocFile = Obj->getString("DocumentationFileName");
+    std::optional<StringRef> Path = Obj->getString("Path");
+    std::optional<StringRef> QualName = Obj->getString("QualName");
+    if (DocFile && Path && QualName && !QualName->empty()) {
+      SmallString<256> Link(RelativeRootPath);
+      sys::path::append(Link, sys::path::Style::posix, *Path);
+      sys::path::append(Link, sys::path::Style::posix,
+                        (*DocFile + ".html").str());
+      Links[*QualName] = std::string(Link);
+    }
+    for (const auto &KV : *Obj)
+      collectTypeLinks(KV.second, RelativeRootPath, Links);
+  } else if (const auto *Arr = V.getAsArray()) {
+    for (const auto &Elem : *Arr)
+      collectTypeLinks(Elem, RelativeRootPath, Links);
+  }
+}
+
 Error HTMLGenerator::generateDocForJSON(json::Value &JSON, raw_fd_ostream &OS,
                                         const ClangDocContext &CDCtx,
                                         StringRef ObjTypeStr,
                                         StringRef RelativeRootPath) {
+  json::Object TypeLinks;
+  collectTypeLinks(JSON, RelativeRootPath, TypeLinks);
+  std::string TypeLinksJSON;
+  raw_string_ostream(TypeLinksJSON) << json::Value(std::move(TypeLinks));
+  if (auto *Obj = JSON.getAsObject())
+    (*Obj)["TypeLinksJSON"] = TypeLinksJSON;
   if (ObjTypeStr == "namespace") {
     if (auto Err = setupTemplateResources(CDCtx, JSON, RelativeRootPath))
       return Err;

@@ -67,6 +67,7 @@ class JSONGenerator : public Generator {
   Error serializeIndex(StringRef RootDir);
   void generateContext(const Info &I, Object &Obj);
   void serializeReference(const Reference &Ref, Object &ReferenceObj);
+  void resolveTypeLink(const Reference &Ref, Object &Obj);
   Error serializeAllFiles(const ClangDocContext &CDCtx, StringRef RootDir);
   void serializeMDReference(const Reference &Ref, Object &ReferenceObj,
                             StringRef BasePath);
@@ -525,6 +526,19 @@ void JSONGenerator::serializeReference(const Reference &Ref,
   }
 }
 
+// Attach the page fields for a signature type that resolves to a documented
+// symbol. The HTML generator turns Path and DocumentationFileName into a
+// page-relative href. Builtin types and types with no page are left alone.
+void JSONGenerator::resolveTypeLink(const Reference &Ref, Object &Obj) {
+  if (Ref.USR == SymbolID() || !Infos)
+    return;
+  Info *Target = Infos->lookup(toHex(toStringRef(Ref.USR)));
+  if (!Target || Target->DocumentationFileName.empty())
+    return;
+  Obj["Path"] = Target->Path;
+  Obj["DocumentationFileName"] = Target->DocumentationFileName;
+}
+
 void JSONGenerator::serializeMDReference(const Reference &Ref,
                                          Object &ReferenceObj,
                                          StringRef BasePath) {
@@ -628,6 +642,8 @@ void JSONGenerator::serializeInfo(const TypeInfo &I, Object &Obj) {
   Obj["USR"] = toHex(toStringRef(I.Type.USR));
   Obj["IsTemplate"] = I.IsTemplate;
   Obj["IsBuiltIn"] = I.IsBuiltIn;
+  // Link the type to its page when it is documented.
+  resolveTypeLink(I.Type, Obj);
 }
 
 void JSONGenerator::serializeInfo(const FieldTypeInfo &I, Object &Obj) {
@@ -636,6 +652,8 @@ void JSONGenerator::serializeInfo(const FieldTypeInfo &I, Object &Obj) {
   json::Value ReferenceVal = Object();
   Object &ReferenceObj = *ReferenceVal.getAsObject();
   serializeReference(I.Type, ReferenceObj);
+  // Link a parameter type to its page when documented.
+  resolveTypeLink(I.Type, ReferenceObj);
   Obj["Type"] = ReferenceVal;
 }
 
