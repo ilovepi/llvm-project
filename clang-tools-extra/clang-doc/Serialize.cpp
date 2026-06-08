@@ -810,8 +810,8 @@ void Serializer::populateSymbolInfo(SymbolInfo &I, const T *D,
     I.Loc.push_back(*allocateListNodeTransient<Location>(Loc));
   }
 
-  auto *Mangler = ItaniumMangleContext::create(
-      D->getASTContext(), D->getASTContext().getDiagnostics());
+  std::unique_ptr<ItaniumMangleContext> Mangler(ItaniumMangleContext::create(
+      D->getASTContext(), D->getASTContext().getDiagnostics()));
   std::string MangledName;
   llvm::raw_string_ostream MangledStream(MangledName);
   if (auto *CXXD = dyn_cast<CXXRecordDecl>(D))
@@ -826,7 +826,6 @@ void Serializer::populateSymbolInfo(SymbolInfo &I, const T *D,
         internString(MangledName.substr(0, 250 - SymbolID.size()) + SymbolID);
   } else
     I.MangledName = internString(MangledName);
-  delete Mangler;
 }
 
 void Serializer::handleCompoundConstraints(
