@@ -5,5 +5,5 @@
 // Output correct conversion names.
 
 // CHECK-HTML: <div id="{{([0-9A-F]{40})}}" class="delimiter-container">
-// CHECK-HTML:     <pre><code class="language-cpp code-clang-doc cd-sig"><span class="nc">T</span> <span class="nf">operator T</span> ()</code></pre>
+// CHECK-HTML:     <pre><code class="code-clang-doc"><span class="nc">T</span> <span class="nf">operator T</span> ()</code></pre>
 // CHECK-HTML: </div>

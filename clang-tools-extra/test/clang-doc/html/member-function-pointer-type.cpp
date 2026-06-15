@@ -2,4 +2,4 @@
 // RUN: clang-doc --output=%t --format=html --executor=standalone %S/../Inputs/member-function-pointer-type.cpp
 // RUN: FileCheck %s --check-prefix=HTML < %t/html/GlobalNamespace/index.html
 
-// HTML: <pre><code class="language-cpp code-clang-doc cd-sig"><span class="nc">void</span> <span class="nf">baz</span> (<span class="nc">void (Class::*)(int)</span> <span class="n">fn</span>)</code></pre>
+// HTML: <pre><code class="code-clang-doc"><span class="nc">void</span> <span class="nf">baz</span> (<span class="nc">void (Class::*)(int)</span> <span class="n">fn</span>)</code></pre>

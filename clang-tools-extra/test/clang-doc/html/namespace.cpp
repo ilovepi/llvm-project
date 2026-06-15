@@ -30,7 +30,7 @@
 // HTML-ANON-INDEX:         <ul class="class-container">
 // HTML-ANON-INDEX:             <li id="{{([0-9A-F]{40})}}" style="max-height: 40px;">
 // HTML-ANON-INDEX:                 <a href="_ZTVN12_GLOBAL__N_19AnonClassE.html">
-// HTML-ANON-INDEX:                     <pre><code class="language-cpp code-clang-doc cd-sig"><span class="k">class</span> <span class="nc">AnonClass</span></code></pre>
+// HTML-ANON-INDEX:                     <pre><code class="code-clang-doc"><span class="k">class</span> <span class="nc">AnonClass</span></code></pre>
 // HTML-ANON-INDEX:                 </a>
 // HTML-ANON-INDEX:             </li>
 // HTML-ANON-INDEX-NOT: <h2 id="Functions">Functions</h2>
@@ -65,11 +65,11 @@
 // HTML-NESTED-INDEX:     <ul class="class-container">
 // HTML-NESTED-INDEX:         <li id="{{([0-9A-F]{40})}}" style="max-height: 40px;">
 // HTML-NESTED-INDEX:             <a href="_ZTVN16PrimaryNamespace15NestedNamespace22ClassInNestedNamespaceE.html">
-// HTML-NESTED-INDEX:                 <pre><code class="language-cpp code-clang-doc cd-sig"><span class="k">class</span> <span class="nc">ClassInNestedNamespace</span></code></pre>
+// HTML-NESTED-INDEX:                 <pre><code class="code-clang-doc"><span class="k">class</span> <span class="nc">ClassInNestedNamespace</span></code></pre>
 // HTML-NESTED-INDEX:             </a>
 // HTML-NESTED-INDEX:         </li>
 // HTML-NESTED-INDEX:     </ul>
-// HTML-NESTED-INDEX:         <pre><code class="language-cpp code-clang-doc cd-sig"><span class="nc">void</span> <span class="nf">functionInNestedNamespace</span> ()</code></pre>
+// HTML-NESTED-INDEX:         <pre><code class="code-clang-doc"><span class="nc">void</span> <span class="nf">functionInNestedNamespace</span> ()</code></pre>
 // HTML-NESTED-INDEX:         <div class="doc-card">
 // HTML-NESTED-INDEX:             <div class="nested-delimiter-container">
 // HTML-NESTED-INDEX:                 <p>Function in NestedNamespace</p>
@@ -88,11 +88,11 @@
 // HTML-PRIMARY-INDEX:          <ul class="class-container">
 // HTML-PRIMARY-INDEX:              <li id="{{([0-9A-F]{40})}}" style="max-height: 40px;">
 // HTML-PRIMARY-INDEX:                  <a href="_ZTVN16PrimaryNamespace23ClassInPrimaryNamespaceE.html">
-// HTML-PRIMARY-INDEX:                      <pre><code class="language-cpp code-clang-doc cd-sig"><span class="k">class</span> <span class="nc">ClassInPrimaryNamespace</span></code></pre>
+// HTML-PRIMARY-INDEX:                      <pre><code class="code-clang-doc"><span class="k">class</span> <span class="nc">ClassInPrimaryNamespace</span></code></pre>
 // HTML-PRIMARY-INDEX:                 </a>
 // HTML-PRIMARY-INDEX:              </li>
 // HTML-PRIMARY-INDEX:          </ul>
-// HTML-PRIMARY-INDEX:          <pre><code class="language-cpp code-clang-doc cd-sig"><span class="nc">void</span> <span class="nf">functionInPrimaryNamespace</span> ()</code></pre>
+// HTML-PRIMARY-INDEX:          <pre><code class="code-clang-doc"><span class="nc">void</span> <span class="nf">functionInPrimaryNamespace</span> ()</code></pre>
 // HTML-PRIMARY-INDEX:          <div class="doc-card">
 // HTML-PRIMARY-INDEX:              <div class="nested-delimiter-container">
 // HTML-PRIMARY-INDEX:                  <p>Function in PrimaryNamespace</p>
@@ -126,11 +126,11 @@
 // HTML-ANOTHER-INDEX:     <ul class="class-container">
 // HTML-ANOTHER-INDEX:         <li id="{{([0-9A-F]{40})}}" style="max-height: 40px;">
 // HTML-ANOTHER-INDEX:             <a href="_ZTVN16AnotherNamespace23ClassInAnotherNamespaceE.html">
-// HTML-ANOTHER-INDEX:                 <pre><code class="language-cpp code-clang-doc cd-sig"><span class="k">class</span> <span class="nc">ClassInAnotherNamespace</span></code></pre>
+// HTML-ANOTHER-INDEX:                 <pre><code class="code-clang-doc"><span class="k">class</span> <span class="nc">ClassInAnotherNamespace</span></code></pre>
 // HTML-ANOTHER-INDEX:             </a>
 // HTML-ANOTHER-INDEX:         </li>
 // HTML-ANOTHER-INDEX:     </ul>
-// HTML-ANOTHER-INDEX:         <pre><code class="language-cpp code-clang-doc cd-sig"><span class="nc">void</span> <span class="nf">functionInAnotherNamespace</span> ()</code></pre>
+// HTML-ANOTHER-INDEX:         <pre><code class="code-clang-doc"><span class="nc">void</span> <span class="nf">functionInAnotherNamespace</span> ()</code></pre>
 // HTML-ANOTHER-INDEX:         <div class="doc-card">
 // HTML-ANOTHER-INDEX:             <div class="nested-delimiter-container">
 // HTML-ANOTHER-INDEX:                 <p>Function in AnotherNamespace</p>

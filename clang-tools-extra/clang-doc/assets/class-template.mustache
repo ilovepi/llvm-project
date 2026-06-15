@@ -151,7 +151,7 @@
             <div class="content">
                 <section class="hero section-container">
                     {{#Template}}
-                    <pre><code class="language-cpp code-clang-doc cd-sig"><span class="k">template</span> &lt;{{#Parameters}}{{Param}}{{^End}}, {{/End}}{{/Parameters}}&gt;</code></pre>
+                    <pre><code class="code-clang-doc"><span class="k">template</span> &lt;{{#Parameters}}{{Param}}{{^End}}, {{/End}}{{/Parameters}}&gt;</code></pre>
                     {{/Template}}
                     <div class="hero__title">
                         <h1 class="hero__title-large">{{TagType}} {{Name}}</h1>
@@ -171,7 +171,7 @@
                     <div>
                         {{#PublicMembers}}
                         <div id="{{Name}}" class="delimiter-container">
-                            <pre><code class="language-cpp code-clang-doc cd-sig" >{{#IsStatic}}<span class="k">static</span> {{/IsStatic}}<span class="nc">{{Type}}</span> <span class="n">{{Name}}</span></code></pre>
+                            <pre><code class="code-clang-doc" >{{#IsStatic}}<span class="k">static</span> {{/IsStatic}}<span class="nc">{{Type}}</span> <span class="n">{{Name}}</span></code></pre>
                         </div>
                         {{/PublicMembers}}
                     </div>
@@ -183,7 +183,7 @@
                     <div>
                         {{#ProtectedMembers}}
                         <div id="{{Name}}" class="delimiter-container">
-                            <pre><code class="language-cpp code-clang-doc cd-sig" >{{#IsStatic}}<span class="k">static</span> {{/IsStatic}}<span class="nc">{{Type}}</span> <span class="n">{{Name}}</span></code></pre>
+                            <pre><code class="code-clang-doc" >{{#IsStatic}}<span class="k">static</span> {{/IsStatic}}<span class="nc">{{Type}}</span> <span class="n">{{Name}}</span></code></pre>
                         </div>
                         {{/ProtectedMembers}}
                     </div>
@@ -222,7 +222,7 @@
                         {{#Records}}
                         <li id="{{USR}}" style="max-height: 40px;">
                             <a href="{{PathStem}}/{{DocumentationFileName}}.html">
-                                <pre><code class="language-cpp code-clang-doc cd-sig"><span class="k">class</span> <span class="nc">{{Name}}</span></code></pre>
+                                <pre><code class="code-clang-doc"><span class="k">class</span> <span class="nc">{{Name}}</span></code></pre>
                             </a>
                         </li>
                         {{/Records}}
@@ -243,13 +243,13 @@
                     {{#Friends}}
                     <div id="{{Reference.USR}}" class="delimiter-container">
                         {{#Template}}
-                        <pre><code class="language-cpp code-clang-doc cd-sig"><span class="k">template</span> &lt;{{#Parameters}}{{Param}}{{^End}}, {{/End}}{{/Parameters}}&gt;</code></pre>
+                        <pre><code class="code-clang-doc"><span class="k">template</span> &lt;{{#Parameters}}{{Param}}{{^End}}, {{/End}}{{/Parameters}}&gt;</code></pre>
                         {{/Template}}
                         {{#IsClass}}
-                        <pre><code class="language-cpp code-clang-doc cd-sig"><span class="k">class</span> <span class="nc">{{Reference.Name}}</span></code></pre>
+                        <pre><code class="code-clang-doc"><span class="k">class</span> <span class="nc">{{Reference.Name}}</span></code></pre>
                         {{/IsClass}}
                         {{^IsClass}}
-                        <pre><code class="language-cpp code-clang-doc cd-sig"><span class="nc">{{ReturnType.Name}}</span> <span class="nf">{{Name}}</span>{{#Template}}{{#Specialization}}&lt;{{#Parameters}}{{Param}}{{^End}}, {{/End}}{{/Parameters}}&gt;{{/Specialization}}{{/Template}} ({{#Params}}<span class="nc">{{Type.QualName}}</span> <span class="n">{{Name}}</span>{{^End}}, {{/End}}{{/Params}})</code></pre>
+                        <pre><code class="code-clang-doc"><span class="nc">{{ReturnType.Name}}</span> <span class="nf">{{Name}}</span>{{#Template}}{{#Specialization}}&lt;{{#Parameters}}{{Param}}{{^End}}, {{/End}}{{/Parameters}}&gt;{{/Specialization}}{{/Template}} ({{#Params}}<span class="nc">{{Type.QualName}}</span> <span class="n">{{Name}}</span>{{^End}}, {{/End}}{{/Params}})</code></pre>
                         {{/IsClass}}
                     </div>
                     {{/Friends}}

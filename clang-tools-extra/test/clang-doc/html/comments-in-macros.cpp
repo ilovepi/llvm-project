@@ -3,7 +3,7 @@
 // RUN: FileCheck %s < %t/html/GlobalNamespace/_ZTV7MyClass.html --check-prefix=HTML-MYCLASS-LINE
 // RUN: FileCheck %s < %t/html/GlobalNamespace/_ZTV7MyClass.html --check-prefix=HTML-MYCLASS
 
-// HTML-MYCLASS: <pre><code class="language-cpp code-clang-doc cd-sig"><span class="nc">int</span> <span class="nf">Add</span> (<span class="nc">int</span> <span class="n">a</span>, <span class="nc">int</span> <span class="n">b</span>)</code></pre>
+// HTML-MYCLASS: <pre><code class="code-clang-doc"><span class="nc">int</span> <span class="nf">Add</span> (<span class="nc">int</span> <span class="n">a</span>, <span class="nc">int</span> <span class="n">b</span>)</code></pre>
 // HTML-MYCLASS: <div class="doc-card">
 // HTML-MYCLASS:     <div class="nested-delimiter-container">
 // HTML-MYCLASS:         <p>Declare a method to calculate the sum of two numbers</p>

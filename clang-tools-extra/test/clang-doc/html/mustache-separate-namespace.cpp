@@ -6,7 +6,7 @@
 // CHECK:       <ul class="class-container">
 // CHECK-NEXT:    <li id="{{[0-9A-F]*}}" style="max-height: 40px;">
 // CHECK-NEXT:        <a href="_ZTVN11MyNamespace3FooE.html">
-// CHECK-NEXT:            <pre><code class="language-cpp code-clang-doc cd-sig"><span class="k">class</span> <span class="nc">Foo</span></code></pre>
+// CHECK-NEXT:            <pre><code class="code-clang-doc"><span class="k">class</span> <span class="nc">Foo</span></code></pre>
 // CHECK-NEXT:        </a>
 // CHECK-NEXT:    </li>
 // CHECK-NEXT: </ul>
@@ -37,7 +37,7 @@
 // CHECK-GLOBAL-NEXT:                        <ul class="class-container">
 // CHECK-GLOBAL-NEXT:                            <li id="{{[0-9A-F]*}}">
 // CHECK-GLOBAL-NEXT:                                <a href="../MyNamespace/index.html">
-// CHECK-GLOBAL-NEXT:                                    <pre><code class="language-cpp code-clang-doc cd-sig"><span class="k">namespace</span> <span class="nf">MyNamespace</span></code></pre>
+// CHECK-GLOBAL-NEXT:                                    <pre><code class="code-clang-doc"><span class="k">namespace</span> <span class="nf">MyNamespace</span></code></pre>
 // CHECK-GLOBAL-NEXT:                                </a>
 // CHECK-GLOBAL-NEXT:                            </li>
 // CHECK-GLOBAL-NEXT:                        </ul>

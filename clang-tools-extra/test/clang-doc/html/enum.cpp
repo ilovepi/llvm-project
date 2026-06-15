@@ -7,7 +7,7 @@
 
 // HTML-INDEX-LABEL:  <div id="{{([0-9A-F]{40})}}" class="delimiter-container">
 // HTML-INDEX-NEXT:     <div>
-// HTML-INDEX-NEXT:       <pre><code class="language-cpp code-clang-doc cd-sig"><span class="k">enum</span> <span class="nc">Color</span></code></pre>
+// HTML-INDEX-NEXT:       <pre><code class="code-clang-doc"><span class="k">enum</span> <span class="nc">Color</span></code></pre>
 // HTML-INDEX-NEXT:     </div>
 // HTML-INDEX-NEXT:     <table class="table-wrapper">
 // HTML-INDEX-NEXT:         <tbody>
@@ -54,7 +54,7 @@
 
 // HTML-INDEX-LABEL:  <div id="{{([0-9A-F]{40})}}" class="delimiter-container">
 // HTML-INDEX-NEXT:     <div>
-// HTML-INDEX-NEXT:       <pre><code class="language-cpp code-clang-doc cd-sig"><span class="k">enum</span> <span class="k">class</span> <span class="nc">Shapes</span></code></pre>
+// HTML-INDEX-NEXT:       <pre><code class="code-clang-doc"><span class="k">enum</span> <span class="k">class</span> <span class="nc">Shapes</span></code></pre>
 // HTML-INDEX-NEXT:     </div>
 // HTML-INDEX-NEXT:     <table class="table-wrapper">
 // HTML-INDEX-NEXT:         <tbody>
@@ -101,7 +101,7 @@
 
 // HTML-INDEX-LABEL:   <div id="{{([0-9A-F]{40})}}" class="delimiter-container">
 // HTML-INDEX-NEXT:     <div>
-// HTML-INDEX-NEXT:       <pre><code class="language-cpp code-clang-doc cd-sig"><span class="k">enum</span> <span class="nc">Size</span> : <span class="nc">uint8_t</span></code></pre>
+// HTML-INDEX-NEXT:       <pre><code class="code-clang-doc"><span class="k">enum</span> <span class="nc">Size</span> : <span class="nc">uint8_t</span></code></pre>
 // HTML-INDEX-NEXT:     </div>
 // HTML-INDEX-NEXT:     <table class="table-wrapper">
 // HTML-INDEX-NEXT:         <tbody>
@@ -150,7 +150,7 @@
 
 // HTML-INDEX-LABEL:  <div id="{{([0-9A-F]{40})}}" class="delimiter-container">
 // HTML-INDEX-NEXT:     <div>
-// HTML-INDEX-NEXT:       <pre><code class="language-cpp code-clang-doc cd-sig"><span class="k">enum</span> <span class="nc">(unnamed)</span> : <span class="nc">long long</span></code></pre>
+// HTML-INDEX-NEXT:       <pre><code class="code-clang-doc"><span class="k">enum</span> <span class="nc">(unnamed)</span> : <span class="nc">long long</span></code></pre>
 // HTML-INDEX-NEXT:     </div>
 // HTML-INDEX-NEXT:     <table class="table-wrapper">
 // HTML-INDEX-NEXT:         <tbody>
@@ -179,7 +179,7 @@
 
 // HTML-INDEX-LABEL:  <div id="{{([0-9A-F]{40})}}" class="delimiter-container">
 // HTML-INDEX-NEXT:     <div>
-// HTML-INDEX-NEXT:       <pre><code class="language-cpp code-clang-doc cd-sig"><span class="k">enum</span> <span class="nc">ColorUserSpecified</span></code></pre>
+// HTML-INDEX-NEXT:       <pre><code class="code-clang-doc"><span class="k">enum</span> <span class="nc">ColorUserSpecified</span></code></pre>
 // HTML-INDEX-NEXT:     </div>
 // HTML-INDEX-NEXT:     <table class="table-wrapper">
 // HTML-INDEX-NEXT:         <tbody>
@@ -207,7 +207,7 @@
 // HTML-PERM-NEXT:     <h2>Enumerations</h2>
 // HTML-PERM-NEXT:     <div id="{{([0-9A-F]{40})}}" class="delimiter-container">
 // HTML-PERM-NEXT:       <div>
-// HTML-PERM-NEXT:         <pre><code class="language-cpp code-clang-doc cd-sig"><span class="k">enum</span> <span class="nc">(unnamed)</span></code></pre>
+// HTML-PERM-NEXT:         <pre><code class="code-clang-doc"><span class="k">enum</span> <span class="nc">(unnamed)</span></code></pre>
 // HTML-PERM-NEXT:       </div>
 // HTML-PERM-NEXT:       <table class="table-wrapper">
 // HTML-PERM-NEXT:           <tbody>
@@ -255,7 +255,7 @@
 // HTML-ANIMAL-NEXT:      <h2>Enumerations</h2>
 // HTML-ANIMAL-NEXT:      <div id="{{([0-9A-F]{40})}}" class="delimiter-container">
 // HTML-ANIMAL-NEXT:         <div>
-// HTML-ANIMAL-NEXT:           <pre><code class="language-cpp code-clang-doc cd-sig"><span class="k">enum</span> <span class="nc">AnimalType</span></code></pre>
+// HTML-ANIMAL-NEXT:           <pre><code class="code-clang-doc"><span class="k">enum</span> <span class="nc">AnimalType</span></code></pre>
 // HTML-ANIMAL-NEXT:         </div>
 // HTML-ANIMAL-NEXT:         <table class="table-wrapper">
 // HTML-ANIMAL-NEXT:             <tbody>
@@ -303,7 +303,7 @@
 
 // HTML-VEHICLES-LABEL:   <div id="{{([0-9A-F]{40})}}" class="delimiter-container">
 // HTML-VEHICLES-NEXT:      <div>
-// HTML-VEHICLES-NEXT:       <pre><code class="language-cpp code-clang-doc cd-sig"><span class="k">enum</span> <span class="nc">Car</span></code></pre>
+// HTML-VEHICLES-NEXT:       <pre><code class="code-clang-doc"><span class="k">enum</span> <span class="nc">Car</span></code></pre>
 // HTML-VEHICLES-NEXT:      </div>
 // HTML-VEHICLES-NEXT:      <table class="table-wrapper">
 // HTML-VEHICLES-NEXT:          <tbody>

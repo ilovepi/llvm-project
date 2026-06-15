@@ -22,26 +22,26 @@
 // HTML-GLOBAL:      <section id="Typedefs" class="section-container">
 // HTML-GLOBAL-NEXT:     <h2>Typedefs</h2>
 // HTML-GLOBAL-NEXT:     <div id="{{([0-9A-F]{40})}}" class="delimiter-container">
-// HTML-GLOBAL-NEXT:         <pre><code class="language-cpp code-clang-doc cd-sig"><span class="k">using</span> <span class="nc">u_long</span> = <span class="nc">unsigned long</span></code></pre>
+// HTML-GLOBAL-NEXT:         <pre><code class="code-clang-doc"><span class="k">using</span> <span class="nc">u_long</span> = <span class="nc">unsigned long</span></code></pre>
 // HTML-GLOBAL-NEXT:         <div class="nested-delimiter-container">
 // HTML-GLOBAL-NEXT:             <p>This is u_long</p>
 // HTML-GLOBAL-NEXT:         </div>
 // HTML-GLOBAL-NEXT:         <p>Defined at line 2 of file {{.*}}typedef-alias.cpp</p>
 // HTML-GLOBAL-NEXT:     </div>
 // HTML-GLOBAL-NEXT:     <div id="{{([0-9A-F]{40})}}" class="delimiter-container">
-// HTML-GLOBAL-NEXT:         <pre><code class="language-cpp code-clang-doc cd-sig"><span class="k">typedef</span> <span class="nc">IntPtr</span> <span class="nc">int *</span></code></pre>
+// HTML-GLOBAL-NEXT:         <pre><code class="code-clang-doc"><span class="k">typedef</span> <span class="nc">IntPtr</span> <span class="nc">int *</span></code></pre>
 // HTML-GLOBAL-NEXT:         <div class="nested-delimiter-container">
 // HTML-GLOBAL-NEXT:             <p>This is IntPtr</p>
 // HTML-GLOBAL-NEXT:         </div>
 // HTML-GLOBAL-NEXT:         <p>Defined at line 5 of file {{.*}}typedef-alias.cpp</p>
 // HTML-GLOBAL-NEXT:     </div>
 // HTML-GLOBAL-NEXT:     <div id="{{([0-9A-F]{40})}}" class="delimiter-container">
-// HTML-GLOBAL-NEXT:         <pre><code class="language-cpp code-clang-doc cd-sig"><span class="k">template</span> &lt;typename T&gt;</code></pre>
-// HTML-GLOBAL-NEXT:         <pre><code class="language-cpp code-clang-doc cd-sig"><span class="k">using</span> <span class="nc">Vec</span> = <span class="nc">Vector&lt;T&gt;</span></code></pre>
+// HTML-GLOBAL-NEXT:         <pre><code class="code-clang-doc"><span class="k">template</span> &lt;typename T&gt;</code></pre>
+// HTML-GLOBAL-NEXT:         <pre><code class="code-clang-doc"><span class="k">using</span> <span class="nc">Vec</span> = <span class="nc">Vector&lt;T&gt;</span></code></pre>
 // HTML-GLOBAL-NEXT:         <p>Defined at line 12 of file {{.*}}typedef-alias.cpp</p>
 // HTML-GLOBAL-NEXT:     </div>
 // HTML-GLOBAL-NEXT:     <div id="{{([0-9A-F]{40})}}" class="delimiter-container">
-// HTML-GLOBAL-NEXT:         <pre><code class="language-cpp code-clang-doc cd-sig"><span class="k">using</span> <span class="nc">IntVec</span> = <span class="nc">Vector&lt;int&gt;</span></code></pre>
+// HTML-GLOBAL-NEXT:         <pre><code class="code-clang-doc"><span class="k">using</span> <span class="nc">IntVec</span> = <span class="nc">Vector&lt;int&gt;</span></code></pre>
 // HTML-GLOBAL-NEXT:         <p>Defined at line 14 of file {{.*}}typedef-alias.cpp</p>
 // HTML-GLOBAL-NEXT:     </div>
 // HTML-GLOBAL-NEXT: </section>
@@ -56,7 +56,7 @@
 // HTML-VECTOR:      <section id="Typedefs" class="section-container">
 // HTML-VECTOR-NEXT:     <h2>Typedefs</h2>
 // HTML-VECTOR-NEXT:     <div id="{{([0-9A-F]{40})}}" class="delimiter-container">
-// HTML-VECTOR-NEXT:         <pre><code class="language-cpp code-clang-doc cd-sig"><span class="k">using</span> <span class="nc">Ptr</span> = <span class="nc">IntPtr</span></code></pre>
+// HTML-VECTOR-NEXT:         <pre><code class="code-clang-doc"><span class="k">using</span> <span class="nc">Ptr</span> = <span class="nc">IntPtr</span></code></pre>
 // HTML-VECTOR-NEXT:         <div class="nested-delimiter-container">
 // HTML-VECTOR-NEXT:             <p>This is a Ptr</p>
 // HTML-VECTOR-NEXT:         </div>
