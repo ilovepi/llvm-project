@@ -367,6 +367,8 @@ void ClangDocBitcodeWriter::emitBlock(const TypeInfo &T) {
   StreamSubBlockGuard Block(Stream, BI_TYPE_BLOCK_ID);
   emitBlock(T.Type, FieldId::F_type);
   emitScalars(T);
+  for (const auto &Arg : T.TemplateArgs)
+    emitBlock(Arg);
 }
 
 void ClangDocBitcodeWriter::emitBlock(const TypedefInfo &T) {
@@ -385,12 +387,16 @@ void ClangDocBitcodeWriter::emitBlock(const FieldTypeInfo &T) {
   StreamSubBlockGuard Block(Stream, BI_FIELD_TYPE_BLOCK_ID);
   emitBlock(T.Type, FieldId::F_type);
   emitScalars(T);
+  for (const auto &Arg : T.TemplateArgs)
+    emitBlock(Arg);
 }
 
 void ClangDocBitcodeWriter::emitBlock(const MemberTypeInfo &T) {
   StreamSubBlockGuard Block(Stream, BI_MEMBER_TYPE_BLOCK_ID);
   emitBlock(T.Type, FieldId::F_type);
   emitScalars(T);
+  for (const auto &Arg : T.TemplateArgs)
+    emitBlock(Arg);
   for (const auto &CI : T.Description)
     emitBlock(*CI.Ptr);
 }

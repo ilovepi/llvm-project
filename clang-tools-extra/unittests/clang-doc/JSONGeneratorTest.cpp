@@ -97,7 +97,11 @@ TEST_F(JSONGeneratorTest, emitRecordJSON) {
         {
           "IsStatic": false,
           "Name": "N",
-          "Type": "int"
+          "Type": {
+            "Name": "int",
+            "QualName": "int",
+            "USR": "0000000000000000000000000000000000000000"
+          }
         }
       ],
       "PublicMethods": [
@@ -163,7 +167,11 @@ TEST_F(JSONGeneratorTest, emitRecordJSON) {
     {
       "IsStatic": false,
       "Name": "X",
-      "Type": "int"
+      "Type": {
+        "Name": "int",
+        "QualName": "int",
+        "USR": "0000000000000000000000000000000000000000"
+      }
     }
   ],
   "PublicMethods": [

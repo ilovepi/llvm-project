@@ -111,6 +111,8 @@ void getMdFiles(llvm::StringRef AssetsPath,
       appendPathPosix(AssetsPath, "index-template.mustache");
   SmallString<128> CommentsTemplate =
       appendPathPosix(AssetsPath, "comments-partial.mustache");
+  SmallString<128> TypeNameTemplate =
+      appendPathPosix(AssetsPath, "type-name.mustache");
 
   CDCtx.MustacheTemplates.insert({"class-template", ClassTemplate.c_str()});
   CDCtx.MustacheTemplates.insert(
@@ -118,4 +120,5 @@ void getMdFiles(llvm::StringRef AssetsPath,
   CDCtx.MustacheTemplates.insert({"all-files", AllFilesTemplate.c_str()});
   CDCtx.MustacheTemplates.insert({"index", IndexTemplate.c_str()});
   CDCtx.MustacheTemplates.insert({"comments", CommentsTemplate.c_str()});
+  CDCtx.MustacheTemplates.insert({"type-name", TypeNameTemplate.c_str()});
 }

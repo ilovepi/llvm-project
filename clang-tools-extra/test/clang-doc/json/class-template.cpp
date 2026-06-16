@@ -7,7 +7,11 @@
 // CHECK-NEXT:      {
 // CHECK-NEXT:        "IsStatic": false,
 // CHECK-NEXT:        "Name": "MemberTemplate",
-// CHECK-NEXT:        "Type": "T"
+// CHECK-NEXT:        "Type": {
+// CHECK-NEXT:          "Name": "T",
+// CHECK-NEXT:          "QualName": "T",
+// CHECK-NEXT:          "USR": "0000000000000000000000000000000000000000"
+// CHECK-NEXT:        }
 // CHECK-NEXT:      }
 // CHECK-NEXT:    ],
 // CHECK:         "Name": "method",

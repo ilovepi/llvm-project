@@ -157,14 +157,22 @@
 // CHECK-NEXT:     {
 // CHECK-NEXT:       "IsStatic": false,
 // CHECK-NEXT:       "Name": "PrivateField",
-// CHECK-NEXT:       "Type": "int"
+// CHECK-NEXT:       "Type": {
+// CHECK-NEXT:         "Name": "int",
+// CHECK-NEXT:         "QualName": "int",
+// CHECK-NEXT:         "USR": "0000000000000000000000000000000000000000"
+// CHECK-NEXT:       }
 // CHECK-NEXT:     }
 // CHECK-NEXT:   ],
 // CHECK-NEXT:    "ProtectedMembers": [
 // CHECK-NEXT:      {
 // CHECK-NEXT:        "IsStatic": false,
 // CHECK-NEXT:        "Name": "ProtectedField",
-// CHECK-NEXT:        "Type": "int"
+// CHECK-NEXT:        "Type": {
+// CHECK-NEXT:          "Name": "int",
+// CHECK-NEXT:          "QualName": "int",
+// CHECK-NEXT:          "USR": "0000000000000000000000000000000000000000"
+// CHECK-NEXT:        }
 // CHECK-NEXT:      }
 // CHECK-NEXT:    ],
 // CHECK-NEXT:   "ProtectedMethods": [
@@ -190,7 +198,11 @@
 // CHECK-NEXT:      {
 // CHECK-NEXT:        "IsStatic": false,
 // CHECK-NEXT:        "Name": "PublicField",
-// CHECK-NEXT:        "Type": "int"
+// CHECK-NEXT:        "Type": {
+// CHECK-NEXT:          "Name": "int",
+// CHECK-NEXT:          "QualName": "int",
+// CHECK-NEXT:          "USR": "0000000000000000000000000000000000000000"
+// CHECK-NEXT:        }
 // CHECK-NEXT:      }
 // CHECK-NEXT:    ],
 // CHECK-NEXT:    "PublicMethods": [
@@ -228,8 +240,10 @@
 // CHECK:             "ReturnType": {
 // CHECK-NEXT:          "IsBuiltIn": false,
 // CHECK-NEXT:          "IsTemplate": false,
-// CHECK-NEXT:          "Name": "const int &",
-// CHECK-NEXT:          "QualName": "const int &",
+// CHECK-NEXT:          "Name": "int",
+// CHECK-NEXT:          "QualName": "int",
+// CHECK-NEXT:          "Qualifiers": "const",
+// CHECK-NEXT:          "Suffix": "&",
 // CHECK-NEXT:          "USR": "{{[0-9A-F]*}}"
 // CHECK-NEXT:        },
 // CHECK:         "Records": [

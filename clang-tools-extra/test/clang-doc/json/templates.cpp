@@ -180,17 +180,67 @@
 // JSON-NEXT:          "Name": "t",
 // JSON-NEXT:          "ParamEnd": true,
 // JSON-NEXT:          "Type": {
+// JSON-NEXT:            "HasTemplateArgs": true,
 // JSON-NEXT:            "Name": "tuple",
 // JSON-NEXT:            "Path": "GlobalNamespace",
-// JSON-NEXT:            "QualName": "tuple<int, int, bool>",
+// JSON-NEXT:            "QualName": "tuple",
+// JSON-NEXT:            "TemplateArgs": [
+// JSON-NEXT:              {
+// JSON-NEXT:                "IsBuiltIn": true,
+// JSON-NEXT:                "IsTemplate": false,
+// JSON-NEXT:                "Name": "int",
+// JSON-NEXT:                "QualName": "int",
+// JSON-NEXT:                "USR": "0000000000000000000000000000000000000000"
+// JSON-NEXT:              },
+// JSON-NEXT:              {
+// JSON-NEXT:                "IsBuiltIn": true,
+// JSON-NEXT:                "IsTemplate": false,
+// JSON-NEXT:                "Name": "int",
+// JSON-NEXT:                "QualName": "int",
+// JSON-NEXT:                "USR": "0000000000000000000000000000000000000000"
+// JSON-NEXT:              },
+// JSON-NEXT:              {
+// JSON-NEXT:                "End": true,
+// JSON-NEXT:                "IsBuiltIn": true,
+// JSON-NEXT:                "IsTemplate": false,
+// JSON-NEXT:                "Name": "bool",
+// JSON-NEXT:                "QualName": "bool",
+// JSON-NEXT:                "USR": "0000000000000000000000000000000000000000"
+// JSON-NEXT:              }
+// JSON-NEXT:            ],
 // JSON-NEXT:            "USR": "{{([0-9A-F]{40})}}"
 // JSON-NEXT:          }
 // JSON-NEXT:        }
 // JSON-NEXT:      ],
 // JSON-NEXT:      "ReturnType": {
+// JSON-NEXT:        "HasTemplateArgs": true,
 // JSON-NEXT:        "IsBuiltIn": false,
 // JSON-NEXT:        "IsTemplate": false,
 // JSON-NEXT:        "Name": "tuple",
-// JSON-NEXT:        "QualName": "tuple<int, int, bool>",
+// JSON-NEXT:        "QualName": "tuple",
+// JSON-NEXT:        "TemplateArgs": [
+// JSON-NEXT:          {
+// JSON-NEXT:            "IsBuiltIn": true,
+// JSON-NEXT:            "IsTemplate": false,
+// JSON-NEXT:            "Name": "int",
+// JSON-NEXT:            "QualName": "int",
+// JSON-NEXT:            "USR": "0000000000000000000000000000000000000000"
+// JSON-NEXT:          },
+// JSON-NEXT:          {
+// JSON-NEXT:            "IsBuiltIn": true,
+// JSON-NEXT:            "IsTemplate": false,
+// JSON-NEXT:            "Name": "int",
+// JSON-NEXT:            "QualName": "int",
+// JSON-NEXT:            "USR": "0000000000000000000000000000000000000000"
+// JSON-NEXT:          },
+// JSON-NEXT:          {
+// JSON-NEXT:            "End": true,
+// JSON-NEXT:            "IsBuiltIn": true,
+// JSON-NEXT:            "IsTemplate": false,
+// JSON-NEXT:            "Name": "bool",
+// JSON-NEXT:            "QualName": "bool",
+// JSON-NEXT:            "USR": "0000000000000000000000000000000000000000"
+// JSON-NEXT:          }
+// JSON-NEXT:        ],
 // JSON-NEXT:        "USR": "{{([0-9A-F]{40})}}"
 // JSON-NEXT:      }

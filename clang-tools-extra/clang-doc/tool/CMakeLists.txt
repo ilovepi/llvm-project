@@ -42,6 +42,7 @@ set(assets
   md/comments-partial.mustache
   md/index-template.mustache
   md/namespace-template.mustache
+  md/type-name.mustache
 )
 
 set(asset_dir "${CMAKE_CURRENT_SOURCE_DIR}/../assets")

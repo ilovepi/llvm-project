@@ -10,8 +10,9 @@
 // CHECK-NEXT:             "Name": "fn",
 // CHECK-NEXT:             "ParamEnd": true,
 // CHECK-NEXT:             "Type": {
-// CHECK-NEXT:               "Name": "void (*)(int)",
-// CHECK-NEXT:               "QualName": "void (*)(int)",
+// CHECK-NEXT:               "Name": "void (int)",
+// CHECK-NEXT:               "QualName": "void (int)",
+// CHECK-NEXT:               "Suffix": "*",
 // CHECK-NEXT:               "USR": "0000000000000000000000000000000000000000"
 // CHECK-NEXT:             }
 // CHECK-NEXT:           }

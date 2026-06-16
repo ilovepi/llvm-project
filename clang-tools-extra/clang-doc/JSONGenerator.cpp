@@ -642,8 +642,15 @@ void JSONGenerator::serializeInfo(const TypeInfo &I, Object &Obj) {
   Obj["USR"] = toHex(toStringRef(I.Type.USR));
   Obj["IsTemplate"] = I.IsTemplate;
   Obj["IsBuiltIn"] = I.IsBuiltIn;
+  insertNonEmpty("Qualifiers", I.Qualifiers, Obj);
+  insertNonEmpty("Suffix", I.Suffix, Obj);
+  insertNonEmpty("NonTypeValue", I.NonTypeValue, Obj);
   // Link the type to its page when it is documented.
   resolveTypeLink(I.Type, Obj);
+  if (!I.TemplateArgs.empty()) {
+    Obj["HasTemplateArgs"] = true;
+    serializeArray(I.TemplateArgs, Obj, "TemplateArgs", serializeInfoLambda());
+  }
 }
 
 void JSONGenerator::serializeInfo(const FieldTypeInfo &I, Object &Obj) {
@@ -652,8 +659,16 @@ void JSONGenerator::serializeInfo(const FieldTypeInfo &I, Object &Obj) {
   json::Value ReferenceVal = Object();
   Object &ReferenceObj = *ReferenceVal.getAsObject();
   serializeReference(I.Type, ReferenceObj);
+  insertNonEmpty("Qualifiers", I.Qualifiers, ReferenceObj);
+  insertNonEmpty("Suffix", I.Suffix, ReferenceObj);
+  insertNonEmpty("NonTypeValue", I.NonTypeValue, ReferenceObj);
   // Link a parameter type to its page when documented.
   resolveTypeLink(I.Type, ReferenceObj);
+  if (!I.TemplateArgs.empty()) {
+    ReferenceObj["HasTemplateArgs"] = true;
+    serializeArray(I.TemplateArgs, ReferenceObj, "TemplateArgs",
+                   serializeInfoLambda());
+  }
   Obj["Type"] = ReferenceVal;
 }
 
@@ -793,8 +808,7 @@ void JSONGenerator::serializeInfo(const RecordInfo &I, json::Object &Obj) {
     for (const MemberTypeInfo &Member : I.Members) {
       json::Value MemberVal = Object();
       auto &MemberObj = *MemberVal.getAsObject();
-      MemberObj["Name"] = Member.Name;
-      MemberObj["Type"] = Member.Type.Name;
+      serializeInfo(Member, MemberObj);
       MemberObj["IsStatic"] = Member.IsStatic;
 
       if (Member.Access == clang::AccessSpecifier::AS_public)

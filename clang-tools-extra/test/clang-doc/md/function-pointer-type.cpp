@@ -2,4 +2,4 @@
 // RUN: clang-doc --output=%t --format=md --executor=standalone %S/../Inputs/function-pointer-type.cpp
 // RUN: FileCheck %s --check-prefix=MD < %t/md/GlobalNamespace/index.md
 
-// MD: *void bar(void (*)(int) fn)*
+// MD: *void bar(void (int)* fn)*

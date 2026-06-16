@@ -10,8 +10,9 @@
 // CHECK-NEXT:             "Name": "arr",
 // CHECK-NEXT:             "ParamEnd": true,
 // CHECK-NEXT:             "Type": {
-// CHECK-NEXT:               "Name": "int (&)[5]",
-// CHECK-NEXT:               "QualName": "int (&)[5]",
+// CHECK-NEXT:               "Name": "int[5]",
+// CHECK-NEXT:               "QualName": "int[5]",
+// CHECK-NEXT:               "Suffix": "&",
 // CHECK-NEXT:               "USR": "0000000000000000000000000000000000000000"
 // CHECK-NEXT:             }
 // CHECK-NEXT:           }

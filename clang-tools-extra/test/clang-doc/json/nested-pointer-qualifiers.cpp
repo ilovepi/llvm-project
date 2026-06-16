@@ -10,8 +10,10 @@
 // CHECK-NEXT:             "Name": "ptr",
 // CHECK-NEXT:             "ParamEnd": true,
 // CHECK-NEXT:             "Type": {
-// CHECK-NEXT:               "Name": "const int *const *",
-// CHECK-NEXT:               "QualName": "const int *const *",
+// CHECK-NEXT:               "Name": "int",
+// CHECK-NEXT:               "QualName": "int",
+// CHECK-NEXT:               "Qualifiers": "const",
+// CHECK-NEXT:               "Suffix": "**",
 // CHECK-NEXT:               "USR": "0000000000000000000000000000000000000000"
 // CHECK-NEXT:             }
 // CHECK-NEXT:           }

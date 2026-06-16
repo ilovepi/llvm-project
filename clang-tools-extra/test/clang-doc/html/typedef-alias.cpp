@@ -29,7 +29,7 @@
 // HTML-GLOBAL-NEXT:         <p>Defined at line 2 of file {{.*}}typedef-alias.cpp</p>
 // HTML-GLOBAL-NEXT:     </div>
 // HTML-GLOBAL-NEXT:     <div id="{{([0-9A-F]{40})}}" class="delimiter-container">
-// HTML-GLOBAL-NEXT:         <pre><code class="code-clang-doc"><span class="k">typedef</span> <span class="nc">IntPtr</span> <span class="nc">int *</span></code></pre>
+// HTML-GLOBAL-NEXT:         <pre><code class="code-clang-doc"><span class="k">typedef</span> <span class="nc">IntPtr</span> <span class="nc">int</span>*</code></pre>
 // HTML-GLOBAL-NEXT:         <div class="nested-delimiter-container">
 // HTML-GLOBAL-NEXT:             <p>This is IntPtr</p>
 // HTML-GLOBAL-NEXT:         </div>

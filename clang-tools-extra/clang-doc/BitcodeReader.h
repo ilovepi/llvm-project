@@ -45,6 +45,7 @@ private:
   // record found.
   template <typename T> llvm::Error readBlock(unsigned ID, T I);
   template <typename T> llvm::Error readBlockWithNamespace(unsigned ID, T I);
+  template <typename T> llvm::Error readTypeWithArgs(unsigned ID, T *I);
 
   template <typename T, typename BlockBeginHandler, typename BlockEndHandler,
             typename RecordHandler>

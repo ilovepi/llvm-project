@@ -367,7 +367,7 @@ struct ScopeChildren {
   void sort();
 };
 
-// A base struct for TypeInfos
+// A representation of a type and any template arguments it carries.
 struct TypeInfo {
   TypeInfo() = default;
   TypeInfo(const Reference &R) : Type(R) {}
@@ -377,9 +377,30 @@ struct TypeInfo {
   TypeInfo(StringRef Name, StringRef Path = StringRef())
       : Type(SymbolID(), Name, InfoType::IT_default, Name, Path) {}
 
-  bool operator==(const TypeInfo &Other) const { return Type == Other.Type; }
+  TypeInfo(const TypeInfo &Other, llvm::BumpPtrAllocator &Arena);
 
-  Reference Type; // Referenced type in this info.
+  bool operator==(const TypeInfo &Other) const {
+    return std::tie(Type, Qualifiers, Suffix, NonTypeValue, IsTemplate,
+                    IsBuiltIn) == std::tie(Other.Type, Other.Qualifiers,
+                                           Other.Suffix, Other.NonTypeValue,
+                                           Other.IsTemplate, Other.IsBuiltIn) &&
+           TemplateArgs == Other.TemplateArgs;
+  }
+
+  // The named type, without qualifiers or template arguments.
+  Reference Type;
+
+  // Template arguments, when Type is a template specialization.
+  llvm::ArrayRef<TypeInfo> TemplateArgs = {};
+
+  // cv-qualifiers, for example "const".
+  StringRef Qualifiers = {};
+
+  // Pointer and reference operators.
+  StringRef Suffix = {};
+
+  // The value of a non-type template argument, for example "5".
+  StringRef NonTypeValue = {};
 
   bool IsTemplate = false;
   bool IsBuiltIn = false;
@@ -444,6 +465,10 @@ struct FieldTypeInfo : public TypeInfo {
       : TypeInfo(TI), Name(internString(Name)),
         DefaultValue(internString(DefaultValue)) {}
 
+  FieldTypeInfo(const FieldTypeInfo &Other, llvm::BumpPtrAllocator &Arena)
+      : TypeInfo(Other, Arena), Name(Other.Name),
+        DefaultValue(Other.DefaultValue) {}
+
   bool operator==(const FieldTypeInfo &Other) const {
     return std::tie(Type, Name, DefaultValue) ==
            std::tie(Other.Type, Other.Name, Other.DefaultValue);
@@ -481,6 +506,8 @@ struct MemberTypeInfo : public FieldTypeInfo {
   AccessSpecifier Access = AccessSpecifier::AS_public;
   bool IsStatic = false;
 };
+
+StringRef getTypeName(const TypeInfo &TI);
 
 struct Location {
   Location(int StartLineNumber = 0, int EndLineNumber = 0,

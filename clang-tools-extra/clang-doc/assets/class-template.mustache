@@ -171,7 +171,7 @@
                     <div>
                         {{#PublicMembers}}
                         <div id="{{Name}}" class="delimiter-container">
-                            <pre><code class="code-clang-doc" >{{#IsStatic}}<span class="k">static</span> {{/IsStatic}}<span class="nc">{{Type}}</span> <span class="n">{{Name}}</span></code></pre>
+                            <pre><code class="code-clang-doc" >{{#IsStatic}}<span class="k">static</span> {{/IsStatic}}{{#Type}}{{>TypeLink}}{{/Type}} <span class="n">{{Name}}</span></code></pre>
                         </div>
                         {{/PublicMembers}}
                     </div>
@@ -183,7 +183,7 @@
                     <div>
                         {{#ProtectedMembers}}
                         <div id="{{Name}}" class="delimiter-container">
-                            <pre><code class="code-clang-doc" >{{#IsStatic}}<span class="k">static</span> {{/IsStatic}}<span class="nc">{{Type}}</span> <span class="n">{{Name}}</span></code></pre>
+                            <pre><code class="code-clang-doc" >{{#IsStatic}}<span class="k">static</span> {{/IsStatic}}{{#Type}}{{>TypeLink}}{{/Type}} <span class="n">{{Name}}</span></code></pre>
                         </div>
                         {{/ProtectedMembers}}
                     </div>

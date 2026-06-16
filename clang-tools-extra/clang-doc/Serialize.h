@@ -98,6 +98,9 @@ private:
 
   TypeInfo getTypeInfoForType(const QualType &T, const PrintingPolicy &Policy);
 
+  TypeInfo getTypeInfoForArg(const TemplateArgument &Arg,
+                             const PrintingPolicy &Policy);
+
   bool isPublic(const clang::AccessSpecifier AS, const clang::Linkage Link);
 
   bool shouldSerializeInfo(bool PublicOnly, bool IsInAnonymousNamespace,

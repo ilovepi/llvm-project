@@ -360,6 +360,12 @@ template <>
 llvm::Error ClangDocBitcodeReader::readBlock(unsigned ID, NamespaceInfo *I);
 template <>
 llvm::Error ClangDocBitcodeReader::readBlock(unsigned ID, FriendInfo *I);
+template <>
+llvm::Error ClangDocBitcodeReader::readBlock(unsigned ID, TypeInfo *I);
+template <>
+llvm::Error ClangDocBitcodeReader::readBlock(unsigned ID, FieldTypeInfo *I);
+template <>
+llvm::Error ClangDocBitcodeReader::readBlock(unsigned ID, MemberTypeInfo *I);
 
 template <>
 llvm::Error ClangDocBitcodeReader::readBlock(unsigned ID, CommentInfo *I) {
@@ -980,6 +986,37 @@ llvm::Error ClangDocBitcodeReader::readBlock(unsigned ID, T I) {
       [&](unsigned BlockOrCode) -> llvm::Error {
         return readRecord(BlockOrCode, I);
       });
+}
+
+template <typename T>
+llvm::Error ClangDocBitcodeReader::readTypeWithArgs(unsigned ID, T *I) {
+  llvm::SmallVector<TypeInfo, 4> LocalArgs;
+  return parseBlock(
+      ID, I,
+      [&](unsigned BlockOrCode) -> llvm::Expected<bool> {
+        return readSubBlockIfMatch(BlockOrCode, BI_TYPE_BLOCK_ID, LocalArgs);
+      },
+      [&]() -> llvm::Error {
+        if (!LocalArgs.empty())
+          I->TemplateArgs =
+              allocateArray<TypeInfo>(LocalArgs, getTransientArena());
+        return llvm::Error::success();
+      });
+}
+
+template <>
+llvm::Error ClangDocBitcodeReader::readBlock(unsigned ID, TypeInfo *I) {
+  return readTypeWithArgs(ID, I);
+}
+
+template <>
+llvm::Error ClangDocBitcodeReader::readBlock(unsigned ID, FieldTypeInfo *I) {
+  return readTypeWithArgs(ID, I);
+}
+
+template <>
+llvm::Error ClangDocBitcodeReader::readBlock(unsigned ID, MemberTypeInfo *I) {
+  return readTypeWithArgs(ID, I);
 }
 
 template <>

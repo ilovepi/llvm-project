@@ -57,7 +57,7 @@
 // HTML-STRUCT-NEXT:       </div>
 // HTML-STRUCT-NEXT:   </section>
 
-// HTML:           <pre><code class="code-clang-doc"><span class="nc">tuple&lt;int, int, bool&gt;</span> <span class="nf">func_with_tuple_param</span> (<span class="nc">tuple&lt;int, int, bool&gt;</span> <span class="n">t</span>)</code></pre>
+// HTML:           <pre><code class="code-clang-doc"><span class="nc">tuple</span>&lt;<span class="nc">int</span>, <span class="nc">int</span>, <span class="nc">bool</span>&gt; <span class="nf">func_with_tuple_param</span> (<span class="nc">tuple</span>&lt;<span class="nc">int</span>, <span class="nc">int</span>, <span class="nc">bool</span>&gt; <span class="n">t</span>)</code></pre>
 // HTML-NEXT:      <div class="doc-card">
 // HTML-NEXT:          <div class="nested-delimiter-container">
 // HTML-NEXT:              <p>A function with a tuple parameter</p>

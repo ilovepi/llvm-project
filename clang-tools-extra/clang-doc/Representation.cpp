@@ -45,6 +45,34 @@ StringPool &getGlobalStringPool() {
   return GlobalPool;
 }
 
+static void writeTypeName(raw_ostream &OS, const TypeInfo &TI) {
+  if (!TI.NonTypeValue.empty()) {
+    OS << TI.NonTypeValue;
+    return;
+  }
+  if (!TI.Qualifiers.empty())
+    OS << TI.Qualifiers << ' ';
+  OS << TI.Type.QualName;
+  if (!TI.TemplateArgs.empty()) {
+    OS << '<';
+    for (const TypeInfo &Arg : TI.TemplateArgs) {
+      if (&Arg != TI.TemplateArgs.begin())
+        OS << ", ";
+      writeTypeName(OS, Arg);
+    }
+    OS << '>';
+  }
+  if (!TI.Suffix.empty())
+    OS << ' ' << TI.Suffix;
+}
+
+StringRef getTypeName(const TypeInfo &TI) {
+  SmallString<128> Buffer;
+  raw_svector_ostream Stream(Buffer);
+  writeTypeName(Stream, TI);
+  return internString(Buffer);
+}
+
 CommentKind stringToCommentKind(StringRef KindStr) {
   static const StringMap<CommentKind> KindMap = {
       {"FullComment", CommentKind::CK_FullComment},
@@ -261,6 +289,13 @@ TemplateInfo::TemplateInfo(const TemplateInfo &Other, BumpPtrAllocator &Arena) {
   Constraints = allocateArray(Other.Constraints, Arena);
 }
 
+TypeInfo::TypeInfo(const TypeInfo &Other, BumpPtrAllocator &Arena)
+    : Type(Other.Type), Qualifiers(Other.Qualifiers), Suffix(Other.Suffix),
+      NonTypeValue(Other.NonTypeValue), IsTemplate(Other.IsTemplate),
+      IsBuiltIn(Other.IsBuiltIn) {
+  TemplateArgs = deepCopyArray(Other.TemplateArgs, Arena);
+}
+
 bool CommentInfo::operator==(const CommentInfo &Other) const {
   auto FirstCI = std::tie(Kind, Text, Name, Direction, ParamName, CloseName,
                           SelfClosing, Explicit, AttrKeys, AttrValues, Args);
@@ -397,9 +432,9 @@ FriendInfo::FriendInfo(const FriendInfo &Other, BumpPtrAllocator &Arena)
   if (Other.Template)
     Template.emplace(*Other.Template, Arena);
   if (Other.ReturnType)
-    ReturnType = Other.ReturnType;
+    ReturnType = TypeInfo(*Other.ReturnType, Arena);
   if (!Other.Params.empty())
-    Params = allocateArray(Other.Params, Arena);
+    Params = deepCopyArray(Other.Params, Arena);
   IsClass = Other.IsClass;
 }
 
@@ -494,7 +529,8 @@ RecordInfo::RecordInfo(const RecordInfo &Other, llvm::BumpPtrAllocator &Arena)
 
 MemberTypeInfo::MemberTypeInfo(const MemberTypeInfo &Other,
                                BumpPtrAllocator &Arena)
-    : FieldTypeInfo(Other), Access(Other.Access), IsStatic(Other.IsStatic) {
+    : FieldTypeInfo(Other, Arena), Access(Other.Access),
+      IsStatic(Other.IsStatic) {
   if (!Other.Description.empty()) {
     for (const auto &Desc : Other.Description) {
       CommentInfo *NewDesc = allocatePtr<CommentInfo>(Arena, Desc, Arena);
@@ -544,7 +580,7 @@ void EnumInfo::merge(EnumInfo &&Other) {
   if (!Scoped)
     Scoped = Other.Scoped;
   if (!BaseType && Other.BaseType)
-    BaseType = std::move(Other.BaseType);
+    BaseType = TypeInfo(*Other.BaseType, getPersistentArena());
   if (Members.empty() && !Other.Members.empty())
     Members = deepCopyArray(Other.Members, getPersistentArena());
   SymbolInfo::merge(std::move(Other));
@@ -557,11 +593,11 @@ void FunctionInfo::merge(FunctionInfo &&Other) {
   if (!Access)
     Access = Other.Access;
   if (ReturnType.Type.USR == EmptySID && ReturnType.Type.Name == "")
-    ReturnType = std::move(Other.ReturnType);
+    ReturnType = TypeInfo(Other.ReturnType, getPersistentArena());
   if (Parent.USR == EmptySID && Parent.Name == "")
     Parent = std::move(Other.Parent);
   if (Params.empty() && !Other.Params.empty())
-    Params = allocateArray(Other.Params, getPersistentArena());
+    Params = deepCopyArray(Other.Params, getPersistentArena());
   if (!Template && Other.Template)
     Template = TemplateInfo(*Other.Template, getPersistentArena());
   SymbolInfo::merge(std::move(Other));
@@ -572,7 +608,7 @@ void TypedefInfo::merge(TypedefInfo &&Other) {
   if (!IsUsing)
     IsUsing = Other.IsUsing;
   if (Underlying.Type.Name == "")
-    Underlying = Other.Underlying;
+    Underlying = TypeInfo(Other.Underlying, getPersistentArena());
   if (!Template && Other.Template)
     Template = TemplateInfo(*Other.Template, getPersistentArena());
   SymbolInfo::merge(std::move(Other));
@@ -598,7 +634,7 @@ void VarInfo::merge(VarInfo &&Other) {
   if (!IsStatic)
     IsStatic = Other.IsStatic;
   if (Type.Type.USR == EmptySID && Type.Type.Name == "")
-    Type = std::move(Other.Type);
+    Type = TypeInfo(Other.Type, getPersistentArena());
   SymbolInfo::merge(std::move(Other));
 }
 

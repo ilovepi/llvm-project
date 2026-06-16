@@ -408,33 +408,61 @@ RecordDecl *Serializer::getRecordDeclForType(const QualType &T) {
 
 TypeInfo Serializer::getTypeInfoForType(const QualType &T,
                                         const PrintingPolicy &Policy) {
-  // Look through references and pointers so a parameter or return type written
-  // as `const Foo &` or `Foo *` resolves to Foo's declaration. The original
-  // spelling is kept for display. The lookup still requires a definition, so
-  // template specializations and undefined types keep their prior handling.
+  SmallString<8> Operators;
   QualType Underlying = T.getNonReferenceType();
-  while (Underlying->isPointerType())
-    Underlying = Underlying->getPointeeType();
-  const TagDecl *TD = getTagDeclForType(Underlying);
-  if (!TD) {
-    TypeInfo TI = TypeInfo(Reference(SymbolID(), T.getAsString(Policy)));
-    TI.IsBuiltIn = T->isBuiltinType();
-    TI.IsTemplate = T->isTemplateTypeParmType();
-    return TI;
+  while (const auto *Ptr = dyn_cast<PointerType>(Underlying.getTypePtr())) {
+    Operators += '*';
+    Underlying = Ptr->getPointeeType();
   }
-  InfoType IT;
-  if (isa<EnumDecl>(TD)) {
-    IT = InfoType::IT_enum;
-  } else if (isa<RecordDecl>(TD)) {
-    IT = InfoType::IT_record;
-  } else {
-    IT = InfoType::IT_default;
-  }
-  Reference R = Reference(getUSRForDecl(TD), TD->getNameAsString(), IT,
-                          T.getAsString(Policy), getInfoRelativePath(TD));
-  TypeInfo TI = TypeInfo(R);
+  if (T->isLValueReferenceType())
+    Operators += '&';
+  else if (T->isRValueReferenceType())
+    Operators += "&&";
+
+  TypeInfo TI;
+  TI.Qualifiers = internString(Underlying.getQualifiers().getAsString());
+  TI.Suffix = internString(Operators);
   TI.IsBuiltIn = T->isBuiltinType();
   TI.IsTemplate = T->isTemplateTypeParmType();
+
+  QualType Unqualified = Underlying.getUnqualifiedType();
+  const TagDecl *TD = getTagDeclForType(Unqualified);
+  if (!TD) {
+    TI.Type = Reference(SymbolID(), Unqualified.getAsString(Policy));
+    return TI;
+  }
+
+  const auto *TST = Unqualified->getAs<TemplateSpecializationType>();
+  InfoType IT = isa<EnumDecl>(TD) ? InfoType::IT_enum : InfoType::IT_record;
+  std::string QualName =
+      TST ? TD->getQualifiedNameAsString() : Unqualified.getAsString(Policy);
+  TI.Type = Reference(getUSRForDecl(TD), TD->getNameAsString(), IT, QualName,
+                      getInfoRelativePath(TD));
+
+  if (TST) {
+    SmallVector<TypeInfo, 4> Args;
+    for (const TemplateArgument &Arg : TST->template_arguments()) {
+      if (Arg.getKind() == TemplateArgument::Pack)
+        for (const TemplateArgument &Inner : Arg.pack_elements())
+          Args.push_back(getTypeInfoForArg(Inner, Policy));
+      else
+        Args.push_back(getTypeInfoForArg(Arg, Policy));
+    }
+    TI.TemplateArgs = allocateArray<TypeInfo>(Args, getTransientArena());
+  }
+  return TI;
+}
+
+TypeInfo Serializer::getTypeInfoForArg(const TemplateArgument &Arg,
+                                       const PrintingPolicy &Policy) {
+  if (Arg.getKind() == TemplateArgument::Type)
+    return getTypeInfoForType(Arg.getAsType(), Policy);
+
+  TypeInfo TI;
+  SmallString<32> Value;
+  llvm::raw_svector_ostream OS(Value);
+  Arg.print(Policy, OS, /*IncludeType=*/false);
+  TI.NonTypeValue = internString(Value);
   return TI;
 }
 

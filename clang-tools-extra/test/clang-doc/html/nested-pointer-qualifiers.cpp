@@ -2,4 +2,4 @@
 // RUN: clang-doc --output=%t --format=html --executor=standalone %S/../Inputs/nested-pointer-qualifiers.cpp
 // RUN: FileCheck %s --check-prefix=HTML < %t/html/GlobalNamespace/index.html
 
-// HTML: <pre><code class="code-clang-doc"><span class="nc">void</span> <span class="nf">foo</span> (<span class="nc">const int *const *</span> <span class="n">ptr</span>)</code></pre>
+// HTML: <pre><code class="code-clang-doc"><span class="nc">void</span> <span class="nf">foo</span> (<span class="k">const</span> <span class="nc">int</span>** <span class="n">ptr</span>)</code></pre>

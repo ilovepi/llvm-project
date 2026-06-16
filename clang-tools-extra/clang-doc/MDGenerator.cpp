@@ -52,8 +52,9 @@ Error MDGenerator::setupTemplateFiles(const ClangDocContext &CDCtx) {
   std::string AllFilesPath = CDCtx.MustacheTemplates.lookup("all-files");
   std::string IndexFilePath = CDCtx.MustacheTemplates.lookup("index");
   std::string CommentsFilePath = CDCtx.MustacheTemplates.lookup("comments");
+  std::string TypeNameFilePath = CDCtx.MustacheTemplates.lookup("type-name");
   std::vector<std::pair<StringRef, StringRef>> Partials = {
-      {"Comments", CommentsFilePath}};
+      {"Comments", CommentsFilePath}, {"TypeName", TypeNameFilePath}};
 
   if (Error Err = setupTemplate(RecordTemplate, ClassFilePath, Partials))
     return Err;

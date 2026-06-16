@@ -12,11 +12,11 @@ Inherits from {{#Parents}}{{Name}}{{^End}}, {{/End}}{{/Parents}}{{#VParents}}{{N
 ## Members
 {{/HasMembers}}
 {{#PublicMembers}}
-public {{#IsStatic}}static {{/IsStatic}}{{Type}} {{Name}}
+public {{#IsStatic}}static {{/IsStatic}}{{#Type}}{{>TypeName}}{{/Type}} {{Name}}
 
 {{/PublicMembers}}
 {{#PrivateMembers}}
-private {{#IsStatic}}static {{/IsStatic}}{{Type}} {{Name}}
+private {{#IsStatic}}static {{/IsStatic}}{{#Type}}{{>TypeName}}{{/Type}} {{Name}}
 
 {{/PrivateMembers}}
 
@@ -26,7 +26,7 @@ private {{#IsStatic}}static {{/IsStatic}}{{Type}} {{Name}}
 {{#PublicMethods}}
 ### {{Name}}
 
-*public {{#IsStatic}}static {{/IsStatic}}{{ReturnType.QualName}} {{Name}}({{#Params}}{{Type.QualName}} {{Name}}{{^ParamEnd}}, {{/ParamEnd}}{{/Params}})*
+*public {{#IsStatic}}static {{/IsStatic}}{{#ReturnType}}{{>TypeName}}{{/ReturnType}} {{Name}}({{#Params}}{{#Type}}{{>TypeName}}{{/Type}} {{Name}}{{^ParamEnd}}, {{/ParamEnd}}{{/Params}})*
 {{#Location}}
 
 *Defined at {{Filename}}#{{LineNumber}}*

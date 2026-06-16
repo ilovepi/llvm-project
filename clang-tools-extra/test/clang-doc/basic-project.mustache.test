@@ -197,7 +197,7 @@ HTML-CALC-NEXT:                     <div id="public_val" class="delimiter-contai
 HTML-CALC-NEXT:                         <pre><code class="code-clang-doc" ><span class="nc">int</span> <span class="n">public_val</span></code></pre>
 HTML-CALC-NEXT:                     </div>
 HTML-CALC-NEXT:                     <div id="static_val" class="delimiter-container">
-HTML-CALC-NEXT:                         <pre><code class="code-clang-doc" ><span class="k">static</span> <span class="nc">const int</span> <span class="n">static_val</span></code></pre>
+HTML-CALC-NEXT:                         <pre><code class="code-clang-doc" ><span class="k">static</span> <span class="k">const</span> <span class="nc">int</span> <span class="n">static_val</span></code></pre>
 HTML-CALC-NEXT:                     </div>
 HTML-CALC-NEXT:                 </div>
 HTML-CALC-NEXT:            </section>

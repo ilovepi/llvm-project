@@ -2,7 +2,7 @@
     {{#Template}}
     <pre><code class="code-clang-doc"><span class="k">template</span> &lt;{{#Parameters}}{{Param}}{{^End}}, {{/End}}{{/Parameters}}&gt;</code></pre>
     {{/Template}}
-    <pre><code class="code-clang-doc"><span class="k">{{#IsUsing}}using{{/IsUsing}}{{^IsUsing}}typedef{{/IsUsing}}</span> <span class="nc">{{Name}}</span>{{#IsUsing}} ={{/IsUsing}}{{#Underlying}} <span class="nc">{{Name}}</span>{{/Underlying}}</code></pre>
+    <pre><code class="code-clang-doc"><span class="k">{{#IsUsing}}using{{/IsUsing}}{{^IsUsing}}typedef{{/IsUsing}}</span> <span class="nc">{{Name}}</span>{{#IsUsing}} ={{/IsUsing}}{{#Underlying}} {{>TypeLink}}{{/Underlying}}</code></pre>
     {{#Description}}
     {{>Comments}}
     {{/Description}}
