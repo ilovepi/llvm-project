@@ -37,11 +37,11 @@
 // HTML-GLOBAL-NEXT:     </div>
 // HTML-GLOBAL-NEXT:     <div id="{{([0-9A-F]{40})}}" class="delimiter-container">
 // HTML-GLOBAL-NEXT:         <pre><code class="code-clang-doc"><span class="k">template</span> &lt;typename T&gt;</code></pre>
-// HTML-GLOBAL-NEXT:         <pre><code class="code-clang-doc"><span class="k">using</span> <span class="nc">Vec</span> = <span class="nc">Vector&lt;T&gt;</span></code></pre>
+// HTML-GLOBAL-NEXT:         <pre><code class="code-clang-doc"><span class="k">using</span> <span class="nc">Vec</span> = <a class="nc cd-ref" href="../GlobalNamespace/_ZTV6Vector.html">Vector</a>&lt;<span class="nc">T</span>&gt;</code></pre>
 // HTML-GLOBAL-NEXT:         <p>Defined at line 12 of file {{.*}}typedef-alias.cpp</p>
 // HTML-GLOBAL-NEXT:     </div>
 // HTML-GLOBAL-NEXT:     <div id="{{([0-9A-F]{40})}}" class="delimiter-container">
-// HTML-GLOBAL-NEXT:         <pre><code class="code-clang-doc"><span class="k">using</span> <span class="nc">IntVec</span> = <span class="nc">Vector&lt;int&gt;</span></code></pre>
+// HTML-GLOBAL-NEXT:         <pre><code class="code-clang-doc"><span class="k">using</span> <span class="nc">IntVec</span> = <a class="nc cd-ref" href="../GlobalNamespace/_ZTV6Vector.html">Vector</a>&lt;<span class="nc">int</span>&gt;</code></pre>
 // HTML-GLOBAL-NEXT:         <p>Defined at line 14 of file {{.*}}typedef-alias.cpp</p>
 // HTML-GLOBAL-NEXT:     </div>
 // HTML-GLOBAL-NEXT: </section>

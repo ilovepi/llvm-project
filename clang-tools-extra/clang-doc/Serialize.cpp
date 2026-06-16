@@ -426,21 +426,26 @@ TypeInfo Serializer::getTypeInfoForType(const QualType &T,
   TI.IsTemplate = T->isTemplateTypeParmType();
 
   QualType Unqualified = Underlying.getUnqualifiedType();
-  const TagDecl *TD = getTagDeclForType(Unqualified);
-  if (!TD) {
-    TI.Type = Reference(SymbolID(), Unqualified.getAsString(Policy));
-    return TI;
-  }
-
   const auto *TST = Unqualified->getAs<TemplateSpecializationType>();
-  InfoType IT = isa<EnumDecl>(TD) ? InfoType::IT_enum : InfoType::IT_record;
-  std::string QualName =
-      TST ? TD->getQualifiedNameAsString() : Unqualified.getAsString(Policy);
-  const TagDecl *LinkDecl = TD;
-  if (const auto *Spec = dyn_cast<ClassTemplateSpecializationDecl>(TD))
+  const TagDecl *TD = getTagDeclForType(Unqualified);
+
+  const NamedDecl *LinkDecl = TD;
+  if (const auto *Spec = dyn_cast_or_null<ClassTemplateSpecializationDecl>(TD))
     LinkDecl = Spec->getSpecializedTemplate()->getTemplatedDecl();
-  TI.Type = Reference(getUSRForDecl(LinkDecl), TD->getNameAsString(), IT,
-                      QualName, getInfoRelativePath(LinkDecl));
+  else if (!TD && TST)
+    if (const auto *Template = TST->getTemplateName().getAsTemplateDecl())
+      LinkDecl = Template->getTemplatedDecl();
+
+  if (!LinkDecl) {
+    TI.Type = Reference(SymbolID(), Unqualified.getAsString(Policy));
+  } else {
+    InfoType IT =
+        isa<EnumDecl>(LinkDecl) ? InfoType::IT_enum : InfoType::IT_record;
+    std::string QualName = TST ? LinkDecl->getQualifiedNameAsString()
+                               : Unqualified.getAsString(Policy);
+    TI.Type = Reference(getUSRForDecl(LinkDecl), LinkDecl->getNameAsString(),
+                        IT, QualName, getInfoRelativePath(LinkDecl));
+  }
 
   if (TST) {
     SmallVector<TypeInfo, 4> Args;
