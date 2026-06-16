@@ -14,8 +14,13 @@
 // CHECK-NEXT:   "Specialization": {
 // CHECK-NEXT:     "Parameters": [
 // CHECK-NEXT:       {
-// CHECK-NEXT:         "Param": "T *",
-// CHECK-NEXT:         "SpecParamEnd": true
+// CHECK-NEXT:         "IsBuiltIn": false,
+// CHECK-NEXT:         "IsTemplate": false,
+// CHECK-NEXT:         "Name": "T",
+// CHECK-NEXT:         "QualName": "T",
+// CHECK-NEXT:         "SpecParamEnd": true,
+// CHECK-NEXT:         "Suffix": "*",
+// CHECK-NEXT:         "USR": "0000000000000000000000000000000000000000"
 // CHECK-NEXT:       }
 // CHECK-NEXT:     ],
 // CHECK-NEXT:     "SpecializationOf": "{{[0-9A-F]*}}",

@@ -37,7 +37,7 @@
 // HTML-NEXT:  </div>
 
 // HTML:           <pre><code class="code-clang-doc"><span class="k">template</span> &lt;</code><code class="code-clang-doc">&gt;</code></pre>
-// HTML-NEXT:      <pre><code class="code-clang-doc"><span class="nc">void</span> <span class="nf">function</span>&lt;bool, 0&gt; (<span class="nc">bool</span> <span class="n">x</span>)</code></pre>
+// HTML-NEXT:      <pre><code class="code-clang-doc"><span class="nc">void</span> <span class="nf">function</span>&lt;<span class="nc">bool</span>, <span class="n">0</span>&gt; (<span class="nc">bool</span> <span class="n">x</span>)</code></pre>
 // HTML-NEXT:      <p>Defined at line 8 of file {{.*}}templates.cpp</p>
 // HTML-NEXT:  </div>
 

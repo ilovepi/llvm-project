@@ -162,11 +162,20 @@
 // JSON-NEXT:        "Specialization": {
 // JSON-NEXT:          "Parameters": [
 // JSON-NEXT:            {
-// JSON-NEXT:              "Param": "bool"
+// JSON-NEXT:              "IsBuiltIn": true,
+// JSON-NEXT:              "IsTemplate": false,
+// JSON-NEXT:              "Name": "bool",
+// JSON-NEXT:              "QualName": "bool",
+// JSON-NEXT:              "USR": "0000000000000000000000000000000000000000"
 // JSON-NEXT:            },
 // JSON-NEXT:            {
-// JSON-NEXT:              "Param": "0",
-// JSON-NEXT:              "SpecParamEnd": true
+// JSON-NEXT:              "IsBuiltIn": false,
+// JSON-NEXT:              "IsTemplate": false,
+// JSON-NEXT:              "Name": "",
+// JSON-NEXT:              "NonTypeValue": "0",
+// JSON-NEXT:              "QualName": "",
+// JSON-NEXT:              "SpecParamEnd": true,
+// JSON-NEXT:              "USR": "0000000000000000000000000000000000000000"
 // JSON-NEXT:            }
 // JSON-NEXT:          ],
 // JSON-NEXT:          "SpecializationOf": "{{([0-9A-F]{40})}}",

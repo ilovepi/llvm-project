@@ -770,17 +770,6 @@ void Serializer::populateTemplateParameters(
   }
 }
 
-TemplateParamInfo
-Serializer::convertTemplateArgToInfo(const clang::Decl *D,
-                                     const TemplateArgument &Arg) {
-  // The TemplateArgument's pretty printing handles all the normal cases
-  // well enough for our requirements.
-  std::string Str;
-  llvm::raw_string_ostream Stream(Str);
-  Arg.print(PrintingPolicy(D->getLangOpts()), Stream, false);
-  return TemplateParamInfo(Str);
-}
-
 // Check if the DeclKind is one for which we support contextual relationships.
 // There might be other ContextDecls, like blocks, that we currently don't
 // handle at all.
@@ -945,13 +934,13 @@ void Serializer::populateFunctionInfo(FunctionInfo &I, const FunctionDecl *D,
 
     // Template parameters to the specialization.
     if (FTSI->TemplateArguments) {
-      SmallVector<TemplateParamInfo, 4> LocalParams;
-      for (const TemplateArgument &Arg : FTSI->TemplateArguments->asArray()) {
-        LocalParams.push_back(convertTemplateArgToInfo(D, Arg));
-      }
+      PrintingPolicy Policy(D->getLangOpts());
+      SmallVector<TypeInfo, 4> LocalParams;
+      for (const TemplateArgument &Arg : FTSI->TemplateArguments->asArray())
+        LocalParams.push_back(getTypeInfoForArg(Arg, Policy));
       if (!LocalParams.empty())
         Specialization.Params =
-            allocateArray<TemplateParamInfo>(LocalParams, getTransientArena());
+            allocateArray<TypeInfo>(LocalParams, getTransientArena());
     }
   }
 }
@@ -1176,28 +1165,22 @@ std::pair<Info *, Info *> Serializer::emitInfo(const RecordDecl *D,
     // because the non-explicit template parameters will have generated internal
     // placeholder names rather than the names the user typed that match the
     // template parameters.
+    PrintingPolicy Policy(D->getLangOpts());
+    llvm::SmallVector<TypeInfo, 4> LocalParams;
     if (const ClassTemplatePartialSpecializationDecl *CTPSD =
             dyn_cast<ClassTemplatePartialSpecializationDecl>(D)) {
       if (const ASTTemplateArgumentListInfo *AsWritten =
-              CTPSD->getTemplateArgsAsWritten()) {
-        llvm::SmallVector<TemplateParamInfo, 4> LocalParams;
-        for (unsigned Idx = 0; Idx < AsWritten->getNumTemplateArgs(); Idx++) {
-          LocalParams.emplace_back(
-              getSourceCode(D, (*AsWritten)[Idx].getSourceRange()));
-        }
-        if (!LocalParams.empty())
-          Specialization.Params = allocateArray<TemplateParamInfo>(
-              LocalParams, getTransientArena());
-      }
+              CTPSD->getTemplateArgsAsWritten())
+        for (unsigned Idx = 0; Idx < AsWritten->getNumTemplateArgs(); Idx++)
+          LocalParams.push_back(
+              getTypeInfoForArg((*AsWritten)[Idx].getArgument(), Policy));
     } else {
-      llvm::SmallVector<TemplateParamInfo, 4> LocalParams;
-      for (const TemplateArgument &Arg : CTSD->getTemplateArgs().asArray()) {
-        LocalParams.push_back(convertTemplateArgToInfo(D, Arg));
-      }
-      if (!LocalParams.empty())
-        Specialization.Params =
-            allocateArray<TemplateParamInfo>(LocalParams, getTransientArena());
+      for (const TemplateArgument &Arg : CTSD->getTemplateArgs().asArray())
+        LocalParams.push_back(getTypeInfoForArg(Arg, Policy));
     }
+    if (!LocalParams.empty())
+      Specialization.Params =
+          allocateArray<TypeInfo>(LocalParams, getTransientArena());
   }
 
   // Records are inserted into the parent by reference, so we need to return

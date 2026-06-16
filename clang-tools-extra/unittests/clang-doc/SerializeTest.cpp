@@ -760,7 +760,7 @@ TEST_F(SerializeTest, emitFunctionTemplate) {
 
   // Specialization values.
   ASSERT_EQ(1u, Func2.Template->Specialization->Params.size());
-  EXPECT_EQ("bool", Func2.Template->Specialization->Params[0].Contents);
+  EXPECT_EQ("bool", getTypeName(Func2.Template->Specialization->Params[0]));
   EXPECT_EQ(Func1.USR, Func2.Template->Specialization->SpecializationOf);
 
   EXPECT_EQ("bool", Func2.ReturnType.Type.Name);
@@ -798,7 +798,7 @@ TEST_F(SerializeTest, emitClassTemplate) {
 
   // Second record specialization values.
   ASSERT_EQ(1u, Rec2->Template->Specialization->Params.size());
-  EXPECT_EQ("0", Rec2->Template->Specialization->Params[0].Contents);
+  EXPECT_EQ("0", getTypeName(Rec2->Template->Specialization->Params[0]));
   EXPECT_EQ(Rec1->USR, Rec2->Template->Specialization->SpecializationOf);
 
   // Third record.
@@ -822,8 +822,8 @@ TEST_F(SerializeTest, emitClassTemplate) {
   EXPECT_EQ("int U", Rec4->Template->Params[0].Contents);
   ASSERT_EQ(2u, Rec4->Template->Specialization->Params.size());
   EXPECT_EQ("MyTemplate<0>",
-            Rec4->Template->Specialization->Params[0].Contents);
-  EXPECT_EQ("U", Rec4->Template->Specialization->Params[1].Contents);
+            getTypeName(Rec4->Template->Specialization->Params[0]));
+  EXPECT_EQ("U", getTypeName(Rec4->Template->Specialization->Params[1]));
 }
 
 } // namespace doc

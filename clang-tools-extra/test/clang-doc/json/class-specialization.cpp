@@ -32,8 +32,12 @@
 // SPECIALIZATION-NEXT:    "Specialization": {
 // SPECIALIZATION-NEXT:      "Parameters": [
 // SPECIALIZATION-NEXT:        {
-// SPECIALIZATION-NEXT:          "Param": "int",
-// SPECIALIZATION-NEXT:          "SpecParamEnd": true
+// SPECIALIZATION-NEXT:          "IsBuiltIn": true,
+// SPECIALIZATION-NEXT:          "IsTemplate": false,
+// SPECIALIZATION-NEXT:          "Name": "int",
+// SPECIALIZATION-NEXT:          "QualName": "int",
+// SPECIALIZATION-NEXT:          "SpecParamEnd": true,
+// SPECIALIZATION-NEXT:          "USR": "0000000000000000000000000000000000000000"
 // SPECIALIZATION-NEXT:        }
 // SPECIALIZATION-NEXT:      ],
 // SPECIALIZATION-NEXT:      "SpecializationOf": "{{[0-9A-F]*}}",
@@ -58,8 +62,12 @@
 // JSON-NAMESPACE-NEXT:      "Specialization": {
 // JSON-NAMESPACE-NEXT:        "Parameters": [
 // JSON-NAMESPACE-NEXT:          {
-// JSON-NAMESPACE-NEXT:            "Param": "int",
-// JSON-NAMESPACE-NEXT:            "SpecParamEnd": true
+// JSON-NAMESPACE-NEXT:            "IsBuiltIn": true,
+// JSON-NAMESPACE-NEXT:            "IsTemplate": false,
+// JSON-NAMESPACE-NEXT:            "Name": "int",
+// JSON-NAMESPACE-NEXT:            "QualName": "int",
+// JSON-NAMESPACE-NEXT:            "SpecParamEnd": true,
+// JSON-NAMESPACE-NEXT:            "USR": "0000000000000000000000000000000000000000"
 // JSON-NAMESPACE-NEXT:          }
 // JSON-NAMESPACE-NEXT:        ],
 // JSON-NAMESPACE-NEXT:        "SpecializationOf": "{{([0-9A-F]{40})}}",

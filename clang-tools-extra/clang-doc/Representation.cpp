@@ -279,7 +279,7 @@ Expected<Info *> mergeInfos(SmallVectorImpl<Info *> &Values) {
 TemplateSpecializationInfo::TemplateSpecializationInfo(
     const TemplateSpecializationInfo &Other, BumpPtrAllocator &Arena)
     : SpecializationOf(Other.SpecializationOf) {
-  Params = allocateArray(Other.Params, Arena);
+  Params = deepCopyArray(Other.Params, Arena);
 }
 
 TemplateInfo::TemplateInfo(const TemplateInfo &Other, BumpPtrAllocator &Arena) {

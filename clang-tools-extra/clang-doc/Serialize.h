@@ -140,9 +140,6 @@ private:
   void populateTemplateParameters(std::optional<TemplateInfo> &TemplateInfo,
                                   const clang::Decl *D);
 
-  TemplateParamInfo convertTemplateArgToInfo(const clang::Decl *D,
-                                             const TemplateArgument &Arg);
-
   bool isSupportedContext(Decl::Kind DeclKind);
 
   void findParent(Info &I, const Decl *D);

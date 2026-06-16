@@ -73,6 +73,8 @@ class JSONGenerator : public Generator {
                             StringRef BasePath);
 
   void serializeClassSpecializations(SymbolID ClassUSR, Object &ReferenceObj);
+  void serializeTemplateSpecialization(const TemplateInfo &Template,
+                                       Object &TemplateObj);
 
   // Convenience lambdas to pass to serializeArray.
   auto serializeInfoLambda() {
@@ -479,8 +481,8 @@ static auto SerializeTemplateParam = [](const TemplateParamInfo &Param,
   JsonObj["Param"] = Param.Contents;
 };
 
-static void serializeTemplateSpecialization(TemplateInfo Template,
-                                            Object &TemplateObj) {
+void JSONGenerator::serializeTemplateSpecialization(
+    const TemplateInfo &Template, Object &TemplateObj) {
   json::Value TemplateSpecializationVal = Object();
   auto &TemplateSpecializationObj = *TemplateSpecializationVal.getAsObject();
   TemplateSpecializationObj["SpecializationOf"] =
@@ -489,7 +491,7 @@ static void serializeTemplateSpecialization(TemplateInfo Template,
     bool VerticalDisplay =
         Template.Specialization->Params.size() > getMaxParamWrapLimit();
     serializeArray(Template.Specialization->Params, TemplateSpecializationObj,
-                   "Parameters", SerializeTemplateParam, "SpecParamEnd",
+                   "Parameters", serializeInfoLambda(), "SpecParamEnd",
                    [VerticalDisplay](Object &JsonObj) {
                      JsonObj["VerticalDisplay"] = VerticalDisplay;
                    });

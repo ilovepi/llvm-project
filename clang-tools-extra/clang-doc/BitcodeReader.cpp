@@ -601,13 +601,13 @@ llvm::Error ClangDocBitcodeReader::readBlock(unsigned ID, TemplateInfo *I) {
 template <>
 llvm::Error ClangDocBitcodeReader::readBlock(unsigned ID,
                                              TemplateSpecializationInfo *I) {
-  llvm::SmallVector<TemplateParamInfo> LocalParams;
+  llvm::SmallVector<TypeInfo> LocalParams;
 
   return parseBlock(
       ID, I,
       [&](unsigned BlockOrCode) -> llvm::Expected<bool> {
-        auto B = readSubBlockIfMatch(BlockOrCode, BI_TEMPLATE_PARAM_BLOCK_ID,
-                                     LocalParams);
+        auto B =
+            readSubBlockIfMatch(BlockOrCode, BI_TYPE_BLOCK_ID, LocalParams);
         if (!B)
           return B.takeError();
         if (*B)

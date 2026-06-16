@@ -431,7 +431,7 @@ struct TemplateSpecializationInfo {
   SymbolID SpecializationOf;
 
   // Template parameters applying to the specialized record/function.
-  llvm::ArrayRef<TemplateParamInfo> Params = {};
+  llvm::ArrayRef<TypeInfo> Params = {};
 };
 
 struct ConstraintInfo {

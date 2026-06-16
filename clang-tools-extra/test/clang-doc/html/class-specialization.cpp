@@ -12,7 +12,7 @@
 // HTML-NAMESPACE-NEXT:         </li>
 // HTML-NAMESPACE-NEXT:         <li id="{{([0-9A-F]{40})}}" style="max-height: 40px;">
 // HTML-NAMESPACE-NEXT:             <a href="_ZTV7MyClassIiE.html">
-// HTML-NAMESPACE-NEXT:                 <pre><code class="code-clang-doc"><span class="k">class</span> <span class="nc">MyClass&lt;int&gt;</span></code></pre>
+// HTML-NAMESPACE-NEXT:                 <pre><code class="code-clang-doc"><span class="k">class</span> <span class="nc">MyClass</span>&lt;<span class="nc">int</span>&gt;</code></pre>
 // HTML-NAMESPACE-NEXT:             </a>
 // HTML-NAMESPACE-NEXT:         </li>
 // HTML-NAMESPACE-NEXT:     </ul>

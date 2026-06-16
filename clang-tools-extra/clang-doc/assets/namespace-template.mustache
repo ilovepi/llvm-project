@@ -58,7 +58,7 @@
                             <ul>
                                 {{#Functions}}
                                 <li class="sidebar-item-container">
-                                    <a class="sidebar-item" href="#{{USR}}">{{Name}}{{#Template}}{{#Specialization}}&lt;{{#Parameters}}{{Param}}{{^End}}, {{/End}}{{/Parameters}}&gt;{{/Specialization}}{{/Template}}</a>
+                                    <a class="sidebar-item" href="#{{USR}}">{{Name}}{{#Template}}{{#Specialization}}&lt;{{#Parameters}}{{>TypeLink}}{{^SpecParamEnd}}, {{/SpecParamEnd}}{{/Parameters}}&gt;{{/Specialization}}{{/Template}}</a>
                                 </li>
                                 {{/Functions}}
                             </ul>
@@ -164,7 +164,7 @@
                         {{#Records}}
                         <li id="{{USR}}" style="max-height: 40px;">
                             <a href="{{DocumentationFileName}}.html">
-                                <pre><code class="code-clang-doc"><span class="k">class</span> <span class="nc">{{Name}}{{#Specialization}}&lt;{{#Parameters}}{{Param}}{{^SpecParamEnd}}, {{/SpecParamEnd}}{{/Parameters}}&gt;{{/Specialization}}</span></code></pre>
+                                <pre><code class="code-clang-doc"><span class="k">class</span> <span class="nc">{{Name}}</span>{{#Specialization}}&lt;{{#Parameters}}{{>TypeLink}}{{^SpecParamEnd}}, {{/SpecParamEnd}}{{/Parameters}}&gt;{{/Specialization}}</code></pre>
                             </a>
                         </li>
                         {{/Records}}
