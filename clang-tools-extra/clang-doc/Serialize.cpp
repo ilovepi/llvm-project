@@ -436,8 +436,11 @@ TypeInfo Serializer::getTypeInfoForType(const QualType &T,
   InfoType IT = isa<EnumDecl>(TD) ? InfoType::IT_enum : InfoType::IT_record;
   std::string QualName =
       TST ? TD->getQualifiedNameAsString() : Unqualified.getAsString(Policy);
-  TI.Type = Reference(getUSRForDecl(TD), TD->getNameAsString(), IT, QualName,
-                      getInfoRelativePath(TD));
+  const TagDecl *LinkDecl = TD;
+  if (const auto *Spec = dyn_cast<ClassTemplateSpecializationDecl>(TD))
+    LinkDecl = Spec->getSpecializedTemplate()->getTemplatedDecl();
+  TI.Type = Reference(getUSRForDecl(LinkDecl), TD->getNameAsString(), IT,
+                      QualName, getInfoRelativePath(LinkDecl));
 
   if (TST) {
     SmallVector<TypeInfo, 4> Args;

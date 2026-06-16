@@ -180,6 +180,7 @@
 // JSON-NEXT:          "Name": "t",
 // JSON-NEXT:          "ParamEnd": true,
 // JSON-NEXT:          "Type": {
+// JSON-NEXT:            "DocumentationFileName": "_ZTV5tuple",
 // JSON-NEXT:            "HasTemplateArgs": true,
 // JSON-NEXT:            "Name": "tuple",
 // JSON-NEXT:            "Path": "GlobalNamespace",
@@ -213,10 +214,12 @@
 // JSON-NEXT:        }
 // JSON-NEXT:      ],
 // JSON-NEXT:      "ReturnType": {
+// JSON-NEXT:        "DocumentationFileName": "_ZTV5tuple",
 // JSON-NEXT:        "HasTemplateArgs": true,
 // JSON-NEXT:        "IsBuiltIn": false,
 // JSON-NEXT:        "IsTemplate": false,
 // JSON-NEXT:        "Name": "tuple",
+// JSON-NEXT:        "Path": "GlobalNamespace",
 // JSON-NEXT:        "QualName": "tuple",
 // JSON-NEXT:        "TemplateArgs": [
 // JSON-NEXT:          {
