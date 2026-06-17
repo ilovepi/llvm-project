@@ -51,7 +51,7 @@
 // HTML-NEXT:     <h2>Friends</h2>
 // HTML-NEXT:     <div id="{{([0-9A-F]{40})}}" class="delimiter-container">
 // HTML-NEXT:         <pre><code class="code-clang-doc"><span class="k">template</span> &lt;typename T&gt;</code></pre>
-// HTML-NEXT:         <pre><code class="code-clang-doc"><span class="nc">void</span> <span class="nf">MyClass</span> (<span class="nc">int</span> <span class="n"></span>)</code></pre>
+// HTML-NEXT:         <pre><code class="code-clang-doc"><span class="nc">void</span> <span class="nf">friendFunction</span> (<span class="nc">int</span> <span class="n"></span>)</code></pre>
 // HTML-NEXT:     </div>
 // HTML-NEXT:     <div id="{{([0-9A-F]{40})}}" class="delimiter-container">
 // HTML-NEXT:         <pre><code class="code-clang-doc"><span class="k">class</span> <span class="nc">Foo</span></code></pre>

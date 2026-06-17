@@ -249,7 +249,7 @@
                         <pre><code class="code-clang-doc"><span class="k">class</span> <span class="nc">{{Reference.Name}}</span></code></pre>
                         {{/IsClass}}
                         {{^IsClass}}
-                        <pre><code class="code-clang-doc"><span class="nc">{{ReturnType.Name}}</span> <span class="nf">{{Name}}</span>{{#Template}}{{#Specialization}}&lt;{{#Parameters}}{{>TypeLink}}{{^SpecParamEnd}}, {{/SpecParamEnd}}{{/Parameters}}&gt;{{/Specialization}}{{/Template}} ({{#Params}}<span class="nc">{{Type.QualName}}</span> <span class="n">{{Name}}</span>{{^End}}, {{/End}}{{/Params}})</code></pre>
+                        <pre><code class="code-clang-doc">{{#ReturnType}}{{>TypeLink}}{{/ReturnType}} <span class="nf">{{Reference.Name}}</span>{{#Template}}{{#Specialization}}&lt;{{#Parameters}}{{>TypeLink}}{{^SpecParamEnd}}, {{/SpecParamEnd}}{{/Parameters}}&gt;{{/Specialization}}{{/Template}} ({{#Params}}{{#Type}}{{>TypeLink}}{{/Type}} <span class="n">{{Name}}</span>{{^End}}, {{/End}}{{/Params}})</code></pre>
                         {{/IsClass}}
                     </div>
                     {{/Friends}}
