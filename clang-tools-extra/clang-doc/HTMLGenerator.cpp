@@ -145,11 +145,12 @@ static void addCrossReferenceLinks(json::Value &V, StringRef RelativeRootPath) {
     std::optional<StringRef> DocFile = Obj->getString("DocumentationFileName");
     std::optional<StringRef> Path = Obj->getString("Path");
     if (DocFile && Path) {
+      std::optional<StringRef> Anchor = Obj->getString("Anchor");
       SmallString<256> Link(RelativeRootPath);
-      sys::path::append(Link, sys::path::Style::posix, *Path);
-      sys::path::append(Link, sys::path::Style::posix,
-                        (*DocFile + ".html").str());
-      (*Obj)["Link"] = std::string(Link);
+      sys::path::append(Link, sys::path::Style::posix, *Path,
+                        Twine(*DocFile) + ".html" +
+                            (Anchor ? Twine("#") + *Anchor : Twine()));
+      (*Obj)["Link"] = internString(Link);
     }
     for (auto &KV : *Obj)
       addCrossReferenceLinks(KV.second, RelativeRootPath);

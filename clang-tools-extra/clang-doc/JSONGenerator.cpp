@@ -90,6 +90,10 @@ class JSONGenerator : public Generator {
 
   llvm::DenseMap<const Info *, SmallVector<Context, 4>> ContextsMap;
   llvm::StringMap<Info *> *Infos = nullptr;
+  // Maps a USR to the Info whose page documents that symbol inline. Typedefs
+  // and aliases have no page of their own, so a reference to one must link to
+  // an anchor on the page of its enclosing namespace or record.
+  llvm::StringMap<Info *> InlineChildPages;
   const ClangDocContext *CDCtx;
   bool Markdown;
 
@@ -534,11 +538,20 @@ void JSONGenerator::serializeReference(const Reference &Ref,
 void JSONGenerator::resolveTypeLink(const Reference &Ref, Object &Obj) {
   if (Ref.USR == SymbolID() || !Infos)
     return;
-  Info *Target = Infos->lookup(toHex(toStringRef(Ref.USR)));
-  if (!Target || Target->DocumentationFileName.empty())
+  StringRef Key = internString(toHex(toStringRef(Ref.USR)));
+  if (Info *Target = Infos->lookup(Key)) {
+    if (Target->DocumentationFileName.empty())
+      return;
+    Obj["Path"] = Target->Path;
+    Obj["DocumentationFileName"] = Target->DocumentationFileName;
     return;
-  Obj["Path"] = Target->Path;
-  Obj["DocumentationFileName"] = Target->DocumentationFileName;
+  }
+  // Inline symbols live on their enclosing scope's page.
+  if (Info *Parent = InlineChildPages.lookup(Key)) {
+    Obj["Path"] = Parent->getRelativeFilePath("");
+    Obj["DocumentationFileName"] = Parent->DocumentationFileName;
+    Obj["Anchor"] = Key;
+  }
 }
 
 void JSONGenerator::serializeMDReference(const Reference &Ref,
@@ -1067,6 +1080,21 @@ Error JSONGenerator::generateDocumentation(StringRef RootDir,
       continue;
     FileToInfos[Path].push_back(Info);
     Info->DocumentationFileName = internString(FileName);
+  }
+
+  for (const auto &Group : Infos) {
+    Info *Info = Group.getValue();
+    const ScopeChildren *Children = nullptr;
+    if (const auto *NS = dyn_cast<NamespaceInfo>(Info))
+      Children = &NS->Children;
+    else if (const auto *RI = dyn_cast<RecordInfo>(Info))
+      Children = &RI->Children;
+    if (!Children)
+      continue;
+    for (const TypedefInfo &TD : Children->Typedefs)
+      InlineChildPages[toHex(toStringRef(TD.USR))] = Info;
+    for (const EnumInfo &E : Children->Enums)
+      InlineChildPages[toHex(toStringRef(E.USR))] = Info;
   }
 
   if (CDCtx.Format == OutputFormatTy::md) {
