@@ -7,12 +7,15 @@
 //===----------------------------------------------------------------------===//
 
 #include "ClangDocExecutor.h"
+#include "clang/Basic/DiagnosticOptions.h"
+#include "clang/Frontend/TextDiagnosticPrinter.h"
 #include "clang/Tooling/AllTUsExecution.h"
 #include "clang/Tooling/Tooling.h"
 #include "llvm/Support/Parallel.h"
 #include "llvm/Support/Regex.h"
 #include "llvm/Support/Threading.h"
 #include "llvm/Support/VirtualFileSystem.h"
+#include "llvm/Support/raw_ostream.h"
 
 namespace clang::doc {
 
@@ -130,8 +133,15 @@ llvm::Error ClangDocExecutor::execute(
     Tool.appendArgumentsAdjuster(getDefaultArgumentsAdjusters());
     for (const auto &FileAndContent : OverlayFiles)
       Tool.mapVirtualFile(FileAndContent.first(), FileAndContent.second);
+    std::string DiagBuffer;
+    llvm::raw_string_ostream DiagOS(DiagBuffer);
+    DiagnosticOptions DiagOpts;
+    TextDiagnosticPrinter DiagPrinter(DiagOS, DiagOpts);
+    Tool.setDiagnosticConsumer(&DiagPrinter);
     if (Tool.run(Action.first.get()))
       AppendError(llvm::Twine("Failed to run action on ") + Path + "\n");
+    if (!DiagBuffer.empty())
+      Log(DiagBuffer);
   });
 
   if (!ErrorMsg.empty())
