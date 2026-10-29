@@ -248,37 +248,76 @@ class Run:
             # count increases.
             completed = queue.SimpleQueue()
 
+            deferred_unsupported = {}
+            last_future = None
+
+            def complete_unsupported(test):
+                result = lit.Test.Result(lit.Test.UNSUPPORTED, "Test is unsupported")
+                result.elapsed = 0.0
+                result.start = time.time()
+                result.pid = os.getpid()
+                test.setResult(result)
+                self.progress_callback(test)
+
+            def next_supported(batch_unsupported=None):
+                for i, test in tests_iter:
+                    if test.config.unsupported:
+                        if batch_unsupported is not None:
+                            batch_unsupported.append(test)
+                        elif last_future is not None and last_future in future_to_test:
+                            deferred_unsupported.setdefault(last_future, []).append(
+                                test
+                            )
+                        else:
+                            complete_unsupported(test)
+                        continue
+                    return i, test
+                return None
+
             # Specialize submit_next() by batch_size:
             # - batch_size <= 1: Avoids batch slicing and list-wrapping overhead.
             # - batch_size > 1: Batches tests into groups of size batch_size per future.
             if batch_size <= 1:
 
                 def submit_next():
-                    for i, test in tests_iter:
-                        ex = executors[i % len(executors)]
-                        future = ex.submit(lit.worker.execute, test)
-                        future_to_test[future] = test
-                        future_to_index[future] = i
-                        pending.add(future)
-                        future.add_done_callback(completed.put)
-                        return True
-                    return False
+                    nonlocal last_future
+                    item = next_supported()
+                    if item is None:
+                        return False
+                    i, test = item
+                    ex = executors[i % len(executors)]
+                    future = ex.submit(lit.worker.execute, test)
+                    future_to_test[future] = test
+                    future_to_index[future] = i
+                    last_future = future
+                    pending.add(future)
+                    future.add_done_callback(completed.put)
+                    return True
 
             else:
-                import itertools
-
                 batch_index = 0
 
                 def submit_next():
-                    nonlocal batch_index
-                    batch = list(itertools.islice(tests_iter, batch_size))
-                    if not batch:
+                    nonlocal batch_index, last_future
+                    tests_batch = []
+                    batch_unsupported = []
+                    while len(tests_batch) < batch_size:
+                        item = next_supported(
+                            batch_unsupported if tests_batch else None
+                        )
+                        if item is None:
+                            break
+                        _, test = item
+                        tests_batch.append(test)
+                    if not tests_batch:
                         return False
-                    indices, tests_batch = zip(*batch)
                     ex = executors[batch_index % len(executors)]
-                    future = ex.submit(lit.worker.execute_batch, list(tests_batch))
-                    future_to_test[future] = list(tests_batch)
+                    future = ex.submit(lit.worker.execute_batch, tests_batch)
+                    future_to_test[future] = tests_batch
                     future_to_index[future] = batch_index
+                    if batch_unsupported:
+                        deferred_unsupported[future] = batch_unsupported
+                    last_future = future
                     batch_index += 1
                     pending.add(future)
                     future.add_done_callback(completed.put)
@@ -316,6 +355,8 @@ class Run:
                             # so this equality check can't misfire on failures=0.
                             if self.failures == self.max_failures:
                                 raise MaxFailuresError()
+                    for unsupported_test in deferred_unsupported.pop(future, ()):
+                        complete_unsupported(unsupported_test)
                     submit_next()
 
         except BrokenProcessPool as e:
