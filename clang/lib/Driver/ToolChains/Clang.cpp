@@ -4652,6 +4652,13 @@ static void RenderDiagnosticsOptions(const Driver &D, const ArgList &Args,
   }
 
   if (const Arg *A =
+          Args.getLastArg(options::OPT_fdiagnostics_missing_annotations,
+                          options::OPT_fno_diagnostics_missing_annotations)) {
+    if (A->getOption().matches(options::OPT_fdiagnostics_missing_annotations))
+      CmdArgs.push_back("-fdiagnostics-missing-annotations");
+  }
+
+  if (const Arg *A =
           Args.getLastArg(options::OPT_fdiagnostics_show_inlining_chain,
                           options::OPT_fno_diagnostics_show_inlining_chain)) {
     if (A->getOption().matches(options::OPT_fdiagnostics_show_inlining_chain))
