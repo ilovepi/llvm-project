@@ -29,6 +29,7 @@
 
 #include "llvm/Transforms/Utils/MisExpect.h"
 #include "llvm/ADT/Twine.h"
+#include "llvm/Analysis/CFG.h"
 #include "llvm/Analysis/OptimizationRemarkEmitter.h"
 #include "llvm/IR/DiagnosticInfo.h"
 #include "llvm/IR/Instruction.h"
@@ -184,6 +185,20 @@ static void scaleByTollerance(const Instruction &I, uint64_t &ScaledThreshold) {
   LLVM_DEBUG(dbgs() << "Scaled Threshold = " << ScaledThreshold << "\n");
 }
 
+// Look for loops, so their conditions aren't reported. We run too early to use
+// LoopInfo, so do the equivalent check from SimplifyCFGPass.cpp.
+static bool isLoopCondition(const Instruction &I) {
+  if (!I.isTerminator())
+    return false;
+
+  const BasicBlock *BB = I.getParent();
+  SmallVector<std::pair<const BasicBlock *, const BasicBlock *>, 32> BackEdges;
+  FindFunctionBackedges(*BB->getParent(), BackEdges);
+  return any_of(BackEdges, [BB](const auto &Edge) {
+    return Edge.first == BB || Edge.second == BB;
+  });
+}
+
 static void reportDiagnostics(const Instruction &I, const ProfDataSummary &PDS,
                               uint32_t ProfiledWeight, DiagKind Kind) {
   uint64_t ScaledThreshold = getScaledThreshold(PDS);
@@ -202,7 +217,7 @@ static void reportDiagnostics(const Instruction &I, const ProfDataSummary &PDS,
     }
     return;
   case DiagKind::MissingExpect:
-    if (ProfiledWeight > ScaledThreshold) {
+    if (ProfiledWeight > ScaledThreshold && !isLoopCondition(I)) {
       emitMissingAnnotationDiag(&I);
     }
     return;

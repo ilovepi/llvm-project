@@ -12,8 +12,8 @@ int is_rare(int);
 
 int loop(int n) {
   int sum = 0;
-  // FIXME: The loop condition shouldn't be reported.
-  for (int i = 0; i < n; ++i) { // expected-remark {{Extremely hot condition. Consider adding llvm.expect intrinsic}}
+  // The loop condition is not reported, but the branch in the loop body is.
+  for (int i = 0; i < n; ++i) {
     if (is_rare(i)) // expected-remark {{Extremely hot condition. Consider adding llvm.expect intrinsic}}
       sum -= 1;
     else

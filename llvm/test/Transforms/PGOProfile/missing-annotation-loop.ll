@@ -6,10 +6,9 @@
 ; RUN:   -pgo-missing-annotations -pass-remarks=missing-annotations -S 2>&1 | \
 ; RUN:   FileCheck %s --implicit-check-not=remark:
 
-; FIXME: The loop conditions on lines 3 and 10 shouldn't be reported.
-; CHECK: remark: loop.c:3:0: Extremely hot condition. Consider adding llvm.expect intrinsic
+; The loop conditions on lines 3 and 10 are not reported, but the branch in the
+; loop body on line 4 is.
 ; CHECK: remark: loop.c:4:0: Extremely hot condition. Consider adding llvm.expect intrinsic
-; CHECK: remark: loop.c:10:0: Extremely hot condition. Consider adding llvm.expect intrinsic
 
 ;--- a.proftext
 :ir
